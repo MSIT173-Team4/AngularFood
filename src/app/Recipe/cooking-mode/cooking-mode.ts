@@ -62,6 +62,7 @@ export class CookingMode implements OnInit, OnDestroy {
   readonly isTimerRunning = signal(false);
   readonly isDeducting = signal(false);
   readonly recipeTitle = signal('專注料理模式');
+  readonly targetServings = signal(1);
 
   readonly currentStep = computed(
     () => this.steps()[this.currentStepIndex()] ?? null
@@ -76,6 +77,14 @@ export class CookingMode implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.recipeId = Number(this.route.snapshot.paramMap.get('id')) || 1;
+    const requestedServings = Number(
+      this.route.snapshot.queryParamMap?.get('servings')
+    );
+    this.targetServings.set(
+      Number.isInteger(requestedServings)
+        ? Math.min(20, Math.max(1, requestedServings))
+        : 1
+    );
 
     const pageData = this.route.snapshot.data['pageData'] as RecipeDetailPageData;
     this.recipeTitle.set(pageData.recipe.title);
@@ -137,7 +146,7 @@ export class CookingMode implements OnInit, OnDestroy {
     this.recipeService.completeCooking({
       userId: recipeDemoConfig.userId,
       recipeId: this.recipeId,
-      targetServings: 1
+      targetServings: this.targetServings()
     }).subscribe({
       next: (response) => {
         this.isDeducting.set(false);

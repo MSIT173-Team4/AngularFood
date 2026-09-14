@@ -1,3 +1,5 @@
+<p-toast />
+
 <section class="detail-shell p-4 md:p-8">
   @if (isUsingMockData()) {
     <div class="data-notice" role="status"><i class="pi pi-info-circle"></i> {{ dataNotice() }}</div>
@@ -10,17 +12,67 @@
         <p-tag value="精選食譜" severity="danger" [rounded]="true" />
         <h1>{{ recipe.title }}</h1>
         <p>{{ recipe.description }}</p>
-        <span><i class="pi pi-clock"></i> {{ recipe.cookingMinutes }} 分鐘　<i class="pi pi-users"></i> {{ recipe.defaultServings }} 人份　<i class="pi pi-bolt"></i> {{ recipe.totalCalories }} kcal</span>
+        <span>
+          <i class="pi pi-clock"></i> {{ recipe.cookingMinutes }} 分鐘　
+          <i class="pi pi-eye"></i> {{ recipe.views }} 次瀏覽　
+          <i class="pi pi-bolt"></i> {{ recipe.totalCalories }} kcal
+        </span>
+      </div>
+    </div>
+
+    <div class="recipe-toolbar" aria-label="食譜份量與互動工具列">
+      <div class="serving-control">
+        <span>料理份量</span>
+        <p-button
+          icon="pi pi-minus"
+          ariaLabel="減少一人份"
+          severity="secondary"
+          [rounded]="true"
+          [outlined]="true"
+          [disabled]="servings() === 1"
+          (onClick)="decreaseServings()"
+        />
+        <strong>{{ servings() }} 人份</strong>
+        <p-button
+          icon="pi pi-plus"
+          ariaLabel="增加一人份"
+          severity="secondary"
+          [rounded]="true"
+          [outlined]="true"
+          [disabled]="servings() === 20"
+          (onClick)="increaseServings()"
+        />
+      </div>
+
+      <div class="engagement-actions">
+        <p-button
+          [label]="likeCount() + ' 個讚'"
+          [icon]="isLiked() ? 'pi pi-thumbs-up-fill' : 'pi pi-thumbs-up'"
+          [severity]="isLiked() ? 'danger' : 'secondary'"
+          [outlined]="!isLiked()"
+          [loading]="isUpdatingEngagement()"
+          [disabled]="isUsingMockData()"
+          (onClick)="toggleLike()"
+        />
+        <p-button
+          [label]="favoriteCount() + ' 次收藏'"
+          [icon]="isFavorite() ? 'pi pi-heart-fill' : 'pi pi-heart'"
+          [severity]="isFavorite() ? 'danger' : 'secondary'"
+          [outlined]="!isFavorite()"
+          [loading]="isUpdatingEngagement()"
+          [disabled]="isUsingMockData()"
+          (onClick)="toggleFavorite()"
+        />
       </div>
     </div>
 
     <div class="detail-grid">
       <aside>
         <h2>準備食材</h2>
-        @for (ingredient of recipe.ingredients; track ingredient.ingredientId) {
+        @for (ingredient of scaledIngredients(); track ingredient.ingredientId) {
           <div class="ingredient">
             <span>{{ ingredient.name }}</span>
-            <b>{{ ingredient.displayAmount }}</b>
+            <b>{{ ingredient.scaledAmount }}</b>
           </div>
         }
       </aside>
@@ -37,7 +89,15 @@
             </div>
           </div>
         }
-        <p-button label="開始專注料理模式" icon="pi pi-compass" [routerLink]="['/cooking-mode', recipe.recipeId]" severity="danger" size="large" [rounded]="true" />
+        <p-button
+          label="開始專注料理模式"
+          icon="pi pi-compass"
+          [routerLink]="['/cooking-mode', recipe.recipeId]"
+          [queryParams]="{ servings: servings() }"
+          severity="danger"
+          size="large"
+          [rounded]="true"
+        />
       </article>
     </div>
   }

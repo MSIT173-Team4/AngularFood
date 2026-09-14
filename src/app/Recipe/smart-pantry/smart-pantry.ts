@@ -18,7 +18,8 @@ import {
 } from '../../features/pantry/pantry.models';
 import { PantryService } from '../../features/pantry/pantry.service';
 import { recipeDemoConfig } from '../api.config';
-import { PantryItem, PantryPageData } from '../recipe.models';
+import { PantryItem, PantryPageData, RecipeRecommendation } from '../recipe.models';
+import { RecipeService } from '../service/recipe.service';
 
 type PantryFormField = Exclude<keyof AddPantryItemPayload, 'userId'>;
 
@@ -43,6 +44,7 @@ type PantryFormField = Exclude<keyof AddPantryItemPayload, 'userId'>;
 export class SmartPantry implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly pantryService = inject(PantryService);
+  private readonly recipeService = inject(RecipeService);
   private readonly messageService = inject(MessageService);
 
   readonly pantryItems = signal<PantryItem[]>([]);
@@ -52,6 +54,8 @@ export class SmartPantry implements OnInit, OnDestroy {
   readonly isSaving = signal(false);
   readonly previewUrl = signal<string | null>(null);
   readonly diagnostic = signal<PantryAiDiagnosticDto | null>(null);
+  readonly recommendations = signal<RecipeRecommendation[]>([]);
+  readonly isLoadingRecommendations = signal(false);
   readonly pantryForm = signal<AddPantryItemPayload>(this.createEmptyForm());
   readonly storageLocations: AddPantryItemPayload['storageLocation'][] = [
     '冷藏',
@@ -63,6 +67,7 @@ export class SmartPantry implements OnInit, OnDestroy {
     const pageData = this.route.snapshot.data['pageData'] as PantryPageData;
     this.pantryItems.set(pageData.pantryItems);
     this.dataNotice.set(pageData.notice);
+    this.loadRecommendations();
   }
 
   ngOnDestroy(): void {
@@ -146,7 +151,40 @@ export class SmartPantry implements OnInit, OnDestroy {
   }
 
   removeItem(pantryId: number): void {
-    this.pantryItems.update((items) => items.filter((item) => item.pantryId !== pantryId));
+    if (pantryId <= 0) {
+      this.pantryItems.update((items) => items.filter((item) => item.pantryId !== pantryId));
+      this.loadRecommendations();
+      return;
+    }
+
+    this.pantryService.deleteItem(pantryId, recipeDemoConfig.userId).subscribe({
+      next: (response) => {
+        if (!response.success) {
+          this.showError(response.message);
+          return;
+        }
+
+        this.pantryItems.update((items) => items.filter((item) => item.pantryId !== pantryId));
+        this.messageService.add({
+          severity: 'success',
+          summary: '庫存已更新',
+          detail: response.message
+        });
+        this.loadRecommendations();
+      },
+      error: (error: HttpErrorResponse) => {
+        this.showError(this.readApiError(error, '刪除冰箱食材失敗，請稍後再試。'));
+      }
+    });
+  }
+
+  joinIngredientNames(
+    ingredients: RecipeRecommendation['availableIngredients'],
+    emptyText: string
+  ): string {
+    return ingredients.length
+      ? ingredients.map((ingredient) => ingredient.name).join('、')
+      : emptyText;
   }
 
   private applyDiagnostic(diagnostic: PantryAiDiagnosticDto): void {
@@ -171,10 +209,27 @@ export class SmartPantry implements OnInit, OnDestroy {
         if (response.success && response.data) {
           this.pantryItems.set(response.data);
           this.dataNotice.set('已同步 FriendlyFoodDb 最新冰箱庫存。');
+          this.loadRecommendations();
         }
       },
       error: () => {
         this.showError('入庫成功，但重新整理冰箱清單失敗，請重新載入頁面。');
+      }
+    });
+  }
+
+  private loadRecommendations(): void {
+    this.isLoadingRecommendations.set(true);
+    this.recipeService.getRecommendations(recipeDemoConfig.userId, 6).subscribe({
+      next: (response) => {
+        this.isLoadingRecommendations.set(false);
+        this.recommendations.set(
+          response.success && response.data ? response.data : []
+        );
+      },
+      error: () => {
+        this.isLoadingRecommendations.set(false);
+        this.recommendations.set([]);
       }
     });
   }
