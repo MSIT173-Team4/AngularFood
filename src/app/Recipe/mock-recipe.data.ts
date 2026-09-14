@@ -7,6 +7,27 @@ import {
 const image = (title: string): string =>
   `https://placehold.co/900x600/f1ded5/5b382c?text=${encodeURIComponent(title)}`;
 
+const recipeCoverFileNames: Record<number, string> = {
+  1: '01-pan-seared-salmon.jpg',
+  2: '02-lemon-butter-sea-bass.jpg',
+  3: '03-margherita-pizza.jpg',
+  4: '04-truffle-mushroom-risotto.jpg',
+  5: '05-acai-berry-bowl.jpg',
+  6: '06-spinach-tofu-soup.jpg',
+  7: '07-mushroom-vegetable-stir-fry.jpg',
+  8: '08-miso-tofu-hot-pot.jpg',
+  9: '09-herb-chicken-quinoa-bowl.jpg',
+  10: '10-black-bean-barley-pork-rib-soup.jpg',
+  11: '11-broccoli-potato-puree.jpg',
+  12: '12-pumpkin-chicken-dog-meal.jpg',
+  13: '13-taiwanese-pork-fried-noodles.jpg',
+  14: '14-japanese-pork-curry.jpg',
+  15: '15-bonito-onion-salad.jpg',
+  16: '16-winter-melon-clam-soup.jpg',
+  17: '17-braised-tofu.jpg',
+  18: '18-baby-vegetable-soft-rice.jpg'
+};
+
 export const MOCK_RECIPES: RecipeSummary[] = [
   createRecipeSummary(1, '香煎鮭魚佐蘆筍', '外酥內嫩的鮭魚搭配嫩綠蘆筍與清爽柑橘油醋。', 25, 480, 326, true, '異國料理'),
   createRecipeSummary(2, '香煎鱸魚佐檸檬奶油醬', '魚皮金黃酥脆，佐以微酸解膩的蒜香檸檬奶油醬。', 35, 420, 284, true, '異國料理'),
@@ -19,7 +40,13 @@ export const MOCK_RECIPES: RecipeSummary[] = [
   createRecipeSummary(9, '香草雞胸藜麥彩蔬碗', '雞胸、藜麥與彩蔬組成方便備餐的高蛋白餐盒。', 30, 460, 188, false, '健康輕食', ['健身餐', '高蛋白']),
   createRecipeSummary(10, '黑豆薏仁排骨湯', '以黑豆、薏仁與排骨慢煮的產後餐點靈感。', 70, 390, 132, false, '特殊照護', ['月子餐', '一鍋到底']),
   createRecipeSummary(11, '花椰菜馬鈴薯泥', '六個月以上寶寶練習吞嚥的無加鹽細緻蔬菜泥。', 20, 95, 96, false, '特殊照護', ['寶寶副食品', '無加鹽']),
-  createRecipeSummary(12, '南瓜雞肉犬用佐餐', '無鹽南瓜與雞肉製成的犬用少量佐餐，不作完整主食。', 25, 160, 84, false, '寵物料理', ['寵物鮮食', '犬用佐餐'])
+  createRecipeSummary(12, '南瓜雞肉犬用佐餐', '無鹽南瓜與雞肉製成的犬用少量佐餐，不作完整主食。', 25, 160, 84, false, '寵物料理', ['寵物鮮食', '犬用佐餐']),
+  createRecipeSummary(13, '台式肉絲家常炒麵', '油麵吸附醬香，搭配肉絲與高麗菜，是適合清冰箱的台式家常主食。', 25, 620, 93, false, '家常菜', ['台式家常', '平底鍋', '零剩食']),
+  createRecipeSummary(14, '馬鈴薯豬肉咖哩', '柔嫩豬肉與根莖蔬菜慢煮入味，隔天加熱也適合的家庭咖哩。', 45, 680, 76, false, '異國料理', ['一鍋到底', '新手友善', '零剩食']),
+  createRecipeSummary(15, '柴魚涼拌洋蔥絲', '冰鎮洋蔥保留爽脆口感，搭配柴魚與和風醬汁。', 10, 120, 26, false, '家常菜', ['十五分鐘', '新手友善', '零剩食']),
+  createRecipeSummary(16, '冬瓜蛤蜊清湯', '冬瓜清甜、蛤蜊鮮味自然釋出，不需繁複調味的清爽湯品。', 30, 150, 104, false, '家常菜', ['台式家常', '一鍋到底', '新手友善']),
+  createRecipeSummary(17, '古早味醬香滷豆腐', '板豆腐煎出金黃表面後吸收醬汁，是簡單下飯的台灣家常料理。', 35, 260, 58, false, '家常菜', ['台式家常', '一鍋到底', '新手友善']),
+  createRecipeSummary(18, '寶寶彩蔬軟飯小餐盤', '以軟飯、根莖蔬菜與雞肉組成可依月齡調整質地的寶寶餐盤。', 35, 210, 42, false, '特殊照護', ['寶寶副食品', '無加鹽', '一鍋到底'])
 ];
 
 function createRecipeSummary(
@@ -37,23 +64,45 @@ function createRecipeSummary(
     recipeId,
     title,
     description,
-    coverImageUrl: image(title),
+    coverImageUrl: recipeCoverFileNames[recipeId]
+      ? `/images/recipes/${recipeCoverFileNames[recipeId]}`
+      : image(title),
     cookingMinutes,
     totalCalories,
     defaultServings: recipeId === 5 ? 1 : 2,
-    views: 120,
+    views: 120 + recipeId * 37,
     likes,
     favorites: Math.floor(likes / 3),
     isAiGenerated,
     categoryName,
-    authorName: 'recipe.demo',
+    authorName: resolveMockAuthorName(categoryName),
     tags
   };
 }
 
+function resolveMockAuthorName(categoryName: string): string {
+  switch (categoryName) {
+    case '家常菜':
+      return '小滿家常菜';
+    case '健康輕食':
+      return '健身便當日記';
+    case '特殊照護':
+      return '樂樂親子餐桌';
+    case '寵物料理':
+      return '毛孩鮮食筆記';
+    default:
+      return 'recipe.demo';
+  }
+}
+
 type MockIngredientDefinition = [name: string, displayAmount: string, amount: number | null, unit: string];
 
-const mockDetailContent: Record<number, { ingredients: MockIngredientDefinition[]; steps: string[]; tip: string }> = {
+const mockDetailContent: Record<number, {
+  ingredients: MockIngredientDefinition[];
+  steps: string[];
+  tip: string;
+  youTubeVideoId?: string;
+}> = {
   1: { ingredients: [['大西洋鮭魚排', '350 公克', 350, 'g'], ['嫩蘆筍', '150 公克', 150, 'g'], ['柳橙', '1 顆', 1, '顆']], steps: ['鮭魚擦乾後調味，蘆筍切除粗硬末端。', '魚皮朝下以中火煎至金黃，再翻面煎熟。', '蘆筍入鍋煎熟，淋上柳橙汁後盛盤。'], tip: '資料來源：USDA Nutrition.gov｜https://www.nutrition.gov/recipes。魚肉中心須完全加熱。' },
   2: { ingredients: [['鱸魚片', '300 公克', 300, 'g'], ['無鹽奶油', '30 公克', 30, 'g'], ['黃檸檬', '1 顆', 1, '顆']], steps: ['鱸魚擦乾並在魚皮劃淺刀，檸檬榨汁。', '魚皮朝下壓平香煎，翻面後煎至熟透。', '原鍋融化奶油拌入檸檬汁，淋回魚片。'], tip: '資料來源：Mayo Clinic Healthy Recipes｜https://www.mayoclinic.org/healthy-lifestyle/recipes/dash-diet-recipes/rcs-20077146。魚肉中心須完全加熱。' },
   3: { ingredients: [['高筋麵粉', '300 公克', 300, 'g'], ['牛番茄', '2 顆', 2, '顆'], ['莫札瑞拉起司', '150 公克', 150, 'g']], steps: ['麵粉加水與酵母揉成麵團並發酵。', '麵團擀平後鋪上番茄片與起司。', '高溫烘烤至餅皮上色、起司融化。'], tip: '資料來源：USDA Nutrition.gov｜https://www.nutrition.gov/recipes。烤箱與烤盤溫度高，取放時使用隔熱手套。' },
@@ -65,14 +114,50 @@ const mockDetailContent: Record<number, { ingredients: MockIngredientDefinition[
   9: { ingredients: [['雞胸肉', '300 公克', 300, 'g'], ['藜麥', '120 公克', 120, 'g'], ['青花椰菜', '180 公克', 180, 'g']], steps: ['藜麥洗淨後加水煮熟並燜五分鐘。', '雞胸肉拍平撒香草，煎至中心熟透。', '花椰菜蒸熟，與藜麥及雞胸分區裝盤。'], tip: '資料來源：USDA MyPlate｜https://www.myplate.gov/web/web/eat-healthy/protein-foods。雞肉中心須完全加熱。' },
   10: { ingredients: [['豬小排', '500 公克', 500, 'g'], ['黑豆', '80 公克', 80, 'g'], ['薏仁', '60 公克', 60, 'g']], steps: ['黑豆與薏仁洗淨浸泡，排骨汆燙。', '所有材料加水煮滾後轉小火。', '燉至豆仁與排骨軟熟，撇油後調味。'], tip: '資料來源：臺大醫院新竹分院｜https://www.hch.gov.tw/?aid=626&iid=748&page_name=detail&pid=62。產後特殊需求先諮詢醫療人員。' },
   11: { ingredients: [['青花椰菜', '40 公克', 40, 'g'], ['馬鈴薯', '50 公克', 50, 'g'], ['飲用水', '30 毫升', 30, 'ml']], steps: ['花椰菜與馬鈴薯洗淨切小塊。', '蒸至用叉子可輕易壓碎。', '加少量溫水壓成符合寶寶發展階段的質地。'], tip: '資料來源：NHS Start for Life｜https://www.nhs.uk/best-start-in-life/baby/recipes-and-meal-ideas/。不加鹽糖，首次食材少量嘗試並全程看護。' },
-  12: { ingredients: [['去皮雞胸肉', '150 公克', 150, 'g'], ['南瓜', '100 公克', 100, 'g'], ['飲用水', '適量', null, '']], steps: ['雞肉去皮去骨，南瓜去籽後切小塊。', '分別以清水煮至完全熟透，不加調味。', '放涼後切碎拌勻，依犬隻體型少量餵食。'], tip: '資料來源：UC Davis School of Veterinary Medicine｜https://healthtopics.vetmed.ucdavis.edu/health-topics/canine/treat-guidelines-dogs。僅供偶爾佐餐；長期鮮食須諮詢獸醫營養師。' }
+  12: { ingredients: [['去皮雞胸肉', '150 公克', 150, 'g'], ['南瓜', '100 公克', 100, 'g'], ['飲用水', '適量', null, '']], steps: ['雞肉去皮去骨，南瓜去籽後切小塊。', '分別以清水煮至完全熟透，不加調味。', '放涼後切碎拌勻，依犬隻體型少量餵食。'], tip: '資料來源：UC Davis School of Veterinary Medicine｜https://healthtopics.vetmed.ucdavis.edu/health-topics/canine/treat-guidelines-dogs。僅供偶爾佐餐；長期鮮食須諮詢獸醫營養師。' },
+  13: {
+    ingredients: [['油麵', '300 公克', 300, 'g'], ['豬里肌肉絲', '120 公克', 120, 'g'], ['高麗菜', '150 公克', 150, 'g'], ['紅蘿蔔', '半根', 0.5, '根']],
+    steps: ['高麗菜切絲，紅蘿蔔切細條，肉絲以少量醬油抓勻。', '熱鍋後炒熟肉絲，先盛出備用。', '原鍋炒軟紅蘿蔔與高麗菜。', '加入油麵與少量水，蓋鍋燜至麵體鬆開。', '放回肉絲並加入醬油拌炒均勻。', '確認肉絲熟透、湯汁收乾後盛盤。'],
+    tip: '資料來源：YouTube／H.tool的廚房日誌｜https://www.youtube.com/watch?v=xnvJGP0BDr8。本食譜依影片主題改寫為測試資料；豬肉須完全加熱。',
+    youTubeVideoId: 'xnvJGP0BDr8'
+  },
+  14: {
+    ingredients: [['豬梅花肉', '300 公克', 300, 'g'], ['馬鈴薯', '2 顆', 2, '顆'], ['紅蘿蔔', '1 根', 1, '根'], ['洋蔥', '1 顆', 1, '顆'], ['咖哩塊', '4 小塊', 80, 'g']],
+    steps: ['豬肉切塊，馬鈴薯與紅蘿蔔滾刀切，洋蔥切片。', '鍋中少油煎香豬肉表面。', '加入洋蔥炒至透明，再放入根莖蔬菜。', '加水蓋過食材，煮滾後轉小火。', '燉至蔬菜柔軟後關小火，放入咖哩塊攪拌融化。', '重新小火煮至濃稠，確認豬肉熟透後完成。'],
+    tip: '資料來源：YouTube／H.tool的廚房日誌｜https://www.youtube.com/watch?v=hT1pCR45bWU。本食譜依影片主題改寫為測試資料；咖哩塊鈉含量較高，可依需求減量。',
+    youTubeVideoId: 'hT1pCR45bWU'
+  },
+  15: {
+    ingredients: [['洋蔥', '1 顆', 1, '顆'], ['柴魚片', '5 公克', 5, 'g'], ['薄鹽醬油', '1 大匙', 15, 'ml'], ['白醋', '1 小匙', 5, 'ml']],
+    steps: ['洋蔥逆紋切成均勻細絲。', '放入冰水輕抓後浸泡，降低辛辣感。', '瀝乾洋蔥並以廚房紙巾吸除多餘水分。', '醬油與白醋混合成醬汁。', '洋蔥裝盤，淋醬後撒上柴魚片。'],
+    tip: '資料來源：YouTube／H.tool的廚房日誌｜https://www.youtube.com/watch?v=ebW1XCD7bYQ。本食譜依影片主題改寫為測試資料；洋蔥辛辣度可用冰水浸泡時間調整。',
+    youTubeVideoId: 'ebW1XCD7bYQ'
+  },
+  16: {
+    ingredients: [['冬瓜', '500 公克', 500, 'g'], ['蛤蜊', '300 公克', 300, 'g'], ['薑', '3 片', 15, 'g'], ['青蔥', '1 根', 1, '根']],
+    steps: ['蛤蜊吐沙後刷洗外殼，冬瓜去皮去籽切塊。', '鍋中加水、薑片與冬瓜煮滾。', '轉中小火煮至冬瓜邊緣透明。', '放入蛤蜊並蓋鍋煮至開殼。', '撈除未開殼蛤蜊，撒上蔥花後完成。'],
+    tip: '資料來源：YouTube／H.tool的廚房日誌｜https://www.youtube.com/watch?v=FwsfSbGOcuQ。本食譜依影片主題改寫為測試資料；未開殼或有異味的蛤蜊不得食用。',
+    youTubeVideoId: 'FwsfSbGOcuQ'
+  },
+  17: {
+    ingredients: [['板豆腐', '2 盒', 800, 'g'], ['薄鹽醬油', '3 大匙', 45, 'ml'], ['薑', '4 片', 20, 'g'], ['青蔥', '2 根', 2, '根']],
+    steps: ['豆腐以紙巾吸乾水分，切成厚片。', '平底鍋加少量油，將豆腐兩面煎至金黃。', '加入薑片與蔥白炒香。', '倒入醬油與清水至豆腐一半高度。', '小火滷煮並中途翻面，使兩面均勻入味。', '湯汁略收後撒上蔥綠即可。'],
+    tip: '資料來源：YouTube／KIMLAN金蘭醬油｜https://www.youtube.com/watch?v=BWrMXB31YH8。本食譜依影片主題改寫為測試資料；醬油鈉含量較高，可依需求減量。',
+    youTubeVideoId: 'BWrMXB31YH8'
+  },
+  18: {
+    ingredients: [['白飯', '100 公克', 100, 'g'], ['雞胸肉', '40 公克', 40, 'g'], ['紅蘿蔔', '20 公克', 20, 'g'], ['青花椰菜', '20 公克', 20, 'g'], ['飲用水', '200 毫升', 200, 'ml']],
+    steps: ['雞肉去筋切碎，蔬菜洗淨後切成適合月齡的小丁。', '鍋中加入白飯與水，以小火煮開。', '加入雞肉碎並充分攪散。', '加入紅蘿蔔與青花椰菜，持續小火燉煮。', '確認雞肉熟透、蔬菜柔軟後關火。', '依寶寶發展壓碎或剪細，放涼至適口溫度再餵食。'],
+    tip: '資料來源：YouTube／international mommy國際媽咪｜https://www.youtube.com/watch?v=YYHm-m-EwJ4。本食譜依影片主題改寫為測試資料；月齡、質地與過敏原須依寶寶發展及醫療建議調整。',
+    youTubeVideoId: 'YYHm-m-EwJ4'
+  }
 };
 
 export const MOCK_RECIPE_DETAILS: RecipeDetail[] = MOCK_RECIPES.map((recipe) => ({
   ...recipe,
   userId: 1,
   categoryId: null,
-  youTubeVideoId: null,
+  youTubeVideoId: mockDetailContent[recipe.recipeId].youTubeVideoId ?? null,
   aiPrepTips: mockDetailContent[recipe.recipeId].tip,
   ingredients: mockDetailContent[recipe.recipeId].ingredients.map((ingredient, index) => ({
     ingredientId: recipe.recipeId * 100 + index + 1,
@@ -87,7 +172,7 @@ export const MOCK_RECIPE_DETAILS: RecipeDetail[] = MOCK_RECIPES.map((recipe) => 
     stepNumber: index + 1,
     instruction,
     imageUrl: image(`${recipe.title}步驟${index + 1}`),
-    timerSeconds: [300, 480, 180][index]
+    timerSeconds: [300, 480, 180][index] ?? 180
   }))
 }));
 
