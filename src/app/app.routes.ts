@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-
 import { NearbyPlace } from './FoodMap/nearby-place/nearby-place';
 import { CreateProduct } from './Market/components/create-product/create-product';
 import {
@@ -7,7 +6,6 @@ import {
   recipeDetailResolver,
   recipeListResolver
 } from './Recipe/recipe.resolvers';
-import { NearbyPlace } from './FoodMap/nearby-place/nearby-place';
 import { GetPublicProduct } from './Market/components/get-public-product/get-public-product';
 
 export const routes: Routes = [
@@ -59,7 +57,6 @@ export const routes: Routes = [
   { path: 'market/create-product', component: CreateProduct },
   { path: 'nearby-place', component: NearbyPlace },
   { path: 'cooking/:id', redirectTo: 'cooking-mode/:id' },
-  { path: '**', redirectTo: 'recipes' }
   { path: 'market/products', component: GetPublicProduct },
-  { path: 'nearby-place', component: NearbyPlace }
+  { path: '**', redirectTo: 'recipes' }
 ];

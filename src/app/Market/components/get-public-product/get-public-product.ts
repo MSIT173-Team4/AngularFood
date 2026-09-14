@@ -1,6 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ProductService } from '../../Service/product';
+import { ProductService } from '../../Service/market';
 
 @Component({
   selector: 'app-get-public-product',
