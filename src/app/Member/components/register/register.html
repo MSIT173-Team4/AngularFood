@@ -1,0 +1,55 @@
+<div class="container">
+  <div class="row justify-content-center align-items-center min-vh-100">
+    <div class="col-12 col-sm-8 col-md-5 col-lg-4">
+      <div class="card shadow">
+        <div class="card-body p-4">
+          <h2 class="text-center mb-4">註冊會員</h2>
+
+          <form [formGroup]="registerData" (ngSubmit)="Register()">
+            <div class="mb-3">
+              <label for="username" class="form-label">用戶名</label>
+              <input class="form-control" id="username" formControlName="fUserName" />
+            </div>
+
+            <div class="mb-3">
+              <label for="password" class="form-label">密碼</label>
+              <input
+                type="password"
+                class="form-control"
+                id="password"
+                formControlName="fPassword"
+              />
+            </div>
+
+            <div class="mb-3">
+              <label for="email" class="form-label">Email</label>
+              <input type="email" class="form-control" id="email" formControlName="fEmail" />
+            </div>
+
+            <div class="mb-3">
+              <label for="phone" class="form-label">手機號碼</label>
+              <input class="form-control" id="phone" formControlName="fPhone" />
+            </div>
+            <div class="mb-3">
+              <label for="address" class="form-label">地址</label>
+              <input class="form-control" id="address" formControlName="fAddress" />
+            </div>
+
+            <div class="mb-3">
+              <label for="idnum" class="form-label">身分證字號</label>
+              <input class="form-control" id="idnum" formControlName="fIdNum" />
+            </div>
+            @if (errorMsg) {
+              <div class="alert alert-danger">
+                {{ errorMsg }}
+              </div>
+            }
+            <div class="mb-3">
+              <button type="submit" class="btn btn-primary w-100">註冊</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

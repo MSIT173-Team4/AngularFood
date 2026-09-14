@@ -7,9 +7,21 @@ import {
   recipeDetailResolver,
   recipeListResolver
 } from './Recipe/recipe.resolvers';
+import { Login } from './Member/components/login/login';
+import { Register } from './Member/components/register/register';
 
 export const routes: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: 'recipes' },
+  { path: '', pathMatch: 'full', redirectTo: 'login' },
+  {
+    path: 'login',
+    title: '登入',
+    component:Login
+  },
+  {
+    path: 'register',
+    title: '註冊',
+    component:Register
+  },
   {
     path: 'recipes',
     title: '食譜發現｜友料美食生活平台',

@@ -1,0 +1,61 @@
+<div class="container">
+  <div class="row justify-content-center align-items-center min-vh-100">
+    <div class="col-12 col-sm-8 col-md-5 col-lg-4">
+      <div class="card shadow">
+        <div class="card-body p-4">
+          <h2 class="text-center mb-4">會員登入</h2>
+
+          <form (ngSubmit)="login()">
+            <!-- 帳號 -->
+            <div class="mb-3">
+              <label for="username" class="form-label">帳號</label>
+
+              <input
+                type="text"
+                id="username"
+                class="form-control"
+                placeholder="請輸入帳號"
+                [(ngModel)]="loginData.username"
+                name="username"
+                required
+              />
+            </div>
+
+            <!-- 密碼 -->
+            <div class="mb-3">
+              <label for="password" class="form-label">密碼</label>
+
+              <input
+                type="password"
+                id="password"
+                class="form-control"
+                placeholder="請輸入密碼"
+                [(ngModel)]="loginData.password"
+                name="password"
+                required
+              />
+            </div>
+
+            <!-- 錯誤訊息 -->
+            @if (errorMessage) {
+              <div class="alert alert-danger">
+                {{ errorMessage }}
+              </div>
+            }
+
+            <!-- 登入按鈕 -->
+            <button type="submit" class="btn btn-primary w-100">登入</button>
+          </form>
+
+          <div class="text-center mt-3">
+            <a href="#">忘記密碼</a>
+          </div>
+          <div class="text-center mt-3">
+            <a href="register">註冊會員</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+```
