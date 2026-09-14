@@ -100,5 +100,63 @@
         />
       </article>
     </div>
+
+    @if (youtubeEmbedUrl(); as embedUrl) {
+      <section class="video-section" aria-labelledby="recipe-video-title">
+        <div class="section-heading">
+          <div>
+            <span>料理影片</span>
+            <h2 id="recipe-video-title">跟著原作者一起料理</h2>
+          </div>
+          <a
+            class="source-link"
+            [href]="youtubeWatchUrl()"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            在 YouTube 開啟 <i class="pi pi-external-link"></i>
+          </a>
+        </div>
+
+        <div class="video-frame">
+          <iframe
+            [src]="embedUrl"
+            [title]="recipe.title + '料理示範影片'"
+            loading="lazy"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+          ></iframe>
+        </div>
+
+        <p class="copyright-note">
+          影片來源：YouTube 原作者。本平台僅提供原始連結與嵌入播放，不下載或重新上傳影片。
+        </p>
+      </section>
+    }
+
+    @if (recipeAttribution(); as attribution) {
+      <section class="source-section" aria-labelledby="recipe-source-title">
+        <i class="pi pi-book"></i>
+        <div>
+          <h2 id="recipe-source-title">資料來源與安全提醒</h2>
+          <p>
+            資料來源：
+            @if (attribution.sourceUrl) {
+              <a
+                [href]="attribution.sourceUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+              >{{ attribution.sourceName }}</a>
+            } @else {
+              <span>{{ attribution.sourceName }}</span>
+            }
+          </p>
+          @if (attribution.safetyNote) {
+            <p>{{ attribution.safetyNote }}</p>
+          }
+        </div>
+      </section>
+    }
   }
 </section>

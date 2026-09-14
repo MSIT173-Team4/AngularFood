@@ -1,5 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
@@ -9,6 +10,12 @@ import { ToastModule } from 'primeng/toast';
 import { recipeDemoConfig } from '../api.config';
 import { RecipeDetail as RecipeDetailModel, RecipeDetailPageData } from '../recipe.models';
 import { RecipeService } from '../service/recipe.service';
+
+interface RecipeAttribution {
+  sourceName: string;
+  sourceUrl: string;
+  safetyNote: string;
+}
 
 @Component({
   selector: 'app-recipe-detail',
@@ -21,6 +28,7 @@ export class RecipeDetail implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly recipeService = inject(RecipeService);
   private readonly messageService = inject(MessageService);
+  private readonly sanitizer = inject(DomSanitizer);
 
   readonly recipe = signal<RecipeDetailModel | null>(null);
   readonly dataNotice = signal('');
@@ -31,6 +39,45 @@ export class RecipeDetail implements OnInit {
   readonly isUpdatingEngagement = signal(false);
   readonly likeCount = signal(0);
   readonly favoriteCount = signal(0);
+
+  readonly recipeAttribution = computed<RecipeAttribution | null>(() => {
+    const attributionText = this.recipe()?.aiPrepTips?.trim();
+    if (!attributionText) {
+      return null;
+    }
+
+    const attributionMatch = attributionText.match(
+      /^資料來源：(.+?)｜(https?:\/\/[^。\s]+)。?(.*)$/s
+    );
+
+    if (!attributionMatch) {
+      return {
+        sourceName: '食譜補充說明',
+        sourceUrl: '',
+        safetyNote: attributionText
+      };
+    }
+
+    return {
+      sourceName: attributionMatch[1].trim(),
+      sourceUrl: attributionMatch[2].trim(),
+      safetyNote: attributionMatch[3].trim()
+    };
+  });
+
+  readonly youtubeWatchUrl = computed(() => {
+    const videoId = this.getValidYouTubeVideoId();
+    return videoId ? `https://www.youtube.com/watch?v=${videoId}` : '';
+  });
+
+  readonly youtubeEmbedUrl = computed<SafeResourceUrl | null>(() => {
+    const videoId = this.getValidYouTubeVideoId();
+    return videoId
+      ? this.sanitizer.bypassSecurityTrustResourceUrl(
+          `https://www.youtube-nocookie.com/embed/${videoId}`
+        )
+      : null;
+  });
 
   readonly scaledIngredients = computed(() => {
     const recipe = this.recipe();
@@ -128,6 +175,11 @@ export class RecipeDetail implements OnInit {
     return Number.isInteger(amount)
       ? amount.toString()
       : amount.toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1');
+  }
+
+  private getValidYouTubeVideoId(): string {
+    const videoId = this.recipe()?.youTubeVideoId?.trim() ?? '';
+    return /^[\w-]{11}$/.test(videoId) ? videoId : '';
   }
 
   private showError(detail: string): void {
