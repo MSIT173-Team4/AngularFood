@@ -57,15 +57,13 @@ export class CreateRecipe implements OnInit, OnDestroy {
 
   private localPreviewUrl: string | null = null;
 
-  readonly title = signal('番茄嫩豆腐鮮魚煲');
-  readonly description = signal('運用冰箱即期食材完成的快速家常料理。');
+  readonly title = signal('');
+  readonly description = signal('');
   readonly servings = signal(2);
-  readonly cookingMinutes = signal(20);
-  readonly totalCalories = signal(420);
-  readonly ingredientDraft = signal('牛番茄 2 顆\n板豆腐 1 盒\n鱸魚片 300 公克');
-  readonly instructionDraft = signal(
-    '1. 處理所有食材。\n2. 將牛番茄炒出香氣後加入清水。\n3. 放入豆腐與鱸魚片煮熟並調味。'
-  );
+  readonly cookingMinutes = signal(0);
+  readonly totalCalories = signal(0);
+  readonly ingredientDraft = signal('');
+  readonly instructionDraft = signal('');
   readonly youTubeUrl = signal('');
   readonly categories = signal<RecipeCategory[]>([]);
   readonly tags = signal<RecipeTag[]>([]);
@@ -273,7 +271,7 @@ export class CreateRecipe implements OnInit, OnDestroy {
 
         this.categories.set(response.data.categories);
         this.tags.set(response.data.tags);
-        this.categoryId.set(response.data.categories[0]?.categoryId ?? null);
+        this.categoryId.set(null);
       },
       error: (error: HttpErrorResponse) => {
         this.showError(this.readApiError(error, '無法載入食譜分類與標籤。'));
