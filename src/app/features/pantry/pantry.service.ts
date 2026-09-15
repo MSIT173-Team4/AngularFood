@@ -27,4 +27,10 @@ export class PantryService {
   addPantryItem(payload: AddPantryItemPayload): Observable<ApiResponse<PantryItem>> {
     return this.http.post<ApiResponse<PantryItem>>(apiConfig.pantry.addItem, payload);
   }
+
+  deleteItem(pantryId: number, userId: number): Observable<ApiResponse<boolean>> {
+    return this.http.delete<ApiResponse<boolean>>(
+      `${apiConfig.pantry.delete(pantryId)}?userId=${userId}`
+    );
+  }
 }

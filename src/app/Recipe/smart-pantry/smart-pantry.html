@@ -47,21 +47,46 @@
     </article>
 
     <article class="recommendation">
-      <p-tag value="食材吻合度 90%" severity="success" [rounded]="true" />
-      <h2>菠菜豆腐清湯</h2>
-      <p>優先消耗剩餘一天的菠菜與剩餘兩天的板豆腐，十五分鐘快速完成。</p>
-      <div class="match-details">
-        <span><i class="pi pi-check-circle" aria-hidden="true"></i> 已有：菠菜、板豆腐</span>
-        <span><i class="pi pi-shopping-cart" aria-hidden="true"></i> 缺少：雞蛋</span>
-      </div>
-      <p-button
-        label="查看推薦食譜"
-        icon="pi pi-arrow-right"
-        iconPos="right"
-        routerLink="/recipes/6"
-        severity="danger"
-        [rounded]="true"
-      />
+      @if (isLoadingRecommendations()) {
+        <div class="recommendation-state" role="status">
+          <p-progressSpinner strokeWidth="5" ariaLabel="推薦計算中" />
+          <strong>正在計算冰箱食材吻合度……</strong>
+        </div>
+      } @else if (recommendations()[0]; as recommendation) {
+        <p-tag
+          [value]="'食材吻合度 ' + recommendation.matchPercentage + '%'"
+          severity="success"
+          [rounded]="true"
+        />
+        <h2>{{ recommendation.title }}</h2>
+        <p>{{ recommendation.explanation }}</p>
+        <div class="match-details">
+          <span>
+            <i class="pi pi-check-circle" aria-hidden="true"></i>
+            已有：
+            {{ joinIngredientNames(recommendation.availableIngredients, '尚無吻合食材') }}
+          </span>
+          <span>
+            <i class="pi pi-shopping-cart" aria-hidden="true"></i>
+            缺少：
+            {{ joinIngredientNames(recommendation.missingIngredients, '無，可直接料理') }}
+          </span>
+        </div>
+        <p-button
+          label="查看推薦食譜"
+          icon="pi pi-arrow-right"
+          iconPos="right"
+          [routerLink]="['/recipes', recommendation.recipeId]"
+          severity="danger"
+          [rounded]="true"
+        />
+      } @else {
+        <div class="recommendation-state">
+          <i class="pi pi-inbox" aria-hidden="true"></i>
+          <strong>目前沒有可配對的食譜</strong>
+          <span>新增冰箱食材後，系統會重新計算推薦。</span>
+        </div>
+      }
     </article>
   </div>
 </section>

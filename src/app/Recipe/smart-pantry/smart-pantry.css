@@ -107,6 +107,25 @@
   border: 0;
 }
 
+.recommendation-state {
+  display: grid;
+  min-height: 280px;
+  place-content: center;
+  justify-items: center;
+  gap: .8rem;
+  color: #e6f5e3;
+  text-align: center;
+}
+
+.recommendation-state > i {
+  font-size: 2rem;
+}
+
+.recommendation-state span {
+  color: #cde5c9;
+  font-size: .85rem;
+}
+
 .diagnostic-dialog,
 .diagnostic-result {
   display: grid;

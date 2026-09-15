@@ -1,13 +1,36 @@
+<p-toast />
+
 <section class="editor-shell p-4 md:p-8">
-  <a routerLink="/recipes" class="back"><i class="pi pi-arrow-left"></i> 回到食譜探索</a>
+  <a routerLink="/recipes" class="back">
+    <i class="pi pi-arrow-left" aria-hidden="true"></i>
+    回到食譜探索
+  </a>
 
   <header>
     <div>
       <span class="eyebrow"><i class="pi pi-sparkles"></i> AI 協作食譜編輯器</span>
       <h1>建立分享食譜</h1>
-      <p>先完成核心欄位，後續可接上 SmartBot.Api 自動解析食材與步驟。</p>
+      <p>AI 協助整理，最後由您確認內容後才會寫入資料庫。</p>
     </div>
-    <p-button label="儲存草稿" icon="pi pi-save" severity="secondary" [outlined]="true" [disabled]="!canSubmit()" (onClick)="saveDraft()" />
+    <div class="header-actions">
+      @if (createdRecipeId()) {
+        <p-button
+          label="查看已發布食譜"
+          icon="pi pi-external-link"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="openCreatedRecipe()"
+        />
+      }
+      <p-button
+        label="確認發布"
+        icon="pi pi-send"
+        severity="danger"
+        [loading]="isSaving()"
+        [disabled]="!canSubmit()"
+        (onClick)="submitRecipe()"
+      />
+    </div>
   </header>
 
   @if (statusMessage()) {
@@ -19,48 +42,111 @@
       <div class="form-grid">
         <label>
           <span>食譜名稱</span>
-          <input pInputText type="text" [ngModel]="title()" (ngModelChange)="title.set($event)" />
+          <input pInputText type="text" maxlength="100" [ngModel]="title()" (ngModelChange)="title.set($event)" />
         </label>
         <label>
           <span>食譜簡介</span>
-          <textarea pTextarea rows="4" [ngModel]="description()" (ngModelChange)="description.set($event)"></textarea>
+          <textarea pTextarea rows="4" maxlength="500" [ngModel]="description()" (ngModelChange)="description.set($event)"></textarea>
         </label>
         <div class="two-columns">
+          <label>
+            <span>食譜分類</span>
+            <p-select
+              [options]="categories()"
+              optionLabel="name"
+              optionValue="categoryId"
+              placeholder="選擇分類"
+              [ngModel]="categoryId()"
+              (ngModelChange)="categoryId.set($event)"
+            />
+          </label>
+          <label>
+            <span>特色標籤</span>
+            <p-multiselect
+              [options]="tags()"
+              optionLabel="name"
+              optionValue="tagId"
+              display="chip"
+              placeholder="可複選"
+              [maxSelectedLabels]="2"
+              [ngModel]="selectedTagIds()"
+              (ngModelChange)="selectedTagIds.set($event)"
+            />
+          </label>
+        </div>
+        <div class="three-columns">
           <label>
             <span>基準份量</span>
             <p-inputnumber [ngModel]="servings()" (ngModelChange)="servings.set($event ?? 1)" [min]="1" [max]="20" suffix=" 人份" />
           </label>
           <label>
             <span>料理時間</span>
-            <p-inputnumber [ngModel]="cookingMinutes()" (ngModelChange)="cookingMinutes.set($event ?? 0)" [min]="0" suffix=" 分鐘" />
+            <p-inputnumber [ngModel]="cookingMinutes()" (ngModelChange)="cookingMinutes.set($event ?? 0)" [min]="0" [max]="1440" suffix=" 分鐘" />
+          </label>
+          <label>
+            <span>總熱量</span>
+            <p-inputnumber [ngModel]="totalCalories()" (ngModelChange)="totalCalories.set($event ?? 0)" [min]="0" suffix=" kcal" />
           </label>
         </div>
       </div>
     </p-card>
 
     <p-card header="封面與影片">
-      <div class="upload-placeholder">
-        <i class="pi pi-image"></i>
-        <strong>拖曳封面圖片至此</strong>
-        <span>目前為 UI 測試區，檔案上傳 API 尚未接線。</span>
-        <p-button label="選擇圖片" icon="pi pi-upload" severity="secondary" [outlined]="true" />
-      </div>
+      <input
+        #coverInput
+        class="visually-hidden"
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        (change)="onCoverSelected($event)"
+      />
+      <button class="upload-placeholder" type="button" (click)="coverInput.click()">
+        @if (coverPreviewUrl(); as previewUrl) {
+          <img [src]="previewUrl" alt="食譜封面預覽" />
+        } @else {
+          <i class="pi pi-image" aria-hidden="true"></i>
+          <strong>選擇食譜封面</strong>
+          <span>支援 JPEG、PNG、WebP，建議 1200 × 900，最大 10 MB。</span>
+        }
+        @if (isUploadingCover()) {
+          <span class="uploading"><i class="pi pi-spin pi-spinner"></i> 封面上傳中</span>
+        }
+      </button>
       <label class="youtube-field">
         <span>YouTube 網址</span>
-        <input pInputText type="url" placeholder="https://www.youtube.com/watch?v=..." />
+        <input
+          pInputText
+          type="url"
+          placeholder="https://www.youtube.com/watch?v=..."
+          [ngModel]="youTubeUrl()"
+          (ngModelChange)="youTubeUrl.set($event)"
+        />
       </label>
     </p-card>
 
     <p-card header="食材清單">
-      <p class="helper">每行輸入一項食材，之後可交由 RecipeParserPrompt 轉成標準化資料。</p>
-      <textarea pTextarea rows="9" [ngModel]="ingredientDraft()" (ngModelChange)="ingredientDraft.set($event)"></textarea>
-      <p-button label="使用 AI 標準化食材" icon="pi pi-sparkles" severity="success" [outlined]="true" />
+      <p class="helper">每行格式：食材名稱、數量、單位，例如「牛番茄 2 顆」。</p>
+      <textarea pTextarea rows="10" [ngModel]="ingredientDraft()" (ngModelChange)="ingredientDraft.set($event)"></textarea>
+      <p-button
+        label="標準化食材名稱與單位"
+        icon="pi pi-sync"
+        severity="success"
+        [outlined]="true"
+        [loading]="isNormalizing()"
+        (onClick)="normalizeIngredients()"
+      />
     </p-card>
 
     <p-card header="料理步驟">
-      <p class="helper">依實際操作順序編號，計時與步驟圖片會在下一階段加入。</p>
-      <textarea pTextarea rows="9" [ngModel]="instructionDraft()" (ngModelChange)="instructionDraft.set($event)"></textarea>
-      <p-button label="使用 AI 拆解步驟" icon="pi pi-sparkles" severity="success" [outlined]="true" />
+      <p class="helper">每行一個步驟；送出時會依目前順序自動編號。</p>
+      <textarea pTextarea rows="10" [ngModel]="instructionDraft()" (ngModelChange)="instructionDraft.set($event)"></textarea>
+      <p-button
+        label="使用 AI 整理食譜內容"
+        icon="pi pi-sparkles"
+        severity="success"
+        [outlined]="true"
+        [loading]="isParsingWithAi()"
+        (onClick)="parseWithAi()"
+      />
     </p-card>
   </div>
 </section>

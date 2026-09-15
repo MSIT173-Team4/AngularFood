@@ -1,0 +1,61 @@
+# Version control and repository metadata
+.git/
+.github/
+
+# Compiled output and generated artifacts
+**/bin/
+**/obj/
+dist/
+tmp/
+out-tsc/
+bazel-out/
+coverage/
+.angular/
+.cache/
+.sass-cache/
+
+# Local dependencies
+node_modules/
+
+# IDE and editor state
+.idea/
+.vs/
+.vscode/
+.history/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.code-workspace
+
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+*.cache
+*.pid
+*.swp
+*.swo
+~$*
+
+# Secrets and machine-specific configuration
+.env
+.env.*
+!.env.example
+**/appsettings.Development.json
+**/appsettings.Local.json
+**/secrets.json
+*.pfx
+*.p12
+*.key
+
+# Test and tool artifacts
+TestResults/
+__screenshots__/
+playwright-report/
+test-results/
+
+# Operating-system files
+.DS_Store
+Thumbs.db
+Desktop.ini
