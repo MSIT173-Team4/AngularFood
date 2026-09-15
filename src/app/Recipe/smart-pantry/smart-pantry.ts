@@ -1,9 +1,10 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
+import { DatePickerModule } from 'primeng/datepicker';
 import { DialogModule } from 'primeng/dialog';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
@@ -15,8 +16,8 @@ import { ToastModule } from 'primeng/toast';
 import {
   AddPantryItemPayload,
   PantryAiDiagnosticDto
-} from '../../features/pantry/pantry.models';
-import { PantryService } from '../../features/pantry/pantry.service';
+} from '../pantry/pantry.models';
+import { PantryService } from '../pantry/pantry.service';
 import { recipeDemoConfig } from '../api.config';
 import { PantryItem, PantryPageData, RecipeRecommendation } from '../recipe.models';
 import { RecipeService } from '../service/recipe.service';
@@ -29,6 +30,7 @@ type PantryFormField = Exclude<keyof AddPantryItemPayload, 'userId'>;
     FormsModule,
     RouterLink,
     ButtonModule,
+    DatePickerModule,
     DialogModule,
     InputNumberModule,
     InputTextModule,
@@ -46,22 +48,34 @@ export class SmartPantry implements OnInit, OnDestroy {
   private readonly pantryService = inject(PantryService);
   private readonly recipeService = inject(RecipeService);
   private readonly messageService = inject(MessageService);
+  private selectedImageFile: File | null = null;
 
   readonly pantryItems = signal<PantryItem[]>([]);
   readonly dataNotice = signal('');
   readonly dialogVisible = signal(false);
+  readonly guideVisible = signal(false);
   readonly isAnalyzing = signal(false);
+  readonly isManualEntry = signal(false);
+  readonly analysisError = signal('');
   readonly isSaving = signal(false);
   readonly previewUrl = signal<string | null>(null);
   readonly diagnostic = signal<PantryAiDiagnosticDto | null>(null);
   readonly recommendations = signal<RecipeRecommendation[]>([]);
   readonly isLoadingRecommendations = signal(false);
+  readonly selectedCalendarDate = signal<Date>(new Date());
   readonly pantryForm = signal<AddPantryItemPayload>(this.createEmptyForm());
   readonly storageLocations: AddPantryItemPayload['storageLocation'][] = [
     '冷藏',
     '冷凍',
     '常溫'
   ];
+
+  readonly selectedDateItems = computed(() => {
+    const selectedDate = this.toLocalDateInput(this.selectedCalendarDate());
+    return this.pantryItems()
+      .filter((item) => item.expirationDate === selectedDate)
+      .sort((left, right) => left.ingredientName.localeCompare(right.ingredientName, 'zh-TW'));
+  });
 
   ngOnInit(): void {
     const pageData = this.route.snapshot.data['pageData'] as PantryPageData;
@@ -79,6 +93,10 @@ export class SmartPantry implements OnInit, OnDestroy {
     this.dialogVisible.set(true);
   }
 
+  openGuideDialog(): void {
+    this.guideVisible.set(true);
+  }
+
   closeCameraDialog(): void {
     this.dialogVisible.set(false);
     this.resetDiagnosticForm();
@@ -94,14 +112,65 @@ export class SmartPantry implements OnInit, OnDestroy {
 
     this.revokePreviewUrl();
     this.previewUrl.set(URL.createObjectURL(file));
+    this.selectedImageFile = file;
     this.diagnostic.set(null);
+    this.isManualEntry.set(false);
+    this.analysisError.set('');
+    this.analyzeSelectedImage();
+  }
+
+  retryDiagnosis(): void {
+    if (!this.selectedImageFile) {
+      this.analysisError.set('請重新選擇一張食材照片。');
+      return;
+    }
+
+    this.analysisError.set('');
+    this.isManualEntry.set(false);
+    this.analyzeSelectedImage();
+  }
+
+  useManualEntry(): void {
+    this.isManualEntry.set(true);
+    this.analysisError.set('');
+  }
+
+  updateCalendarDate(value: Date | null): void {
+    if (value) {
+      this.selectedCalendarDate.set(value);
+    }
+  }
+
+  formatExpirationDate(value: string | null): string {
+    if (!value) {
+      return '未設定日期';
+    }
+
+    return new Intl.DateTimeFormat('zh-TW', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    }).format(new Date(`${value}T00:00:00`));
+  }
+
+  private analyzeSelectedImage(): void {
+    const file = this.selectedImageFile;
+    if (!file) {
+      return;
+    }
+
     this.isAnalyzing.set(true);
 
     this.pantryService.diagnoseImage(file).subscribe({
       next: (response) => {
         this.isAnalyzing.set(false);
         if (!response.success || !response.data) {
-          this.showError(response.message);
+          const message = this.toFriendlyAiError(
+            response.message,
+            'AI 分析暫時未完成，可重新分析或改為手動入庫。'
+          );
+          this.analysisError.set(message);
+          this.showError(message);
           return;
         }
 
@@ -109,7 +178,12 @@ export class SmartPantry implements OnInit, OnDestroy {
       },
       error: (error: HttpErrorResponse) => {
         this.isAnalyzing.set(false);
-        this.showError(this.readApiError(error, 'AI 診斷失敗，請重新拍攝後再試。'));
+        const message = this.readApiError(
+          error,
+          'AI 服務暫時無法使用，照片已保留，可重試或改為手動入庫。'
+        );
+        this.analysisError.set(message);
+        this.showError(message);
       }
     });
   }
@@ -192,6 +266,8 @@ export class SmartPantry implements OnInit, OnDestroy {
     expirationDate.setDate(expirationDate.getDate() + diagnostic.estimatedDays);
 
     this.diagnostic.set(diagnostic);
+    this.analysisError.set('');
+    this.isManualEntry.set(false);
     this.pantryForm.set({
       userId: recipeDemoConfig.userId,
       ingredientName: diagnostic.ingredientName,
@@ -237,6 +313,9 @@ export class SmartPantry implements OnInit, OnDestroy {
   private resetDiagnosticForm(): void {
     this.revokePreviewUrl();
     this.diagnostic.set(null);
+    this.selectedImageFile = null;
+    this.analysisError.set('');
+    this.isManualEntry.set(false);
     this.isAnalyzing.set(false);
     this.isSaving.set(false);
     this.pantryForm.set(this.createEmptyForm());
@@ -257,7 +336,7 @@ export class SmartPantry implements OnInit, OnDestroy {
     };
   }
 
-  private toLocalDateInput(date: Date): string {
+  toLocalDateInput(date: Date): string {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
@@ -273,7 +352,17 @@ export class SmartPantry implements OnInit, OnDestroy {
   }
 
   private readApiError(error: HttpErrorResponse, fallbackMessage: string): string {
-    return typeof error.error?.message === 'string' ? error.error.message : fallbackMessage;
+    const apiMessage = typeof error.error?.message === 'string'
+      ? error.error.message
+      : '';
+
+    return this.toFriendlyAiError(apiMessage, fallbackMessage);
+  }
+
+  private toFriendlyAiError(apiMessage: string, fallbackMessage: string): string {
+    return apiMessage.includes('SmartBot.Api')
+      ? 'AI 服務暫時無法使用，照片已保留，可重新分析或改為手動入庫。'
+      : apiMessage || fallbackMessage;
   }
 
   private showError(message: string): void {

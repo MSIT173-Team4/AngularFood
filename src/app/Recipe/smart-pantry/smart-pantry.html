@@ -8,7 +8,28 @@
 
   <p-tag value="零剩食永續生活" severity="success" [rounded]="true" />
   <h1>智慧清冰箱</h1>
-  <p class="subtitle">盤點您的食材庫存，依即期食材配對最適合的料理。</p>
+  <p class="subtitle">拍下剛買回家的食材，取得外觀判讀、保存建議並建立個人庫存。</p>
+
+  <section class="feature-intro" aria-labelledby="feature-intro-title">
+    <div class="feature-intro-icon">
+      <i class="pi pi-camera" aria-hidden="true"></i>
+    </div>
+    <div>
+      <h2 id="feature-intro-title">一張照片，完成保存前的三項判斷</h2>
+      <div class="feature-benefits">
+        <span><i class="pi pi-eye"></i> 辨識食材與外觀狀態</span>
+        <span><i class="pi pi-home"></i> 推薦冷藏、冷凍或常溫</span>
+        <span><i class="pi pi-calendar-plus"></i> 建立到期日與冰箱庫存</span>
+      </div>
+    </div>
+    <p-button
+      label="查看拍攝方法"
+      icon="pi pi-question-circle"
+      severity="secondary"
+      [outlined]="true"
+      (onClick)="openGuideDialog()"
+    />
+  </section>
 
   <div class="pantry-grid">
     <article>
@@ -42,7 +63,18 @@
           />
         </div>
       } @empty {
-        <p>冰箱清單已清空。</p>
+        <div class="empty-pantry">
+          <i class="pi pi-box" aria-hidden="true"></i>
+          <strong>冰箱目前沒有食材</strong>
+          <span>每位使用者的庫存會分開保存，從拍照或手動新增第一項食材開始。</span>
+          <p-button
+            label="新增第一項食材"
+            icon="pi pi-camera"
+            severity="warn"
+            [rounded]="true"
+            (onClick)="openCameraDialog()"
+          />
+        </div>
       }
     </article>
 
@@ -89,7 +121,94 @@
       }
     </article>
   </div>
+
+  <section class="expiry-calendar" aria-labelledby="expiry-calendar-title">
+    <div class="calendar-heading">
+      <div>
+        <span class="section-kicker">庫存日期管理</span>
+        <h2 id="expiry-calendar-title">食材到期行事曆</h2>
+        <p>選擇日期，查看當天需要優先使用的食材。</p>
+      </div>
+      <p-tag
+        [value]="pantryItems().length + ' 項庫存'"
+        severity="info"
+        [rounded]="true"
+      />
+    </div>
+
+    <div class="calendar-grid">
+      <p-datepicker
+        [inline]="true"
+        [showWeek]="true"
+        [ngModel]="selectedCalendarDate()"
+        (ngModelChange)="updateCalendarDate($event)"
+      />
+
+      <div class="date-agenda">
+        <span>{{ formatExpirationDate(toLocalDateInput(selectedCalendarDate())) }}</span>
+        <h3>預計到期食材</h3>
+
+        @for (item of selectedDateItems(); track item.pantryId) {
+          <div class="agenda-item">
+            <div>
+              <strong>{{ item.ingredientName }}</strong>
+              <small>{{ item.amount }} {{ item.unit }}．{{ item.storageLocation }}</small>
+            </div>
+            <p-button
+              icon="pi pi-check"
+              ariaLabel="標記已使用"
+              severity="secondary"
+              [rounded]="true"
+              [text]="true"
+              (onClick)="removeItem(item.pantryId)"
+            />
+          </div>
+        } @empty {
+          <div class="empty-agenda">
+            <i class="pi pi-calendar" aria-hidden="true"></i>
+            <strong>這一天沒有食材到期</strong>
+            <span>選擇其他日期，或新增食材建立保存紀錄。</span>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
 </section>
+
+<p-dialog
+  header="拍得清楚，AI 才能判斷得更完整"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: 'min(92vw, 760px)' }"
+  [visible]="guideVisible()"
+  (visibleChange)="guideVisible.set($event)"
+>
+  <div class="photo-guide">
+    <div class="guide-step">
+      <span>1</span>
+      <i class="pi pi-sun" aria-hidden="true"></i>
+      <strong>光線充足</strong>
+      <p>使用自然光，避免偏黃燈光、反光與過深陰影。</p>
+    </div>
+    <div class="guide-step">
+      <span>2</span>
+      <i class="pi pi-stop" aria-hidden="true"></i>
+      <strong>一次一種食材</strong>
+      <p>完整拍到表面與切口，不要把多種蔬果或生鮮混在一起。</p>
+    </div>
+    <div class="guide-step">
+      <span>3</span>
+      <i class="pi pi-search" aria-hidden="true"></i>
+      <strong>確認後再入庫</strong>
+      <p>AI 只判讀外觀，請再確認氣味、觸感、包裝日期與保存紀錄。</p>
+    </div>
+  </div>
+  <div class="safety-note">
+    <i class="pi pi-info-circle" aria-hidden="true"></i>
+    <span>若食材有異味、黏液、發霉或包裝膨脹，請勿只依照片結果判斷可否食用。</span>
+  </div>
+</p-dialog>
 
 <p-dialog
   header="拍照新增食材"
@@ -102,6 +221,11 @@
   (onHide)="closeCameraDialog()"
 >
   <div class="diagnostic-dialog">
+    <div class="shooting-reminder">
+      <i class="pi pi-lightbulb" aria-hidden="true"></i>
+      <span>請拍攝單一食材並保留完整外觀；診斷後仍可修改名稱、數量、溫層與日期。</span>
+      <button type="button" (click)="openGuideDialog()">查看圖解</button>
+    </div>
     <input
       #imageInput
       class="visually-hidden"
@@ -138,6 +262,32 @@
       </div>
     }
 
+    @if (analysisError()) {
+      <div class="analysis-error" role="alert">
+        <i class="pi pi-exclamation-circle" aria-hidden="true"></i>
+        <div>
+          <strong>AI 分析暫時未完成</strong>
+          <span>{{ analysisError() }}</span>
+        </div>
+        <div class="error-actions">
+          <p-button
+            label="重新分析"
+            icon="pi pi-refresh"
+            severity="danger"
+            [outlined]="true"
+            (onClick)="retryDiagnosis()"
+          />
+          <p-button
+            label="改為手動入庫"
+            icon="pi pi-pencil"
+            severity="secondary"
+            [text]="true"
+            (onClick)="useManualEntry()"
+          />
+        </div>
+      </div>
+    }
+
     @if (diagnostic(); as result) {
       <div class="diagnostic-result">
         <div class="freshness-summary">
@@ -152,6 +302,18 @@
             <strong>{{ result.storageTip }}</strong>
           </div>
         </div>
+
+      </div>
+    }
+
+    @if (diagnostic() || isManualEntry()) {
+      <div class="pantry-form-section">
+        @if (isManualEntry()) {
+          <div class="manual-notice">
+            <i class="pi pi-pencil" aria-hidden="true"></i>
+            AI 尚未提供判讀，請依包裝標示與實際狀態自行填寫。
+          </div>
+        }
 
         <div class="pantry-form">
           <label>
@@ -224,7 +386,7 @@
       icon="pi pi-check"
       severity="success"
       [loading]="isSaving()"
-      [disabled]="!diagnostic() || isAnalyzing()"
+      [disabled]="(!diagnostic() && !isManualEntry()) || isAnalyzing()"
       (onClick)="confirmPantryItem()"
     />
   </ng-template>

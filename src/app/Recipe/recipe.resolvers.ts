@@ -1,7 +1,7 @@
 import { inject } from '@angular/core';
 import { ActivatedRouteSnapshot, ResolveFn } from '@angular/router';
 import { catchError, map, of } from 'rxjs';
-import { MOCK_PANTRY_ITEMS, MOCK_RECIPES, getMockRecipeDetail } from './mock-recipe.data';
+import { MOCK_RECIPES, getMockRecipeDetail } from './mock-recipe.data';
 import {
   PantryPageData,
   RecipeDetailPageData,
@@ -45,17 +45,23 @@ export const pantryResolver: ResolveFn<PantryPageData> = () => {
   const recipeService = inject(RecipeService);
 
   return recipeService.getPantryItems(recipeDemoConfig.userId).pipe(
-    map((response) => response.success && response.data?.length
-      ? { pantryItems: response.data, source: 'api' as const, notice: response.message }
+    map((response) => response.success
+      ? {
+          pantryItems: response.data ?? [],
+          source: 'api' as const,
+          notice: response.data?.length
+            ? response.message
+            : '目前尚未建立冰箱庫存，可拍照或手動新增第一項食材。'
+        }
       : {
-          pantryItems: MOCK_PANTRY_ITEMS,
-          source: 'mock' as const,
-          notice: 'API 無冰箱庫存，已載入測試資料。'
+          pantryItems: [],
+          source: 'api' as const,
+          notice: response.message || '目前無法讀取冰箱庫存。'
         }),
     catchError(() => of({
-      pantryItems: MOCK_PANTRY_ITEMS,
-      source: 'mock' as const,
-      notice: 'Web API 尚未連線，已自動切換為 Mock 冰箱資料。'
+      pantryItems: [],
+      source: 'api' as const,
+      notice: '目前無法連線冰箱服務，請稍後重新整理。'
     }))
   );
 };
