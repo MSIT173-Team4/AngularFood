@@ -42,11 +42,25 @@
       <div class="form-grid">
         <label>
           <span>食譜名稱</span>
-          <input pInputText type="text" maxlength="100" [ngModel]="title()" (ngModelChange)="title.set($event)" />
+          <input
+            pInputText
+            type="text"
+            maxlength="100"
+            placeholder="例如：番茄嫩豆腐鮮魚煲"
+            [ngModel]="title()"
+            (ngModelChange)="title.set($event)"
+          />
         </label>
         <label>
           <span>食譜簡介</span>
-          <textarea pTextarea rows="4" maxlength="500" [ngModel]="description()" (ngModelChange)="description.set($event)"></textarea>
+          <textarea
+            pTextarea
+            rows="4"
+            maxlength="500"
+            placeholder="例如：運用冰箱即期食材完成的快速家常料理。"
+            [ngModel]="description()"
+            (ngModelChange)="description.set($event)"
+          ></textarea>
         </label>
         <div class="two-columns">
           <label>
@@ -74,8 +88,8 @@
             />
           </label>
         </div>
-        <div class="three-columns">
-          <label>
+        <div class="recipe-metrics">
+          <label class="calorie-field">
             <span>基準份量</span>
             <p-inputnumber [ngModel]="servings()" (ngModelChange)="servings.set($event ?? 1)" [min]="1" [max]="20" suffix=" 人份" />
           </label>
@@ -85,7 +99,14 @@
           </label>
           <label>
             <span>總熱量</span>
-            <p-inputnumber [ngModel]="totalCalories()" (ngModelChange)="totalCalories.set($event ?? 0)" [min]="0" suffix=" kcal" />
+            <p-inputnumber
+              [ngModel]="totalCalories()"
+              (ngModelChange)="totalCalories.set($event ?? 0)"
+              [min]="0"
+              [max]="100000"
+              placeholder="例如：420"
+              suffix=" kcal"
+            />
           </label>
         </div>
       </div>
@@ -125,7 +146,13 @@
 
     <p-card header="食材清單">
       <p class="helper">每行格式：食材名稱、數量、單位，例如「牛番茄 2 顆」。</p>
-      <textarea pTextarea rows="10" [ngModel]="ingredientDraft()" (ngModelChange)="ingredientDraft.set($event)"></textarea>
+      <textarea
+        pTextarea
+        rows="10"
+        placeholder="牛番茄 2 顆&#10;板豆腐 1 盒&#10;鱸魚片 300 公克"
+        [ngModel]="ingredientDraft()"
+        (ngModelChange)="ingredientDraft.set($event)"
+      ></textarea>
       <p-button
         label="標準化食材名稱與單位"
         icon="pi pi-sync"
@@ -138,7 +165,13 @@
 
     <p-card header="料理步驟">
       <p class="helper">每行一個步驟；送出時會依目前順序自動編號。</p>
-      <textarea pTextarea rows="10" [ngModel]="instructionDraft()" (ngModelChange)="instructionDraft.set($event)"></textarea>
+      <textarea
+        pTextarea
+        rows="10"
+        placeholder="1. 清洗並切好所有食材。&#10;2. 將牛番茄炒出香氣後加入清水。&#10;3. 放入豆腐與鱸魚片煮熟並調味。"
+        [ngModel]="instructionDraft()"
+        (ngModelChange)="instructionDraft.set($event)"
+      ></textarea>
       <p-button
         label="使用 AI 整理食譜內容"
         icon="pi pi-sparkles"

@@ -21,9 +21,44 @@
   color: #ffffff;
 }
 
+.voice-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  max-width: 780px;
+  margin: 2rem auto 0;
+  padding: 1rem 1.25rem;
+  border: 1px solid rgba(193, 238, 188, 0.35);
+  border-radius: 1rem;
+  text-align: left;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.voice-controls h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1.1rem;
+}
+
+.voice-hint,
+.voice-status,
+.recognized-command {
+  margin: 0;
+}
+
 .voice-hint {
-  margin-top: 2rem;
   color: #c1eebc;
+  font-size: 0.85rem;
+}
+
+.voice-status {
+  margin-top: 0.35rem;
+  color: #fff8f6;
+}
+
+.recognized-command {
+  margin-top: 0.35rem;
+  color: #ffb59d;
   font-size: 0.85rem;
 }
 
@@ -95,6 +130,15 @@
   }
 
   .actions p-button {
+    width: 100%;
+  }
+
+  .voice-controls {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .voice-controls p-button {
     width: 100%;
   }
 }

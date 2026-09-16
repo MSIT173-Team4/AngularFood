@@ -30,8 +30,41 @@
     <a routerLink="/pantry">立即配對 <i class="pi pi-arrow-right"></i></a>
   </div>
 
-  <div class="category-row" aria-label="食譜分類篩選">
-    <span><i class="pi pi-filter"></i> 探索分類</span>
+  <section class="discovery-tools" aria-label="食譜搜尋與分類">
+    <label class="recipe-search">
+      <span class="visually-hidden">搜尋食譜</span>
+      <i class="pi pi-search" aria-hidden="true"></i>
+      <input
+        pInputText
+        type="search"
+        placeholder="搜尋料理名稱、食材特色、分類或作者"
+        [ngModel]="searchTerm()"
+        (ngModelChange)="searchTerm.set($event)"
+      />
+      @if (searchTerm()) {
+        <button type="button" aria-label="清除搜尋文字" (click)="searchTerm.set('')">
+          <i class="pi pi-times" aria-hidden="true"></i>
+        </button>
+      }
+    </label>
+    <span class="result-count">找到 {{ recipes().length }} 道食譜</span>
+  </section>
+
+  <div
+    class="category-row"
+    [class.expanded]="areFiltersExpanded()"
+    aria-label="食譜分類篩選"
+  >
+    <button
+      class="filter-toggle"
+      type="button"
+      [attr.aria-expanded]="areFiltersExpanded()"
+      (click)="toggleAllFilters()"
+    >
+      <i class="pi pi-filter"></i>
+      探索分類
+      <i [class]="areFiltersExpanded() ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"></i>
+    </button>
     @for (filter of filterOptions(); track filter) {
       <button
         type="button"
@@ -82,7 +115,18 @@
         </ng-template>
       </p-card>
     } @empty {
-      <p class="state">目前沒有符合「{{ selectedFilter() }}」的公開食譜。</p>
+      <div class="state">
+        <i class="pi pi-search" aria-hidden="true"></i>
+        <strong>目前沒有符合條件的公開食譜</strong>
+        <span>可更換關鍵字或選擇其他分類。</span>
+        <p-button
+          label="清除篩選"
+          icon="pi pi-refresh"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="clearFilters()"
+        />
+      </div>
     }
   </div>
 </section>
