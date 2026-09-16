@@ -1,9 +1,11 @@
+import { routes } from './../../../app.routes';
 import { Register } from './../register/register';
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { UserLoginDTO } from '../../interfaces/UserLoginDTO';
 import { HttpHeaders } from '@angular/common/http';
+import { Router } from '@angular/router';
 @Component({
   selector: 'app-login',
   imports: [FormsModule],
@@ -11,7 +13,8 @@ import { HttpHeaders } from '@angular/common/http';
   styleUrl: './login.css',
 })
 export class Login {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
+  private router = inject(Router);
   baseURL: string = 'https://localhost:7164/api';
   loginData = { username: '', password: '' };
   errorMessage = '';
@@ -27,18 +30,7 @@ export class Login {
       })
       .subscribe({
         next: (res) => {
-          this.http
-            .get(`${this.baseURL}/Users/test`, {
-              withCredentials: true,
-            })
-            .subscribe({
-              next: (res) => {
-                console.log(res);
-              },
-              error: (res) => {
-                console.log(res);
-              },
-            });
+          this.router.navigate(['/main']);
         },
         error: (err) => {
           console.log('status:', err.status);

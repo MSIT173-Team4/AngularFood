@@ -9,7 +9,7 @@ import {
 } from './Recipe/recipe.resolvers';
 import { Login } from './Member/components/login/login';
 import { Register } from './Member/components/register/register';
-
+import { Main } from './Member/components/main/main';
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'login' },
   {
@@ -21,6 +21,11 @@ export const routes: Routes = [
     path: 'register',
     title: '註冊',
     component:Register
+  },
+  {
+    path: 'main',
+    title: '主頁',
+    component:Main
   },
   {
     path: 'recipes',
