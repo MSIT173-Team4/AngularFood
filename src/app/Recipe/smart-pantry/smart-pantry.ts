@@ -12,6 +12,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { SelectModule } from 'primeng/select';
 import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
+import { forkJoin } from 'rxjs';
 
 import {
   AddPantryItemPayload,
@@ -23,6 +24,7 @@ import { PantryItem, PantryPageData, RecipeRecommendation } from '../recipe.mode
 import { RecipeService } from '../service/recipe.service';
 
 type PantryFormField = Exclude<keyof AddPantryItemPayload, 'userId'>;
+type ValidationErrors = Record<string, string>;
 
 @Component({
   selector: 'app-smart-pantry',
@@ -49,6 +51,7 @@ export class SmartPantry implements OnInit, OnDestroy {
   private readonly recipeService = inject(RecipeService);
   private readonly messageService = inject(MessageService);
   private selectedImageFile: File | null = null;
+  private readonly validationTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
   readonly pantryItems = signal<PantryItem[]>([]);
   readonly dataNotice = signal('');
@@ -59,15 +62,37 @@ export class SmartPantry implements OnInit, OnDestroy {
   readonly analysisError = signal('');
   readonly isSaving = signal(false);
   readonly previewUrl = signal<string | null>(null);
-  readonly diagnostic = signal<PantryAiDiagnosticDto | null>(null);
+  readonly diagnostics = signal<PantryAiDiagnosticDto[]>([]);
   readonly recommendations = signal<RecipeRecommendation[]>([]);
+  readonly selectedRecommendationIndex = signal(0);
   readonly isLoadingRecommendations = signal(false);
   readonly selectedCalendarDate = signal<Date>(new Date());
-  readonly pantryForm = signal<AddPantryItemPayload>(this.createEmptyForm());
+  readonly pantryForms = signal<AddPantryItemPayload[]>([]);
+  readonly validationErrors = signal<ValidationErrors>({});
   readonly storageLocations: AddPantryItemPayload['storageLocation'][] = [
     '冷藏',
     '冷凍',
     '常溫'
+  ];
+  readonly unitOptions = [
+    '份',
+    '個',
+    '顆',
+    '根',
+    '把',
+    '束',
+    '支',
+    '尾',
+    '塊',
+    '片',
+    '包',
+    '盒',
+    '瓶',
+    '罐',
+    '公克',
+    '公斤',
+    '毫升',
+    '公升'
   ];
 
   readonly selectedDateItems = computed(() => {
@@ -77,6 +102,10 @@ export class SmartPantry implements OnInit, OnDestroy {
       .sort((left, right) => left.ingredientName.localeCompare(right.ingredientName, 'zh-TW'));
   });
 
+  readonly selectedRecommendation = computed(() =>
+    this.recommendations()[this.selectedRecommendationIndex()] ?? null
+  );
+
   ngOnInit(): void {
     const pageData = this.route.snapshot.data['pageData'] as PantryPageData;
     this.pantryItems.set(pageData.pantryItems);
@@ -85,6 +114,7 @@ export class SmartPantry implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.clearValidationTimers();
     this.revokePreviewUrl();
   }
 
@@ -113,7 +143,9 @@ export class SmartPantry implements OnInit, OnDestroy {
     this.revokePreviewUrl();
     this.previewUrl.set(URL.createObjectURL(file));
     this.selectedImageFile = file;
-    this.diagnostic.set(null);
+    this.diagnostics.set([]);
+    this.pantryForms.set([]);
+    this.validationErrors.set({});
     this.isManualEntry.set(false);
     this.analysisError.set('');
     this.analyzeSelectedImage();
@@ -133,6 +165,8 @@ export class SmartPantry implements OnInit, OnDestroy {
   useManualEntry(): void {
     this.isManualEntry.set(true);
     this.analysisError.set('');
+    this.diagnostics.set([]);
+    this.pantryForms.set([this.createEmptyForm()]);
   }
 
   updateCalendarDate(value: Date | null): void {
@@ -174,7 +208,14 @@ export class SmartPantry implements OnInit, OnDestroy {
           return;
         }
 
-        this.applyDiagnostic(response.data);
+        if (!response.data.length) {
+          const message = '照片中沒有可確認的食材，請重新拍攝或改為手動入庫。';
+          this.analysisError.set(message);
+          this.showError(message);
+          return;
+        }
+
+        this.applyDiagnostics(response.data);
       },
       error: (error: HttpErrorResponse) => {
         this.isAnalyzing.set(false);
@@ -188,30 +229,48 @@ export class SmartPantry implements OnInit, OnDestroy {
     });
   }
 
-  updateForm<K extends PantryFormField>(field: K, value: AddPantryItemPayload[K]): void {
-    this.pantryForm.update((current) => ({ ...current, [field]: value }));
+  updateForm<K extends PantryFormField>(
+    index: number,
+    field: K,
+    value: AddPantryItemPayload[K]
+  ): void {
+    this.pantryForms.update((forms) => forms.map((form, formIndex) =>
+      formIndex === index ? { ...form, [field]: value } : form
+    ));
+    this.scheduleValidation(index, field);
   }
 
-  confirmPantryItem(): void {
-    const payload = this.pantryForm();
-    if (!payload.ingredientName.trim() || payload.amount <= 0 || !payload.expirationDate) {
-      this.showError('請確認食材名稱、數量與過期日。');
+  getValidationError(index: number, field: PantryFormField): string {
+    return this.validationErrors()[this.validationKey(index, field)] ?? '';
+  }
+
+  removeDetectedItem(index: number): void {
+    this.diagnostics.update((items) => items.filter((_, itemIndex) => itemIndex !== index));
+    this.pantryForms.update((forms) => forms.filter((_, formIndex) => formIndex !== index));
+    this.validationErrors.set({});
+  }
+
+  confirmPantryItems(): void {
+    const payloads = this.pantryForms();
+    if (!payloads.length || !this.validateAllForms()) {
+      this.showError('請修正欄位下方的紅字提醒後再入庫。');
       return;
     }
 
     this.isSaving.set(true);
-    this.pantryService.addPantryItem(payload).subscribe({
-      next: (response) => {
+    forkJoin(payloads.map((payload) => this.pantryService.addPantryItem(payload))).subscribe({
+      next: (responses) => {
         this.isSaving.set(false);
-        if (!response.success) {
-          this.showError(response.message);
+        const failedResponse = responses.find((response) => !response.success);
+        if (failedResponse) {
+          this.showError(failedResponse.message);
           return;
         }
 
         this.messageService.add({
           severity: 'success',
           summary: '入庫成功',
-          detail: response.message
+          detail: `已將 ${responses.length} 項食材放入冰箱。`
         });
         this.dialogVisible.set(false);
         this.resetDiagnosticForm();
@@ -261,22 +320,42 @@ export class SmartPantry implements OnInit, OnDestroy {
       : emptyText;
   }
 
-  private applyDiagnostic(diagnostic: PantryAiDiagnosticDto): void {
-    const expirationDate = new Date();
-    expirationDate.setDate(expirationDate.getDate() + diagnostic.estimatedDays);
+  showPreviousRecommendation(): void {
+    const count = this.recommendations().length;
+    if (count > 1) {
+      this.selectedRecommendationIndex.update((index) =>
+        (index - 1 + count) % count
+      );
+    }
+  }
 
-    this.diagnostic.set(diagnostic);
+  showNextRecommendation(): void {
+    const count = this.recommendations().length;
+    if (count > 1) {
+      this.selectedRecommendationIndex.update((index) => (index + 1) % count);
+    }
+  }
+
+  private applyDiagnostics(diagnostics: PantryAiDiagnosticDto[]): void {
+    this.diagnostics.set(diagnostics);
     this.analysisError.set('');
     this.isManualEntry.set(false);
-    this.pantryForm.set({
-      userId: recipeDemoConfig.userId,
-      ingredientName: diagnostic.ingredientName,
-      amount: 1,
-      unit: '份',
-      storageLocation: diagnostic.recommendedLocation,
-      expirationDate: this.toLocalDateInput(expirationDate),
-      note: diagnostic.storageTip.slice(0, 150)
-    });
+    this.pantryForms.set(diagnostics.map((diagnostic) => {
+      const expirationDate = new Date();
+      expirationDate.setDate(expirationDate.getDate() + diagnostic.estimatedDays);
+
+      return {
+        userId: recipeDemoConfig.userId,
+        ingredientName: diagnostic.ingredientName,
+        amount: 1,
+        unit: this.unitOptions.includes(diagnostic.suggestedUnit)
+          ? diagnostic.suggestedUnit
+          : '份',
+        storageLocation: diagnostic.recommendedLocation,
+        expirationDate: this.toLocalDateInput(expirationDate),
+        note: diagnostic.storageTip.slice(0, 150)
+      };
+    }));
   }
 
   private reloadPantryItems(): void {
@@ -302,6 +381,7 @@ export class SmartPantry implements OnInit, OnDestroy {
         this.recommendations.set(
           response.success && response.data ? response.data : []
         );
+        this.selectedRecommendationIndex.set(0);
       },
       error: () => {
         this.isLoadingRecommendations.set(false);
@@ -311,14 +391,110 @@ export class SmartPantry implements OnInit, OnDestroy {
   }
 
   private resetDiagnosticForm(): void {
+    this.clearValidationTimers();
     this.revokePreviewUrl();
-    this.diagnostic.set(null);
+    this.diagnostics.set([]);
+    this.pantryForms.set([]);
+    this.validationErrors.set({});
     this.selectedImageFile = null;
     this.analysisError.set('');
     this.isManualEntry.set(false);
     this.isAnalyzing.set(false);
     this.isSaving.set(false);
-    this.pantryForm.set(this.createEmptyForm());
+  }
+
+  private scheduleValidation(index: number, field: PantryFormField): void {
+    const key = this.validationKey(index, field);
+    const activeTimer = this.validationTimers.get(key);
+    if (activeTimer) {
+      clearTimeout(activeTimer);
+    }
+
+    this.validationErrors.update((errors) => {
+      const nextErrors = { ...errors };
+      delete nextErrors[key];
+      return nextErrors;
+    });
+
+    const timer = setTimeout(() => {
+      this.setValidationError(index, field, this.validateField(index, field));
+      this.validationTimers.delete(key);
+    }, 1000);
+    this.validationTimers.set(key, timer);
+  }
+
+  private validateAllForms(): boolean {
+    const nextErrors: ValidationErrors = {};
+    const fields: PantryFormField[] = [
+      'ingredientName',
+      'amount',
+      'unit',
+      'storageLocation',
+      'expirationDate'
+    ];
+
+    this.pantryForms().forEach((_, index) => {
+      fields.forEach((field) => {
+        const message = this.validateField(index, field);
+        if (message) {
+          nextErrors[this.validationKey(index, field)] = message;
+        }
+      });
+    });
+
+    this.validationErrors.set(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  }
+
+  private validateField(index: number, field: PantryFormField): string {
+    const form = this.pantryForms()[index];
+    if (!form) {
+      return '';
+    }
+
+    if (field === 'ingredientName' && !form.ingredientName.trim()) {
+      return '請輸入食材名稱。';
+    }
+
+    if (field === 'amount') {
+      const amount = Number(form.amount);
+      const hasTooManyDecimals = !Number.isInteger(amount * 100);
+      if (!Number.isFinite(amount) || amount < 1 || amount > 99999 || hasTooManyDecimals) {
+        return '數量須為 1～99,999，最多保留小數點後 2 位。';
+      }
+    }
+
+    if (field === 'unit' && !this.unitOptions.includes(form.unit)) {
+      return '請從選單選擇固定單位。';
+    }
+
+    if (field === 'expirationDate' && !form.expirationDate) {
+      return '請選擇建議過期日。';
+    }
+
+    return '';
+  }
+
+  private setValidationError(index: number, field: PantryFormField, message: string): void {
+    const key = this.validationKey(index, field);
+    this.validationErrors.update((errors) => {
+      const nextErrors = { ...errors };
+      if (message) {
+        nextErrors[key] = message;
+      } else {
+        delete nextErrors[key];
+      }
+      return nextErrors;
+    });
+  }
+
+  private validationKey(index: number, field: PantryFormField): string {
+    return `${index}:${field}`;
+  }
+
+  private clearValidationTimers(): void {
+    this.validationTimers.forEach((timer) => clearTimeout(timer));
+    this.validationTimers.clear();
   }
 
   private createEmptyForm(): AddPantryItemPayload {

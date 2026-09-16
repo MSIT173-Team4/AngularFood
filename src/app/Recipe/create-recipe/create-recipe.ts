@@ -64,6 +64,9 @@ export class CreateRecipe implements OnInit, OnDestroy {
   readonly totalCalories = signal(0);
   readonly ingredientDraft = signal('');
   readonly instructionDraft = signal('');
+  readonly stepImageUrls = signal<Array<string | null>>([]);
+  readonly stepPreviewUrls = signal<Record<number, string>>({});
+  readonly uploadingStepIndex = signal<number | null>(null);
   readonly youTubeUrl = signal('');
   readonly categories = signal<RecipeCategory[]>([]);
   readonly tags = signal<RecipeTag[]>([]);
@@ -87,12 +90,21 @@ export class CreateRecipe implements OnInit, OnDestroy {
       && !this.isSaving()
   );
 
+  readonly instructionLines = computed(() =>
+    this.instructionDraft()
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line) => line.replace(/^\d+[.、．]\s*/, ''))
+  );
+
   ngOnInit(): void {
     this.loadMetadata();
   }
 
   ngOnDestroy(): void {
     this.revokeLocalPreview();
+    this.revokeStepPreviews();
   }
 
   onCoverSelected(event: Event): void {
@@ -128,6 +140,64 @@ export class CreateRecipe implements OnInit, OnDestroy {
     });
   }
 
+  onStepImageSelected(stepIndex: number, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) {
+      return;
+    }
+
+    const currentPreview = this.stepPreviewUrls()[stepIndex];
+    if (currentPreview) {
+      URL.revokeObjectURL(currentPreview);
+    }
+    const previewUrl = URL.createObjectURL(file);
+    this.stepPreviewUrls.update((previews) => ({
+      ...previews,
+      [stepIndex]: previewUrl
+    }));
+    this.uploadingStepIndex.set(stepIndex);
+
+    this.recipeService.uploadStepImage(file).subscribe({
+      next: (response) => {
+        this.uploadingStepIndex.set(null);
+        if (!response.success || !response.data) {
+          this.showError(response.message);
+          return;
+        }
+
+        this.stepImageUrls.update((urls) => {
+          const nextUrls = [...urls];
+          nextUrls[stepIndex] = response.data!.url;
+          return nextUrls;
+        });
+        this.statusMessage.set(`步驟 ${stepIndex + 1} 圖片已上傳。`);
+      },
+      error: (error: HttpErrorResponse) => {
+        this.uploadingStepIndex.set(null);
+        this.showError(this.readApiError(error, '步驟圖片上傳失敗。'));
+      }
+    });
+  }
+
+  removeStepImage(stepIndex: number): void {
+    const previewUrl = this.stepPreviewUrls()[stepIndex];
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    this.stepPreviewUrls.update((previews) => {
+      const nextPreviews = { ...previews };
+      delete nextPreviews[stepIndex];
+      return nextPreviews;
+    });
+    this.stepImageUrls.update((urls) => {
+      const nextUrls = [...urls];
+      nextUrls[stepIndex] = null;
+      return nextUrls;
+    });
+  }
+
   parseWithAi(): void {
     const content = [
       this.title(),
@@ -158,6 +228,8 @@ export class CreateRecipe implements OnInit, OnDestroy {
             .map((step) => `${step.stepNumber}. ${step.description}`)
             .join('\n')
         );
+        this.revokeStepPreviews();
+        this.stepImageUrls.set([]);
         this.isAiGenerated.set(true);
         this.statusMessage.set('AI 已整理食材與步驟，請確認內容後再送出。');
       },
@@ -310,7 +382,7 @@ export class CreateRecipe implements OnInit, OnDestroy {
       .map((line, index) => ({
         stepNumber: index + 1,
         instruction: line.replace(/^\d+[.、．]\s*/, ''),
-        imageUrl: null,
+        imageUrl: this.stepImageUrls()[index] ?? null,
         timerSeconds: 0
       }));
   }
@@ -332,6 +404,11 @@ export class CreateRecipe implements OnInit, OnDestroy {
       URL.revokeObjectURL(this.localPreviewUrl);
       this.localPreviewUrl = null;
     }
+  }
+
+  private revokeStepPreviews(): void {
+    Object.values(this.stepPreviewUrls()).forEach((url) => URL.revokeObjectURL(url));
+    this.stepPreviewUrls.set({});
   }
 
   private readApiError(error: HttpErrorResponse, fallbackMessage: string): string {

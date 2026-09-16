@@ -149,6 +149,41 @@
   border: 0;
 }
 
+.recommendation-counter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  color: #cde5c9;
+  font-size: .75rem;
+  font-weight: 800;
+}
+
+.recommendation-counter div {
+  display: flex;
+  gap: .35rem;
+}
+
+.recommendation-counter button {
+  display: grid;
+  width: 2rem;
+  height: 2rem;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, .22);
+  border-radius: 50%;
+  color: #fff;
+  background: rgba(255, 255, 255, .08);
+  cursor: pointer;
+}
+
+.recommendation-shopping-hint {
+  display: block;
+  margin-top: 1rem;
+  color: #cde5c9;
+  line-height: 1.55;
+}
+
 .empty-pantry {
   display: grid;
   min-height: 330px;
@@ -284,6 +319,27 @@
 .diagnostic-result {
   display: grid;
   gap: 1.25rem;
+}
+
+.diagnostic-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.diagnostic-item {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid #eadbd4;
+  border-radius: 1rem;
+  background: #fffaf7;
+}
+
+.diagnostic-item-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
 }
 
 .shooting-reminder,
@@ -495,6 +551,16 @@
 .pantry-form p-inputnumber,
 .pantry-form p-select {
   width: 100%;
+}
+
+.field-error {
+  color: #ba1a1a;
+  font-size: .75rem;
+  line-height: 1.4;
+}
+
+.pantry-form input.ng-invalid {
+  border-color: #ba1a1a;
 }
 
 @media(max-width: 760px) {

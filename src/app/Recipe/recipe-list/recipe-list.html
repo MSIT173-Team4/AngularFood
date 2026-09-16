@@ -39,10 +39,10 @@
         type="search"
         placeholder="搜尋料理名稱、食材特色、分類或作者"
         [ngModel]="searchTerm()"
-        (ngModelChange)="searchTerm.set($event)"
+        (ngModelChange)="updateSearchTerm($event)"
       />
       @if (searchTerm()) {
-        <button type="button" aria-label="清除搜尋文字" (click)="searchTerm.set('')">
+        <button type="button" aria-label="清除搜尋文字" (click)="updateSearchTerm('')">
           <i class="pi pi-times" aria-hidden="true"></i>
         </button>
       }
@@ -78,7 +78,7 @@
   </div>
 
   <div class="recipe-grid">
-    @for (recipe of recipes(); track recipe.recipeId) {
+    @for (recipe of pagedRecipes(); track recipe.recipeId) {
       <p-card styleClass="recipe-card">
         <ng-template #header>
           <div class="cover-frame">
@@ -93,6 +93,17 @@
         </ng-template>
         <ng-template #title>{{ recipe.title }}</ng-template>
         <p class="description">{{ recipe.description }}</p>
+        <div class="recipe-author">
+          @if (recipe.authorImageUrl) {
+            <img [src]="recipe.authorImageUrl" [alt]="recipe.authorName + ' 的會員頭像'" />
+          } @else {
+            <span>{{ recipe.authorName.slice(0, 1) }}</span>
+          }
+          <div>
+            <b>{{ recipe.authorName }}</b>
+            <small>{{ recipe.authorRecipeCount ?? 0 }} 道公開食譜</small>
+          </div>
+        </div>
         <div class="recipe-tags">
           @for (tag of recipe.tags.slice(0, 3); track tag) {
             <span>{{ tag }}</span>
@@ -129,4 +140,16 @@
       </div>
     }
   </div>
+
+  @if (recipes().length > pageSize) {
+    <p-paginator
+      [first]="currentPage() * pageSize"
+      [rows]="pageSize"
+      [totalRecords]="recipes().length"
+      [pageLinkSize]="5"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="第 {currentPage} / {totalPages} 頁，共 {totalRecords} 道食譜"
+      (onPageChange)="changePage($event)"
+    />
+  }
 </section>

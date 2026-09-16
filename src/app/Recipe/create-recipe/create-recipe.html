@@ -172,6 +172,53 @@
         [ngModel]="instructionDraft()"
         (ngModelChange)="instructionDraft.set($event)"
       ></textarea>
+      @if (instructionLines().length) {
+        <div class="step-image-list">
+          <div class="step-image-heading">
+            <strong>步驟圖片</strong>
+            <span>選填。圖片網址會存入該步驟的 fImageUrl。</span>
+          </div>
+          @for (instruction of instructionLines(); track $index; let index = $index) {
+            <article class="step-image-item">
+              <span class="step-number">{{ index + 1 }}</span>
+              <div class="step-image-content">
+                <p>{{ instruction }}</p>
+                @if (stepPreviewUrls()[index]; as previewUrl) {
+                  <img [src]="previewUrl" [alt]="'步驟 ' + (index + 1) + ' 圖片預覽'" />
+                }
+              </div>
+              <input
+                #stepImageInput
+                class="visually-hidden"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                (change)="onStepImageSelected(index, $event)"
+              />
+              <div class="step-image-actions">
+                <p-button
+                  [label]="stepImageUrls()[index] ? '更換圖片' : '加入圖片'"
+                  icon="pi pi-image"
+                  severity="secondary"
+                  size="small"
+                  [outlined]="true"
+                  [loading]="uploadingStepIndex() === index"
+                  (onClick)="stepImageInput.click()"
+                />
+                @if (stepImageUrls()[index]) {
+                  <p-button
+                    label="移除"
+                    icon="pi pi-trash"
+                    severity="danger"
+                    size="small"
+                    [text]="true"
+                    (onClick)="removeStepImage(index)"
+                  />
+                }
+              </div>
+            </article>
+          }
+        </div>
+      }
       <p-button
         label="使用 AI 整理食譜內容"
         icon="pi pi-sparkles"

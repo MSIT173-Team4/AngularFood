@@ -2,6 +2,7 @@ export interface PantryAiDiagnosticDto {
   ingredientName: string;
   freshnessStatus: string;
   recommendedLocation: '冷藏' | '冷凍' | '常溫';
+  suggestedUnit: string;
   storageTip: string;
   estimatedDays: number;
 }

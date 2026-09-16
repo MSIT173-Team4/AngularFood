@@ -14,7 +14,11 @@ import { ProgressBarModule } from 'primeng/progressbar';
 import { ToastModule } from 'primeng/toast';
 
 import { recipeDemoConfig } from '../api.config';
-import { RecipeDetailPageData, RecipeStep } from '../recipe.models';
+import {
+  RecipeDetail,
+  RecipeDetailPageData,
+  RecipeStep
+} from '../recipe.models';
 import { RecipeService } from '../service/recipe.service';
 
 interface BrowserSpeechRecognitionEvent extends Event {
@@ -66,6 +70,7 @@ export class CookingMode implements OnInit, OnDestroy {
   private recipeId = 1;
 
   readonly currentStepIndex = signal(0);
+  readonly recipe = signal<RecipeDetail | null>(null);
   readonly steps = signal<RecipeStep[]>([]);
   readonly remainingSeconds = signal(0);
   readonly isTimerRunning = signal(false);
@@ -88,6 +93,21 @@ export class CookingMode implements OnInit, OnDestroy {
       : 0;
   });
 
+  readonly scaledIngredients = computed(() => {
+    const recipe = this.recipe();
+    if (!recipe) {
+      return [];
+    }
+
+    const ratio = this.targetServings() / Math.max(recipe.defaultServings, 1);
+    return recipe.ingredients.map((ingredient) => ({
+      ...ingredient,
+      display: ingredient.baseAmount === null
+        ? ingredient.displayAmount
+        : `${this.formatAmount(ingredient.baseAmount * ratio)} ${ingredient.unit}`
+    }));
+  });
+
   ngOnInit(): void {
     this.recipeId = Number(this.route.snapshot.paramMap.get('id')) || 1;
     const requestedServings = Number(
@@ -100,6 +120,7 @@ export class CookingMode implements OnInit, OnDestroy {
     );
 
     const pageData = this.route.snapshot.data['pageData'] as RecipeDetailPageData;
+    this.recipe.set(pageData.recipe);
     this.recipeTitle.set(pageData.recipe.title);
     this.steps.set(pageData.recipe.steps);
     this.resetStepTimer();
@@ -116,6 +137,7 @@ export class CookingMode implements OnInit, OnDestroy {
     this.recipeService.getRecipeById(this.recipeId).subscribe({
       next: (response) => {
         if (response.success && response.data) {
+          this.recipe.set(response.data);
           this.recipeTitle.set(response.data.title);
           this.steps.set(response.data.steps);
           this.resetStepTimer();
@@ -148,6 +170,15 @@ export class CookingMode implements OnInit, OnDestroy {
 
   toggleTimer(): void {
     this.isTimerRunning() ? this.stopTimer() : this.startTimer();
+  }
+
+  goToStep(index: number): void {
+    if (index < 0 || index >= this.steps().length) {
+      return;
+    }
+
+    this.currentStepIndex.set(index);
+    this.resetStepTimer();
   }
 
   toggleSpeechRecognition(): void {
@@ -287,6 +318,12 @@ export class CookingMode implements OnInit, OnDestroy {
         this.shouldKeepListening = false;
       });
     };
+  }
+
+  private formatAmount(amount: number): string {
+    return Number.isInteger(amount)
+      ? amount.toString()
+      : amount.toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1');
   }
 
   private tryStartSpeechRecognition(): void {

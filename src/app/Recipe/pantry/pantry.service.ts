@@ -16,11 +16,11 @@ export class PantryService {
     );
   }
 
-  diagnoseImage(file: File): Observable<ApiResponse<PantryAiDiagnosticDto>> {
+  diagnoseImage(file: File): Observable<ApiResponse<PantryAiDiagnosticDto[]>> {
     const formData = new FormData();
     formData.append('file', file, file.name);
 
-    return this.http.post<ApiResponse<PantryAiDiagnosticDto>>(
+    return this.http.post<ApiResponse<PantryAiDiagnosticDto[]>>(
       apiConfig.pantry.diagnoseImage,
       formData
     );

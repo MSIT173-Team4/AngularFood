@@ -4,11 +4,25 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
+import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { TagModule } from 'primeng/tag';
 import { RecipeListPageData, RecipeSummary } from '../recipe.models';
 import { RecipeService } from '../service/recipe.service';
 
-@Component({ selector: 'app-recipe-list', imports: [FormsModule, RouterLink, ButtonModule, CardModule, InputTextModule, TagModule], templateUrl: './recipe-list.html', styleUrl: './recipe-list.css' })
+@Component({
+  selector: 'app-recipe-list',
+  imports: [
+    FormsModule,
+    RouterLink,
+    ButtonModule,
+    CardModule,
+    InputTextModule,
+    PaginatorModule,
+    TagModule
+  ],
+  templateUrl: './recipe-list.html',
+  styleUrl: './recipe-list.css'
+})
 export class RecipeList implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly recipeService = inject(RecipeService);
@@ -20,6 +34,8 @@ export class RecipeList implements OnInit {
   readonly searchTerm = signal('');
   readonly areFiltersExpanded = signal(false);
   readonly trendingRecipeIds = signal<ReadonlySet<number>>(new Set());
+  readonly currentPage = signal(0);
+  readonly pageSize = 24;
 
   readonly filterOptions = computed(() => {
     const labels = this.allRecipes().flatMap((recipe) => [
@@ -50,6 +66,11 @@ export class RecipeList implements OnInit {
     });
   });
 
+  readonly pagedRecipes = computed(() => {
+    const firstRecord = this.currentPage() * this.pageSize;
+    return this.recipes().slice(firstRecord, firstRecord + this.pageSize);
+  });
+
   ngOnInit(): void {
     const pageData = this.route.snapshot.data['pageData'] as RecipeListPageData;
     this.allRecipes.set(pageData.recipes);
@@ -60,6 +81,17 @@ export class RecipeList implements OnInit {
 
   selectFilter(filter: string): void {
     this.selectedFilter.set(filter);
+    this.currentPage.set(0);
+  }
+
+  updateSearchTerm(keyword: string): void {
+    this.searchTerm.set(keyword);
+    this.currentPage.set(0);
+  }
+
+  changePage(event: PaginatorState): void {
+    const rows = event.rows ?? this.pageSize;
+    this.currentPage.set(Math.floor((event.first ?? 0) / rows));
   }
 
   toggleAllFilters(): void {
@@ -69,6 +101,7 @@ export class RecipeList implements OnInit {
   clearFilters(): void {
     this.searchTerm.set('');
     this.selectedFilter.set('全部');
+    this.currentPage.set(0);
   }
 
   isTrending(recipeId: number): boolean {

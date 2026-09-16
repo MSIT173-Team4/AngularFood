@@ -13,7 +13,7 @@ import { recipeDemoConfig } from './api.config';
 export const recipeListResolver: ResolveFn<RecipeListPageData> = () => {
   const recipeService = inject(RecipeService);
 
-  return recipeService.getRecipes().pipe(
+  return recipeService.getRecipes(recipeDemoConfig.userId).pipe(
     map((response) => response.success && response.data?.length
       ? { recipes: response.data, source: 'api' as const, notice: response.message }
       : { recipes: MOCK_RECIPES, source: 'mock' as const, notice: 'API 無公開食譜，已載入測試資料。' }),

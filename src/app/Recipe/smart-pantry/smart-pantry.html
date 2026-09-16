@@ -84,7 +84,20 @@
           <p-progressSpinner strokeWidth="5" ariaLabel="推薦計算中" />
           <strong>正在計算冰箱食材吻合度……</strong>
         </div>
-      } @else if (recommendations()[0]; as recommendation) {
+      } @else if (selectedRecommendation(); as recommendation) {
+        <div class="recommendation-counter">
+          <span>清冰箱推薦 {{ selectedRecommendationIndex() + 1 }} / {{ recommendations().length }}</span>
+          @if (recommendations().length > 1) {
+            <div>
+              <button type="button" aria-label="上一道推薦" (click)="showPreviousRecommendation()">
+                <i class="pi pi-chevron-left"></i>
+              </button>
+              <button type="button" aria-label="下一道推薦" (click)="showNextRecommendation()">
+                <i class="pi pi-chevron-right"></i>
+              </button>
+            </div>
+          }
+        </div>
         <p-tag
           [value]="'食材吻合度 ' + recommendation.matchPercentage + '%'"
           severity="success"
@@ -112,6 +125,11 @@
           severity="danger"
           [rounded]="true"
         />
+        @if (recommendation.missingIngredients.length) {
+          <small class="recommendation-shopping-hint">
+            進入詳情後可將缺少的 {{ recommendation.missingIngredients.length }} 種食材加入會員採購清單。
+          </small>
+        }
       } @else {
         <div class="recommendation-state">
           <i class="pi pi-inbox" aria-hidden="true"></i>
@@ -194,8 +212,8 @@
     <div class="guide-step">
       <span>2</span>
       <i class="pi pi-stop" aria-hidden="true"></i>
-      <strong>一次一種食材</strong>
-      <p>完整拍到表面與切口，不要把多種蔬果或生鮮混在一起。</p>
+      <strong>食材分開擺放</strong>
+      <p>可一次拍攝多種食材，但請勿重疊或遮住表面；系統最多辨識 12 種。</p>
     </div>
     <div class="guide-step">
       <span>3</span>
@@ -223,7 +241,7 @@
   <div class="diagnostic-dialog">
     <div class="shooting-reminder">
       <i class="pi pi-lightbulb" aria-hidden="true"></i>
-      <span>請拍攝單一食材並保留完整外觀；診斷後仍可修改名稱、數量、溫層與日期。</span>
+      <span>可拍攝一種或多種食材，請分開擺放並保留完整外觀；診斷後仍可逐項修改。</span>
       <button type="button" (click)="openGuideDialog()">查看圖解</button>
     </div>
     <input
@@ -241,7 +259,7 @@
       } @else {
         <div class="photo-placeholder">
           <i class="pi pi-camera" aria-hidden="true"></i>
-          <span>選擇或拍攝一張清楚的單一食材照片</span>
+          <span>選擇或拍攝一張清楚的食材照片，可同時包含多種食材</span>
         </div>
       }
 
@@ -257,7 +275,7 @@
     @if (isAnalyzing()) {
       <div class="analysis-state" role="status" aria-live="polite">
         <p-progressSpinner strokeWidth="5" ariaLabel="AI 分析中" />
-        <strong>AI 主廚正在分析食材新鮮度...</strong>
+        <strong>AI 主廚正在辨識照片內的食材與新鮮度...</strong>
         <span>照片只能協助判讀外觀，仍請以氣味、觸感與保存紀錄確認安全性。</span>
       </div>
     }
@@ -288,93 +306,123 @@
       </div>
     }
 
-    @if (diagnostic(); as result) {
-      <div class="diagnostic-result">
-        <div class="freshness-summary">
-          <span>外觀診斷</span>
-          <strong>{{ result.freshnessStatus }}</strong>
-        </div>
+    @if (pantryForms().length) {
+      <div class="diagnostic-list">
+        @for (form of pantryForms(); track $index; let index = $index) {
+          <article class="diagnostic-item">
+            <div class="diagnostic-item-heading">
+              <strong>食材 {{ index + 1 }}：{{ form.ingredientName || '尚未命名' }}</strong>
+              @if (pantryForms().length > 1) {
+                <p-button
+                  label="不入庫"
+                  icon="pi pi-trash"
+                  severity="secondary"
+                  size="small"
+                  [text]="true"
+                  (onClick)="removeDetectedItem(index)"
+                />
+              }
+            </div>
 
-        <div class="storage-prescription">
-          <i class="pi pi-sparkles" aria-hidden="true"></i>
-          <div>
-            <span>主廚保鮮處方</span>
-            <strong>{{ result.storageTip }}</strong>
-          </div>
-        </div>
+            @if (diagnostics()[index]; as result) {
+              <div class="diagnostic-result">
+                <div class="freshness-summary">
+                  <span>外觀診斷</span>
+                  <strong>{{ result.freshnessStatus }}</strong>
+                </div>
+                <div class="storage-prescription">
+                  <i class="pi pi-sparkles" aria-hidden="true"></i>
+                  <div>
+                    <span>主廚保鮮處方</span>
+                    <strong>{{ result.storageTip }}</strong>
+                  </div>
+                </div>
+              </div>
+            } @else if (isManualEntry()) {
+              <div class="manual-notice">
+                <i class="pi pi-pencil" aria-hidden="true"></i>
+                AI 尚未提供判讀，請依包裝標示與實際狀態自行填寫。
+              </div>
+            }
 
-      </div>
-    }
+            <div class="pantry-form">
+              <label>
+                <span>食材名稱</span>
+                <input
+                  pInputText
+                  [class.ng-invalid]="getValidationError(index, 'ingredientName')"
+                  [ngModel]="form.ingredientName"
+                  (ngModelChange)="updateForm(index, 'ingredientName', $event)"
+                />
+                @if (getValidationError(index, 'ingredientName'); as message) {
+                  <small class="field-error">{{ message }}</small>
+                }
+              </label>
 
-    @if (diagnostic() || isManualEntry()) {
-      <div class="pantry-form-section">
-        @if (isManualEntry()) {
-          <div class="manual-notice">
-            <i class="pi pi-pencil" aria-hidden="true"></i>
-            AI 尚未提供判讀，請依包裝標示與實際狀態自行填寫。
-          </div>
+              <label>
+                <span>數量</span>
+                <p-inputNumber
+                  [ngModel]="form.amount"
+                  (ngModelChange)="updateForm(index, 'amount', $event ?? 0)"
+                  [min]="1"
+                  [max]="99999"
+                  [minFractionDigits]="0"
+                  [maxFractionDigits]="2"
+                  [useGrouping]="true"
+                />
+                @if (getValidationError(index, 'amount'); as message) {
+                  <small class="field-error">{{ message }}</small>
+                }
+              </label>
+
+              <label>
+                <span>單位</span>
+                <p-select
+                  [options]="unitOptions"
+                  [ngModel]="form.unit"
+                  (ngModelChange)="updateForm(index, 'unit', $event)"
+                  appendTo="body"
+                />
+                @if (getValidationError(index, 'unit'); as message) {
+                  <small class="field-error">{{ message }}</small>
+                }
+              </label>
+
+              <label>
+                <span>存放溫層</span>
+                <p-select
+                  [options]="storageLocations"
+                  [ngModel]="form.storageLocation"
+                  (ngModelChange)="updateForm(index, 'storageLocation', $event)"
+                  appendTo="body"
+                />
+              </label>
+
+              <label>
+                <span>建議過期日</span>
+                <input
+                  pInputText
+                  type="date"
+                  [ngModel]="form.expirationDate"
+                  (ngModelChange)="updateForm(index, 'expirationDate', $event)"
+                />
+                @if (getValidationError(index, 'expirationDate'); as message) {
+                  <small class="field-error">{{ message }}</small>
+                }
+              </label>
+
+              <label class="full-width">
+                <span>保鮮備註</span>
+                <input
+                  pInputText
+                  maxlength="150"
+                  [ngModel]="form.note"
+                  (ngModelChange)="updateForm(index, 'note', $event)"
+                />
+              </label>
+            </div>
+          </article>
         }
-
-        <div class="pantry-form">
-          <label>
-            <span>食材名稱</span>
-            <input
-              pInputText
-              [ngModel]="pantryForm().ingredientName"
-              (ngModelChange)="updateForm('ingredientName', $event)"
-            />
-          </label>
-
-          <label>
-            <span>數量</span>
-            <p-inputNumber
-              [ngModel]="pantryForm().amount"
-              (ngModelChange)="updateForm('amount', $event ?? 1)"
-              [min]="0.01"
-              [minFractionDigits]="0"
-              [maxFractionDigits]="2"
-            />
-          </label>
-
-          <label>
-            <span>單位</span>
-            <input
-              pInputText
-              [ngModel]="pantryForm().unit"
-              (ngModelChange)="updateForm('unit', $event)"
-            />
-          </label>
-
-          <label>
-            <span>存放溫層</span>
-            <p-select
-              [options]="storageLocations"
-              [ngModel]="pantryForm().storageLocation"
-              (ngModelChange)="updateForm('storageLocation', $event)"
-              appendTo="body"
-            />
-          </label>
-
-          <label>
-            <span>建議過期日</span>
-            <input
-              pInputText
-              type="date"
-              [ngModel]="pantryForm().expirationDate"
-              (ngModelChange)="updateForm('expirationDate', $event)"
-            />
-          </label>
-
-          <label class="full-width">
-            <span>保鮮備註</span>
-            <input
-              pInputText
-              maxlength="150"
-              [ngModel]="pantryForm().note"
-              (ngModelChange)="updateForm('note', $event)"
-            />
-          </label>
-        </div>
       </div>
     }
   </div>
@@ -382,12 +430,12 @@
   <ng-template #footer>
     <p-button label="取消" severity="secondary" [text]="true" (onClick)="closeCameraDialog()" />
     <p-button
-      label="確認放入冰箱"
+      [label]="pantryForms().length > 1 ? '確認 ' + pantryForms().length + ' 項入庫' : '確認放入冰箱'"
       icon="pi pi-check"
       severity="success"
       [loading]="isSaving()"
-      [disabled]="(!diagnostic() && !isManualEntry()) || isAnalyzing()"
-      (onClick)="confirmPantryItem()"
+      [disabled]="pantryForms().length === 0 || isAnalyzing()"
+      (onClick)="confirmPantryItems()"
     />
   </ng-template>
 </p-dialog>
