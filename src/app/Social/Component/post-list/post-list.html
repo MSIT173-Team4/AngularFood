@@ -1,0 +1,47 @@
+<div class="page-container">
+  <h1 class="page-title">貼文</h1>
+
+  <div class="control-bar">
+    <div class="sort-group">
+      <label>排序方式：</label>
+      <select [(ngModel)]="sortBy" (change)="onSortChange()">
+        <option value="latest">最新</option>
+        <option value="popular">最熱門</option>
+      </select>
+    </div>
+
+    <div class="search-group">
+      <input type="text" [(ngModel)]="keyword" (keyup.enter)="onSearch()" placeholder="輸入關鍵字..." />
+      <button class="btn-search" (click)="onSearch()">查詢貼文</button>
+      <button class="btn-create" (click)="goToCreate()">發佈貼文</button>
+    </div>
+  </div>
+
+  <!-- 貼文列表卡片 -->
+  <div class="post-list">
+    @for (post of posts; track post.postId) {
+      <div class="post-card" (click)="viewPost(post.postId)">
+        <div class="card-top">
+          <h2 class="post-title">{{ post.title }}</h2>
+          <span class="post-date">{{ post.postDate | date:'yyyy/MM/dd HH:mm' }}</span>
+        </div>
+
+        <div class="author-name">{{ post.userName }}</div>
+
+        <div class="card-bottom">
+          <div class="metrics">
+            <span class="like-icon" (click)="toggleLike($event, post)">
+              <i [class]="post.isLikedByCurrentUser ? 'fas fa-heart liked' : 'far fa-heart'"></i>
+              {{ post.likes }}
+            </span>
+            <span class="views-count">瀏覽量 : {{ post.views }}</span>
+          </div>
+
+          <button class="btn-view" (click)="viewPost(post.postId)">查看</button>
+        </div>
+      </div>
+    } @empty {
+      <div class="no-posts">尚無任何貼文</div>
+    }
+  </div>
+</div>
