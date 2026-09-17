@@ -6,9 +6,30 @@
     離開料理模式
   </a>
 
-  <p class="voice-hint">
-    語音導引已啟用，可說「下一步」、「開始計時」或「完成料理」。
-  </p>
+  <section class="voice-controls" aria-labelledby="voice-control-title">
+    <div>
+      <h2 id="voice-control-title">語音料理助理</h2>
+      <p class="voice-hint">
+        每次點擊後說一個口令：「下一步」、「上一步」、「開始計時」、「暫停」或「煮好了」。
+      </p>
+      <p class="voice-status" aria-live="polite">{{ speechStatus() }}</p>
+
+      @if (lastRecognizedCommand()) {
+        <p class="recognized-command">
+          最近辨識：{{ lastRecognizedCommand() }}
+        </p>
+      }
+    </div>
+
+    <p-button
+      [label]="isListening() ? '停止語音' : '啟用語音'"
+      [icon]="isListening() ? 'pi pi-microphone-slash' : 'pi pi-microphone'"
+      [severity]="isListening() ? 'secondary' : 'success'"
+      [disabled]="!isSpeechSupported()"
+      [outlined]="!isListening()"
+      (onClick)="toggleSpeechRecognition()"
+    />
+  </section>
 
   <h1>{{ recipeTitle() }}</h1>
 
@@ -21,7 +42,7 @@
   @if (currentStep(); as step) {
     <article class="step-card">
       <span class="step-indicator">
-        步驟 {{ step.stepNumber }}／{{ steps().length }}
+        步驟 {{ step.stepNumber }}/{{ steps().length }}
       </span>
 
       <h2>{{ step.instruction }}</h2>

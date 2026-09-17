@@ -113,3 +113,144 @@ export interface CookingDeductionResult {
   isExhausted: boolean;
   isInsufficient: boolean;
 }
+
+export interface RecipeCategory {
+  categoryId: number;
+  name: string;
+  displayOrder: number;
+}
+
+export interface RecipeTag {
+  tagId: number;
+  type: string;
+  name: string;
+}
+
+export interface RecipeMetadata {
+  categories: RecipeCategory[];
+  tags: RecipeTag[];
+}
+
+export interface RecipeEngagement {
+  recipeId: number;
+  userId: number;
+  isLiked: boolean;
+  isFavorite: boolean;
+  likeCount: number;
+  favoriteCount: number;
+}
+
+export interface RecipeView {
+  recipeId: number;
+  viewCount: number;
+}
+
+export interface RecipeMatchIngredient {
+  ingredientId: number;
+  name: string;
+  daysUntilExpiration: number | null;
+}
+
+export interface RecipeRecommendation {
+  recipeId: number;
+  title: string;
+  coverImageUrl: string | null;
+  categoryName: string;
+  cookingMinutes: number;
+  matchPercentage: number;
+  matchedIngredientCount: number;
+  requiredIngredientCount: number;
+  isReadyToCook: boolean;
+  availableIngredients: RecipeMatchIngredient[];
+  expiringIngredients: RecipeMatchIngredient[];
+  missingIngredients: RecipeMatchIngredient[];
+  explanation: string;
+}
+
+export interface TrendingRecipe {
+  recipe: RecipeSummary;
+  timeDecayScore: number;
+}
+
+export interface RecipeIngredientInput {
+  ingredientId: number | null;
+  name: string;
+  displayAmount: string;
+  baseAmount: number | null;
+  standardUnit: string | null;
+  isMain: boolean;
+  sortOrder: number;
+}
+
+export interface RecipeStepInput {
+  stepNumber: number;
+  instruction: string;
+  imageUrl: string | null;
+  timerSeconds: number;
+}
+
+export interface CreateRecipePayload {
+  userId: number;
+  categoryId: number;
+  title: string;
+  description: string | null;
+  coverImageUrl: string | null;
+  youTubeVideoId: string | null;
+  aiPrepTips: string | null;
+  isAiGenerated: boolean;
+  defaultServings: number;
+  cookingMinutes: number;
+  totalCalories: number;
+  ingredients: RecipeIngredientInput[];
+  steps: RecipeStepInput[];
+  tagIds: number[];
+}
+
+export interface RecipeAsset {
+  url: string;
+  fileName: string;
+  fileSize: number;
+  contentType: string;
+  recommendedWidth: number;
+  recommendedHeight: number;
+}
+
+export interface IngredientNormalization {
+  ingredientId: number | null;
+  rawIngredientName: string;
+  standardIngredientName: string;
+  originalAmount: number;
+  standardAmount: number;
+  originalUnit: string;
+  standardUnit: string;
+  displayAmount: string;
+  conversionApplied: boolean;
+}
+
+export interface ParsedRecipeIngredient {
+  name: string;
+  amount: number;
+  unit: string;
+}
+
+export interface ParsedRecipeStep {
+  stepNumber: number;
+  description: string;
+}
+
+export interface ParsedRecipe {
+  recipeTitle: string;
+  ingredients: ParsedRecipeIngredient[];
+  steps: ParsedRecipeStep[];
+}
+
+export interface IngredientLocalization {
+  rawInput: string;
+  standardTaiwaneseName: string | null;
+  category: string;
+}
+
+export interface ChefRecommendation {
+  recommendation: string;
+  generatedAt: string;
+}

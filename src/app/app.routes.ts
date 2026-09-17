@@ -54,6 +54,14 @@ export const routes: Routes = [
         (module) => module.CreateRecipe
       )
   },
+  {
+    path: 'forum',
+    title: '討論區｜友料美食生活平台',
+    loadComponent: () =>
+      import('./Forum/forum-placeholder/forum-placeholder').then(
+        (module) => module.ForumPlaceholder
+      )
+  },
   { path: 'market/create-product', component: CreateProduct },
   { path: 'nearby-place', component: NearbyPlace },
   { path: 'cooking/:id', redirectTo: 'cooking-mode/:id' },

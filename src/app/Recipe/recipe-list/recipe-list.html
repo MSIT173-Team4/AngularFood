@@ -30,14 +30,51 @@
     <a routerLink="/pantry">立即配對 <i class="pi pi-arrow-right"></i></a>
   </div>
 
-  <div class="category-row" aria-label="食譜分類篩選">
-    <span><i class="pi pi-filter"></i> 探索分類</span>
-    <button type="button">全部</button>
-    <button type="button">家常菜</button>
-    <button type="button">異國料理</button>
-    <button type="button">烘焙</button>
-    <button type="button">15 分鐘內</button>
-    <button type="button">高蛋白低卡</button>
+  <section class="discovery-tools" aria-label="食譜搜尋與分類">
+    <label class="recipe-search">
+      <span class="visually-hidden">搜尋食譜</span>
+      <i class="pi pi-search" aria-hidden="true"></i>
+      <input
+        pInputText
+        type="search"
+        placeholder="搜尋料理名稱、食材特色、分類或作者"
+        [ngModel]="searchTerm()"
+        (ngModelChange)="searchTerm.set($event)"
+      />
+      @if (searchTerm()) {
+        <button type="button" aria-label="清除搜尋文字" (click)="searchTerm.set('')">
+          <i class="pi pi-times" aria-hidden="true"></i>
+        </button>
+      }
+    </label>
+    <span class="result-count">找到 {{ recipes().length }} 道食譜</span>
+  </section>
+
+  <div
+    class="category-row"
+    [class.expanded]="areFiltersExpanded()"
+    aria-label="食譜分類篩選"
+  >
+    <button
+      class="filter-toggle"
+      type="button"
+      [attr.aria-expanded]="areFiltersExpanded()"
+      (click)="toggleAllFilters()"
+    >
+      <i class="pi pi-filter"></i>
+      探索分類
+      <i [class]="areFiltersExpanded() ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"></i>
+    </button>
+    @for (filter of filterOptions(); track filter) {
+      <button
+        type="button"
+        [class.active]="selectedFilter() === filter"
+        [attr.aria-pressed]="selectedFilter() === filter"
+        (click)="selectFilter(filter)"
+      >
+        {{ filter }}
+      </button>
+    }
   </div>
 
   <div class="recipe-grid">
@@ -49,10 +86,18 @@
             @if (recipe.isAiGenerated) {
               <p-tag class="cover-tag" value="AI 協作" severity="info" [rounded]="true" />
             }
+            @if (isTrending(recipe.recipeId)) {
+              <p-tag class="trending-tag" value="本週熱門" severity="danger" [rounded]="true" />
+            }
           </div>
         </ng-template>
         <ng-template #title>{{ recipe.title }}</ng-template>
         <p class="description">{{ recipe.description }}</p>
+        <div class="recipe-tags">
+          @for (tag of recipe.tags.slice(0, 3); track tag) {
+            <span>{{ tag }}</span>
+          }
+        </div>
         <div class="metadata">
           <span><i class="pi pi-clock"></i> {{ recipe.cookingMinutes }} 分鐘</span>
           <span><i class="pi pi-heart"></i> {{ recipe.likes }}</span>
@@ -70,7 +115,18 @@
         </ng-template>
       </p-card>
     } @empty {
-      <p class="state">目前尚無可顯示的公開食譜。</p>
+      <div class="state">
+        <i class="pi pi-search" aria-hidden="true"></i>
+        <strong>目前沒有符合條件的公開食譜</strong>
+        <span>可更換關鍵字或選擇其他分類。</span>
+        <p-button
+          label="清除篩選"
+          icon="pi pi-refresh"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="clearFilters()"
+        />
+      </div>
     }
   </div>
 </section>

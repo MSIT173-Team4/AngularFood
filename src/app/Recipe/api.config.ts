@@ -1,5 +1,4 @@
 const friendlyFoodApiBaseUrl = 'https://localhost:7164/api';
-const smartBotApiBaseUrl = 'https://localhost:7189/api';
 
 export const apiConfig = {
   recipes: {
@@ -10,8 +9,19 @@ export const apiConfig = {
     update: (recipeId: number) => `${friendlyFoodApiBaseUrl}/recipe/${recipeId}`,
     delete: (recipeId: number) => `${friendlyFoodApiBaseUrl}/recipe/${recipeId}`,
     completeCooking: `${friendlyFoodApiBaseUrl}/recipe/complete-cooking`,
+    recommendations: (userId: number, limit = 12) =>
+      `${friendlyFoodApiBaseUrl}/recipe/recommendations?userId=${userId}&limit=${limit}`,
+    trending: (limit = 8) => `${friendlyFoodApiBaseUrl}/recipe/trending?limit=${limit}`,
+    view: (recipeId: number) => `${friendlyFoodApiBaseUrl}/recipe/${recipeId}/view`,
     like: (recipeId: number) => `${friendlyFoodApiBaseUrl}/recipe/${recipeId}/like`,
-    favorite: (recipeId: number) => `${friendlyFoodApiBaseUrl}/recipe/${recipeId}/favorite`
+    favorite: (recipeId: number) => `${friendlyFoodApiBaseUrl}/recipe/${recipeId}/favorite`,
+    uploadCover: `${friendlyFoodApiBaseUrl}/recipe/assets/cover`,
+    normalizeIngredient: `${friendlyFoodApiBaseUrl}/recipe/ingredients/normalize`,
+    ai: {
+      localizeIngredient: `${friendlyFoodApiBaseUrl}/recipe/ai/localize-ingredient`,
+      parseRecipe: `${friendlyFoodApiBaseUrl}/recipe/ai/parse-recipe`,
+      chefRecommend: `${friendlyFoodApiBaseUrl}/recipe/ai/chef-recommend`
+    }
   },
   pantry: {
     listByUser: (userId: number) => `${friendlyFoodApiBaseUrl}/recipe/pantry/user/${userId}`,
@@ -20,11 +30,6 @@ export const apiConfig = {
     create: `${friendlyFoodApiBaseUrl}/recipe/pantry`,
     update: (pantryId: number) => `${friendlyFoodApiBaseUrl}/recipe/pantry/${pantryId}`,
     delete: (pantryId: number) => `${friendlyFoodApiBaseUrl}/recipe/pantry/${pantryId}`
-  },
-  smartBot: {
-    localizeIngredient: `${smartBotApiBaseUrl}/chat/localize-ingredient`,
-    parseRecipe: `${smartBotApiBaseUrl}/chat/parse-recipe`,
-    chefRecommend: `${smartBotApiBaseUrl}/chat/chef-recommend`
   }
 } as const;
 

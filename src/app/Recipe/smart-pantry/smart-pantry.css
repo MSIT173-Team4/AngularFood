@@ -25,6 +25,48 @@
   color: #6d5a51;
 }
 
+.feature-intro {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  border: 1px solid #d5e4d2;
+  border-radius: 1rem;
+  background: linear-gradient(120deg, #f5fbf2, #fffaf7);
+}
+
+.feature-intro-icon {
+  display: grid;
+  width: 3.25rem;
+  height: 3.25rem;
+  place-items: center;
+  border-radius: 1rem;
+  color: #fff;
+  background: #406840;
+  font-size: 1.35rem;
+}
+
+.feature-intro h2 {
+  margin: 0 0 .6rem;
+  color: #273c29;
+  font-size: 1.15rem;
+}
+
+.feature-benefits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .6rem 1.25rem;
+  color: #526351;
+  font-size: .82rem;
+}
+
+.feature-benefits i {
+  margin-right: .3rem;
+  color: #406840;
+}
+
 .pantry-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(300px, .85fr);
@@ -107,10 +149,249 @@
   border: 0;
 }
 
+.empty-pantry {
+  display: grid;
+  min-height: 330px;
+  place-content: center;
+  justify-items: center;
+  gap: .75rem;
+  padding: 2rem;
+  color: #6d5a51;
+  text-align: center;
+}
+
+.empty-pantry > i {
+  color: #a88374;
+  font-size: 2.5rem;
+}
+
+.empty-pantry span {
+  max-width: 340px;
+  font-size: .86rem;
+  line-height: 1.6;
+}
+
+.recommendation-state {
+  display: grid;
+  min-height: 280px;
+  place-content: center;
+  justify-items: center;
+  gap: .8rem;
+  color: #e6f5e3;
+  text-align: center;
+}
+
+.recommendation-state > i {
+  font-size: 2rem;
+}
+
+.recommendation-state span {
+  color: #cde5c9;
+  font-size: .85rem;
+}
+
+.expiry-calendar {
+  margin-top: 1.5rem;
+  padding: clamp(1.25rem, 3vw, 1.75rem);
+  border: 1px solid #eadbd4;
+  border-radius: 1.25rem;
+  background: #fff;
+  box-shadow: 0 12px 32px rgba(58, 36, 28, .06);
+}
+
+.calendar-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.calendar-heading h2 {
+  margin: .25rem 0;
+}
+
+.calendar-heading p {
+  margin: 0;
+  color: #6d5a51;
+}
+
+.section-kicker {
+  color: #406840;
+  font-size: .76rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: minmax(300px, .8fr) minmax(0, 1.2fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.date-agenda {
+  min-height: 360px;
+  padding: 1.25rem;
+  border-radius: 1rem;
+  background: #fff8f5;
+}
+
+.date-agenda > span {
+  color: #ab3500;
+  font-size: .8rem;
+  font-weight: 800;
+}
+
+.date-agenda h3 {
+  margin: .35rem 0 1rem;
+}
+
+.agenda-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: .85rem 0;
+  border-bottom: 1px solid #eadbd4;
+}
+
+.agenda-item small {
+  display: block;
+  margin-top: .25rem;
+  color: #6d5a51;
+}
+
+.empty-agenda {
+  display: grid;
+  min-height: 245px;
+  place-content: center;
+  justify-items: center;
+  gap: .55rem;
+  color: #806b62;
+  text-align: center;
+}
+
+.empty-agenda i {
+  font-size: 2rem;
+}
+
+.empty-agenda span {
+  font-size: .82rem;
+}
+
 .diagnostic-dialog,
 .diagnostic-result {
   display: grid;
   gap: 1.25rem;
+}
+
+.shooting-reminder,
+.analysis-error,
+.manual-notice,
+.safety-note {
+  display: flex;
+  align-items: flex-start;
+  gap: .75rem;
+  padding: .85rem 1rem;
+  border-radius: .85rem;
+  font-size: .84rem;
+  line-height: 1.55;
+}
+
+.shooting-reminder {
+  color: #65490e;
+  background: #fff8e7;
+}
+
+.shooting-reminder span {
+  flex: 1;
+}
+
+.shooting-reminder button {
+  padding: 0;
+  border: 0;
+  color: #8c5100;
+  background: transparent;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.analysis-error {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  color: #93000a;
+  background: #ffdad6;
+}
+
+.analysis-error span {
+  display: block;
+  margin-top: .2rem;
+}
+
+.error-actions {
+  display: flex;
+  grid-column: 2;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+
+.manual-notice {
+  margin-bottom: 1rem;
+  color: #4d563f;
+  background: #edf5ea;
+}
+
+.photo-guide {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.guide-step {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: .65rem;
+  padding: 1.25rem 1rem;
+  border: 1px solid #eadbd4;
+  border-radius: 1rem;
+  text-align: center;
+  background: #fffaf7;
+}
+
+.guide-step > span {
+  position: absolute;
+  top: .65rem;
+  left: .65rem;
+  display: grid;
+  width: 1.6rem;
+  height: 1.6rem;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: #ab3500;
+  font-size: .75rem;
+  font-weight: 800;
+}
+
+.guide-step > i {
+  color: #406840;
+  font-size: 2rem;
+}
+
+.guide-step p {
+  margin: 0;
+  color: #6d5a51;
+  font-size: .8rem;
+  line-height: 1.55;
+}
+
+.safety-note {
+  margin-top: 1rem;
+  color: #65490e;
+  background: #fff3d5;
 }
 
 .photo-panel {
@@ -194,6 +475,12 @@
   gap: 1rem;
 }
 
+:host ::ng-deep .expiry-calendar .p-datepicker {
+  width: 100%;
+  border: 0;
+  box-shadow: none;
+}
+
 .pantry-form label {
   display: grid;
   gap: .4rem;
@@ -211,6 +498,14 @@
 }
 
 @media(max-width: 760px) {
+  .feature-intro {
+    grid-template-columns: auto 1fr;
+  }
+
+  .feature-intro p-button {
+    grid-column: 1 / -1;
+  }
+
   .pantry-grid {
     grid-template-columns: 1fr;
   }
@@ -226,5 +521,14 @@
 
   .pantry-form .full-width {
     grid-column: auto;
+  }
+
+  .calendar-grid,
+  .photo-guide {
+    grid-template-columns: 1fr;
+  }
+
+  .calendar-heading {
+    flex-direction: column;
   }
 }
