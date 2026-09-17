@@ -1,0 +1,123 @@
+.page-container {
+  max-width: 900px;
+  margin: 30px auto;
+  padding: 0 20px;
+
+  .page-title {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--text-color);
+    margin-bottom: 20px;
+  }
+
+  .control-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    gap: 15px;
+
+    .sort-group {
+      select {
+        padding: 8px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        background: white;
+      }
+    }
+
+    .search-group {
+      display: flex;
+      gap: 10px;
+
+      input {
+        padding: 8px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        width: 200px;
+      }
+
+      .btn-search {
+        background-color: #1976d2;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+
+      .btn-create {
+        background-color: var(--secondary-color);
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+    }
+  }
+
+  .post-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+
+    .post-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 20px;
+      cursor: pointer;
+
+      .card-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+
+        .post-title {
+          font-size: 1.3rem;
+          margin: 0;
+          color: var(--text-color);
+        }
+
+        .post-date {
+          color: var(--gray-text);
+          font-size: 0.85rem;
+        }
+      }
+
+      .author-name {
+        color: var(--gray-text);
+        margin: 10px 0 20px 0;
+      }
+
+      .card-bottom {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .metrics {
+          display: flex;
+          gap: 20px;
+
+          .like-icon {
+            cursor: pointer;
+            .liked { color: #e63946; }
+          }
+        }
+
+        .btn-view {
+          background: white;
+          border: 1px solid var(--border-color);
+          padding: 6px 16px;
+          border-radius: 4px;
+          cursor: pointer;
+
+          &:hover {
+            background: #f0f0f0;
+          }
+        }
+      }
+    }
+  }
+}
