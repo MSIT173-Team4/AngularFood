@@ -54,13 +54,9 @@ export class MarketService {
   }
 
   // 搜尋 + 篩選（接 GET /api/MarketProduct/search）
-  // ★ 後端 SearchProducts 改完回傳 PagedResultDto 之後用這個版本
   searchProducts(params: ProductSearchParams): Observable<PagedResult<MarketProduct>> {
     let httpParams = new HttpParams();
 
-    // 只有有值的欄位才帶進 query string
-    // 避免傳 ?keyword=&minPrice= 這種空字串給後端
-    // 不然後端的 !string.IsNullOrEmpty(dto.Keyword) 判斷會失效
     if (params.keyword) httpParams = httpParams.set('keyword', params.keyword);
     if (params.categoryNo) httpParams = httpParams.set('categoryNo', params.categoryNo);
     if (params.minPrice != null) httpParams = httpParams.set('minPrice', params.minPrice);

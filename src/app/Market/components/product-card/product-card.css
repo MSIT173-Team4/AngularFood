@@ -1,0 +1,118 @@
+.product-card {
+  background: #ffffff;
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(38, 24, 20, .06);
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow .2s;
+}
+
+.product-card:hover {
+  box-shadow: 0 4px 12px rgba(38, 24, 20, .12);
+}
+
+.product-card.sold-out {
+  opacity: 0.85;
+}
+
+/* 圖片區：固定比例，超出裁切 */
+.card-image-wrapper {
+  position: relative;
+  aspect-ratio: 4 / 3;   /* ← 這行是圖片大小的關鍵，固定寬高比 */
+  overflow: hidden;       /* ← 超出就裁掉，不讓圖片撐破卡片 */
+  background: #fff1ed;
+}
+
+.card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;      /* ← 圖片填滿容器，不變形 */
+  transition: transform .3s;
+}
+
+.product-card:hover .card-image {
+  transform: scale(1.05);
+}
+
+.card-image.grayscale {
+  filter: grayscale(25%);
+}
+
+/* 售完遮罩 */
+.sold-out-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(61, 45, 40, .3);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sold-out-badge {
+  background: rgba(255, 248, 246, .9);
+  color: #261814;
+  padding: 0.25rem 1rem;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* 收藏按鈕 */
+.favorite-btn {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 248, 246, .8);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8d7168;
+  transition: color .15s;
+}
+
+.favorite-btn:hover {
+  color: #832600;
+}
+
+/* 商品資訊區 */
+.card-body {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.product-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #261814;
+  margin: 0;
+}
+
+.product-brand {
+  font-size: 12px;
+  color: #8d7168;
+  margin: 0.25rem 0 0;
+}
+
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.5rem;
+}
+
+.product-price {
+  font-size: 20px;
+  font-weight: 700;
+  color: #261814;
+}

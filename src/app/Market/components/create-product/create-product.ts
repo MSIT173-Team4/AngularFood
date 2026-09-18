@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ProductService } from '../../Service/market';
+import { MarketService } from '../../Service/market';
 
 @Component({
   selector: 'app-create-product',
@@ -24,7 +24,7 @@ export class CreateProduct {
   selectedFiles: File[] = [];
   message = '';
 
-  constructor(private productService: ProductService) { }
+  constructor(private marketService: MarketService) { }
 
   onFileChange(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -48,11 +48,11 @@ export class CreateProduct {
       formData.append('Images', file);
     }
 
-    this.productService.createProduct(formData).subscribe({
+    this.marketService.createProduct(formData).subscribe({
       next: (res: any) => {
         this.message = `新增成功！商品 ID：${res.productId}`;
       },
-      error: (err) => {
+      error: (err: any) => {
         this.message = `新增失敗：${err.error}`;
       }
     });

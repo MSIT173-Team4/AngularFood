@@ -1,19 +1,139 @@
-<div class="product-list">
-  @for (product of products(); track product.productId) {
-  <div class="product-card">
+<p-toast position="bottom-right" />
 
-    <div class="product-image">
-      @if (product.imageUrls && product.imageUrls.length > 0) {
-      <img [src]="product.imageUrls[0]" [alt]="product.productName" />
-      } @else {
-      <div>無圖片</div>
+<section class="marketplace-section">
+  <div class="marketplace-container">
+
+    <!-- ══ 搜尋列 + 進階篩選 ════════════════════════════ -->
+    <div class="filter-card">
+
+      <!-- 搜尋列這一行 -->
+      <div class="search-row">
+        <div class="search-input-wrapper">
+          <i class="pi pi-search search-icon"></i>
+          <!-- 1. [(ngModel)] = Two-way binding：input 值同步到 keyword 變數 -->
+          <input type="text" pInputText [(ngModel)]="keyword" placeholder="搜尋商品名稱..." class="search-input"
+            (keyup.enter)="onSearch()" />
+          <p-button label="搜尋" (onClick)="onSearch()" size="small" />
+        </div>
+
+        <p-button [label]="showAdvancedFilter ? '收合進階篩選' : '進階篩選'" icon="pi pi-sliders-h" severity="secondary"
+          (onClick)="showAdvancedFilter = !showAdvancedFilter" />
+      </div>
+
+      <!-- 進階篩選區塊 -->
+      @if (showAdvancedFilter) {
+      <div class="advanced-filter-panel">
+
+        <!-- 價格區間 -->
+        <div class="filter-group">
+          <label class="filter-label">
+            <i class="pi pi-wallet"></i> 價格區間 (NT$)
+          </label>
+          <div class="price-inputs">
+            <!-- 3. [(ngModel)] 直接綁定數字，不用自己轉型 -->
+            <input type="number" pInputText [(ngModel)]="minPrice" placeholder="最低價" class="price-input" />
+            <span>~</span>
+            <input type="number" pInputText [(ngModel)]="maxPrice" placeholder="最高價" class="price-input" />
+          </div>
+
+          <!-- 快捷價格按鈕 -->
+          <div class="quick-price-chips">
+            <p-button label="100-300元" size="small" severity="secondary" [outlined]="true"
+              (onClick)="minPrice=100; maxPrice=300" />
+            <p-button label="300-500元" size="small" severity="secondary" [outlined]="true"
+              (onClick)="minPrice=300; maxPrice=500" />
+            <p-button label="500元以上" size="small" severity="secondary" [outlined]="true"
+              (onClick)="minPrice=500; maxPrice=null" />
+          </div>
+        </div>
+
+        <!-- 操作按鈕 -->
+        <div class="filter-actions">
+          <p-button label="重設條件" icon="pi pi-refresh" severity="secondary" [text]="true" (onClick)="onResetFilter()" />
+          <p-button label="套用篩選" icon="pi pi-filter" (onClick)="onSearch()" />
+        </div>
+      </div>
       }
     </div>
 
-    <p class="product-name">{{ product.productName }}</p>
-    <p class="product-brand">{{ product.brandOrOrigin }}</p>
-    <p class="product-price">NT$ {{ product.price }}</p>
+    <!-- ══ 麵包屑 + 排序列 ═══════════════════════════════ -->
+    <div class="toolbar-row">
+
+      <!-- 麵包屑（之後接 Router 後可以用 p-breadcrumb） -->
+      <nav class="breadcrumb">
+        <a href="#">首頁</a>
+        <i class="pi pi-chevron-right"></i>
+        <span>友善商城</span>
+        <span class="count-badge">{{ products.length }} 件好物</span>
+      </nav>
+
+      <!-- 排序按鈕群 -->
+      <div class="sort-buttons">
+        <!-- 4. @for 是 Angular 17+ 取代 *ngFor 的新語法 -->
+        @for (opt of sortOptions; track opt.value) {
+        <button class="sort-btn" [class.active]="selectedSortBy === opt.value" (click)="onSortChange(opt.value)">
+          {{ opt.label }}
+        </button>
+        }
+      </div>
+    </div>
+
+    <!-- ══ 主內容：左側分類 + 商品 Grid ══════════════════ -->
+    <div class="main-layout">
+
+      <!-- 左側分類 Sidebar（目前靜態，之後可接 API） -->
+      <aside class="sidebar">
+        <div class="sidebar-card">
+          <div class="sidebar-header">
+            <span>食品類別</span>
+          </div>
+          <nav class="category-nav">
+            <a href="#" class="category-link active">調味・乾貨<span>86</span></a>
+            <a href="#" class="category-link">食材・生鮮<span>142</span></a>
+            <a href="#" class="category-link">烘焙手作原料<span>48</span></a>
+          </nav>
+        </div>
+      </aside>
+
+      <!-- 右側商品區 -->
+      <main class="product-area">
+
+        <!-- 載入中狀態 -->
+        @if (isLoading) {
+        <div class="loading-state">
+          <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+          <p>載入商品中...</p>
+        </div>
+        }
+
+        <!-- 空結果 -->
+        @if (!isLoading && products.length === 0) {
+        <div class="empty-state">
+          <i class="pi pi-search" style="font-size: 3rem"></i>
+          <h4>查無符合條件的商品</h4>
+          <p>建議放寬搜尋條件後再試</p>
+          <p-button label="重設篩選條件" (onClick)="onResetFilter()" />
+        </div>
+        }
+
+        <!-- 5. 商品 Grid：用 @for 跑迴圈，每個用 app-product-card 渲染 -->
+        @if (!isLoading && products.length > 0) {
+        <div class="product-grid">
+          @for (product of products; track product.productId) {
+          <!-- 6. [product] 傳資料給子 Component（@Input） -->
+          <!-- (addToCart) 接子 Component 發出的事件（@Output） -->
+          <app-product-card [product]="product" (addToCart)="onAddToCart($event)"
+            (toggleFavorite)="onToggleFavorite($event)" />
+          }
+        </div>
+        }
+
+        <!-- ══ 分頁 ════════════════════════════════════ -->
+        <!-- 7. p-paginator：PrimeNG 分頁元件 -->
+        <p-paginator [rows]="pageSize" [totalRecords]="totalRecords" [first]="(currentPage - 1) * pageSize"
+          (onPageChange)="onPageChange($event)" [rowsPerPageOptions]="[10, 20, 50]" />
+      </main>
+    </div>
 
   </div>
-  }
-</div>
+</section>
