@@ -1,0 +1,164 @@
+<p-dialog
+  header="廣告版位結帳"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="!isProcessing()"
+  [style]="{ width: 'min(94vw, 680px)' }"
+  [visible]="visible"
+  (visibleChange)="visibleChange.emit($event)"
+>
+  <div class="checkout">
+    <ol class="checkout-progress" aria-label="結帳進度">
+      <li class="complete"><span>1</span>確認訂單</li>
+      <li [class.active]="checkoutStage() === 'card-entry' || checkoutStage() === 'processing'" [class.complete]="checkoutStage() === 'email-sending' || checkoutStage() === 'otp-verification' || checkoutStage() === 'success'"><span>2</span>付款授權</li>
+      <li [class.active]="checkoutStage() === 'email-sending' || checkoutStage() === 'otp-verification'" [class.complete]="checkoutStage() === 'success'"><span>3</span>信箱驗證</li>
+    </ol>
+
+    <section class="checkout-summary">
+      <div>
+        <span>{{ placement }}</span>
+        <strong>{{ productName }}</strong>
+        <small>{{ advertiserName }}．刊登 {{ rentalDays }} 天</small>
+      </div>
+      <b>NT$ {{ totalPrice }}</b>
+    </section>
+
+    @if (checkoutStage() === 'order-review') {
+      <section class="order-review">
+        <div class="checkout-section-title">
+          <span>確認申請與付款金額</span>
+          <small>確認後進入安全付款頁</small>
+        </div>
+        <dl>
+          <div><dt>申請品牌</dt><dd>{{ advertiserName }}</dd></div>
+          <div><dt>推廣商品</dt><dd>{{ productName }}</dd></div>
+          <div><dt>廣告版位</dt><dd>{{ placement }}</dd></div>
+          <div><dt>刊登期間</dt><dd>{{ rentalDays }} 天</dd></div>
+          <div><dt>付款通知</dt><dd>{{ contactEmail }}</dd></div>
+        </dl>
+        <p class="secure-notice"><i class="pi pi-shield"></i> 付款完成後，系統將寄送訂單明細與素材審核資訊至聯絡信箱。</p>
+      </section>
+    } @else if (checkoutStage() === 'card-entry') {
+      <section class="card-payment">
+        @if (currentOrder(); as order) {
+          <div class="payment-heading">
+            <div>
+              <span>訂單編號</span>
+              <strong>{{ order.orderNo }}</strong>
+            </div>
+            <span class="tappay-brand"><i class="pi pi-lock"></i> TapPay</span>
+          </div>
+        }
+
+        <div class="credit-card-preview" [class.visa]="cardBrand() === 'VISA'" [class.mastercard]="cardBrand() === 'Mastercard'">
+          <div class="card-preview-header"><i class="pi pi-wifi"></i><b>{{ cardBrand() }}</b></div>
+          <span class="card-chip"></span>
+          <strong>{{ cardNumber() || '•••• •••• •••• ••••' }}</strong>
+          <div><span>{{ cardholderName() || 'CARDHOLDER NAME' }}</span><span>{{ expirationMonth() || 'MM' }}/{{ expirationYear() || 'YY' }}</span></div>
+        </div>
+
+        <div class="card-form">
+          <label class="full-width">
+            <span>持卡人姓名</span>
+            <input pInputText autocomplete="off" placeholder="與信用卡英文姓名相同" [ngModel]="cardholderName()" (ngModelChange)="cardholderName.set($event)" />
+            @if (submitAttempted() && !isCardholderNameValid()) { <small class="field-error">請輸入持卡人姓名。</small> }
+          </label>
+          <label class="full-width">
+            <span>信用卡號</span>
+            <div class="card-number-field"><input pInputText inputmode="numeric" autocomplete="off" maxlength="23" placeholder="0000 0000 0000 0000" [ngModel]="cardNumber()" (ngModelChange)="updateCardNumber($event)" /><i class="pi pi-credit-card"></i></div>
+            @if (submitAttempted() && !isCardNumberValid()) { <small class="field-error">請確認信用卡號格式。</small> }
+          </label>
+          <label>
+            <span>有效期限</span>
+            <div class="expiration-fields">
+              <input pInputText inputmode="numeric" autocomplete="off" maxlength="2" placeholder="MM" aria-label="有效月份" [ngModel]="expirationMonth()" (ngModelChange)="updateExpirationMonth($event)" />
+              <span>/</span>
+              <input pInputText inputmode="numeric" autocomplete="off" maxlength="2" placeholder="YY" aria-label="有效年份" [ngModel]="expirationYear()" (ngModelChange)="updateExpirationYear($event)" />
+            </div>
+            @if (submitAttempted() && !isExpirationValid()) { <small class="field-error">請輸入有效的月份與年份。</small> }
+          </label>
+          <label>
+            <span>安全碼</span>
+            <div class="security-code-field"><input pInputText type="password" inputmode="numeric" autocomplete="off" maxlength="4" placeholder="CVV" [ngModel]="securityCode()" (ngModelChange)="updateSecurityCode($event)" /><i class="pi pi-question-circle" title="卡片背面的三位或四位數字"></i></div>
+            @if (submitAttempted() && !isSecurityCodeValid()) { <small class="field-error">請輸入卡片安全碼。</small> }
+          </label>
+        </div>
+        <div class="payment-assurance"><i class="pi pi-lock"></i><span><b>安全加密付款</b><small>卡片資訊僅用於本次授權，不會保留完整卡號與安全碼。</small></span></div>
+      </section>
+    } @else if (checkoutStage() === 'processing') {
+      <section class="payment-state" role="status" aria-live="polite">
+        <div class="processing-ring"><i class="pi pi-lock"></i></div>
+        <strong>正在取得銀行授權</strong>
+        <span>請勿關閉視窗或重新整理頁面，系統正在安全處理本次付款。</span>
+        <div class="processing-bar"><span></span></div>
+      </section>
+    } @else if (checkoutStage() === 'email-sending') {
+      <section class="payment-state email-state" role="status" aria-live="polite">
+        <div class="mail-animation"><i class="pi pi-envelope"></i><span></span></div>
+        <strong>付款完成，正在寄送驗證碼</strong>
+        <span>六位數 OTP 將寄送至 {{ maskedEmail() }}。</span>
+        <div class="processing-bar"><span></span></div>
+      </section>
+    } @else if (checkoutStage() === 'otp-verification') {
+      <section class="otp-verification" aria-live="polite">
+        <div class="otp-icon"><i class="pi pi-envelope"></i></div>
+        <div class="otp-heading">
+          <strong>驗證付款信箱</strong>
+          <span>請輸入寄送至 {{ maskedEmail() }} 的六位數驗證碼。</span>
+        </div>
+        @if (emailError()) {
+          <p class="email-error"><i class="pi pi-exclamation-circle"></i> {{ emailError() }}</p>
+        } @else {
+          <div class="otp-input-wrap">
+            <input pInputText inputmode="numeric" autocomplete="one-time-code" maxlength="6" aria-label="六位數驗證碼" placeholder="000000" [ngModel]="otpInput()" (ngModelChange)="updateOtp($event)" />
+            <span>{{ otpCountdown() }}</span>
+          </div>
+          @if (otpError()) { <small class="field-error otp-error">{{ otpError() }}</small> }
+        }
+        <button type="button" class="resend-otp" [disabled]="resendSecondsRemaining() > 0 || isProcessing()" (click)="resendOtp()">
+          @if (resendSecondsRemaining() > 0) {
+            {{ resendSecondsRemaining() }} 秒後可重新寄送
+          } @else {
+            沒有收到驗證信？重新寄送
+          }
+        </button>
+        <p class="otp-help">驗證碼五分鐘內有效。請同時檢查垃圾郵件或促銷內容分類。</p>
+      </section>
+    } @else if (checkoutStage() === 'success') {
+      <section class="payment-success" aria-live="polite">
+        <i class="pi pi-check"></i>
+        <strong>付款成功</strong>
+        <span>廣告版位申請已送出，{{ maskedEmail() }} 已完成 OTP 驗證。</span>
+        @if (currentOrder(); as order) {
+          <dl class="payment-receipt">
+            <div><dt>訂單編號</dt><dd>{{ order.orderNo }}</dd></div>
+            <div><dt>交易編號</dt><dd>{{ order.transactionId }}</dd></div>
+            <div><dt>付款方式</dt><dd>{{ order.cardBrand }} •••• {{ order.cardLastFour }}</dd></div>
+            <div><dt>授權碼</dt><dd>{{ order.authorizationCode }}</dd></div>
+            <div><dt>付款金額</dt><dd>NT$ {{ order.totalAmount }}</dd></div>
+          </dl>
+        }
+        <ol>
+          <li class="complete"><i class="pi pi-check-circle"></i><span><b>付款授權完成</b><small>付款結果已確認</small></span></li>
+          <li class="complete"><i class="pi pi-envelope"></i><span><b>付款信箱驗證完成</b><small>{{ maskedEmail() }}</small></span></li>
+          <li class="current"><i class="pi pi-clock"></i><span><b>等待素材審核</b><small>審核通過後安排刊登</small></span></li>
+        </ol>
+      </section>
+    }
+  </div>
+
+  <ng-template #footer>
+    @if (checkoutStage() === 'order-review') {
+      <p-button label="返回修改" severity="secondary" [text]="true" (onClick)="returnToApplicationForm()" />
+      <p-button label="確認訂單" icon="pi pi-arrow-right" iconPos="right" severity="warn" [loading]="isProcessing()" (onClick)="createOrder()" />
+    } @else if (checkoutStage() === 'card-entry') {
+      <p-button label="返回修改" severity="secondary" [text]="true" (onClick)="returnToApplicationForm()" />
+      <p-button [label]="'付款 NT$ ' + totalPrice" icon="pi pi-lock" severity="warn" (onClick)="submitPayment()" />
+    } @else if (checkoutStage() === 'otp-verification') {
+      <p-button label="驗證並完成申請" icon="pi pi-check" severity="warn" [disabled]="otpInput().length !== 6 || !!emailError()" (onClick)="verifyOtp()" />
+    } @else if (checkoutStage() === 'success') {
+      <p-button label="完成" icon="pi pi-check" severity="success" (onClick)="closeCheckout()" />
+    }
+  </ng-template>
+</p-dialog>

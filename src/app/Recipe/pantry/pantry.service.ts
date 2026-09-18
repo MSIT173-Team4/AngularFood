@@ -4,7 +4,11 @@ import { Observable } from 'rxjs';
 
 import { apiConfig } from '../api.config';
 import { ApiResponse, PantryItem } from '../recipe.models';
-import { AddPantryItemPayload, PantryAiDiagnosticDto } from './pantry.models';
+import {
+  AddPantryItemPayload,
+  PantryAiDiagnosticDto,
+  UpdatePantryItemPayload
+} from './pantry.models';
 
 @Injectable({ providedIn: 'root' })
 export class PantryService {
@@ -16,11 +20,11 @@ export class PantryService {
     );
   }
 
-  diagnoseImage(file: File): Observable<ApiResponse<PantryAiDiagnosticDto>> {
+  diagnoseImage(file: File): Observable<ApiResponse<PantryAiDiagnosticDto[]>> {
     const formData = new FormData();
     formData.append('file', file, file.name);
 
-    return this.http.post<ApiResponse<PantryAiDiagnosticDto>>(
+    return this.http.post<ApiResponse<PantryAiDiagnosticDto[]>>(
       apiConfig.pantry.diagnoseImage,
       formData
     );
@@ -29,6 +33,16 @@ export class PantryService {
   addPantryItem(payload: AddPantryItemPayload): Observable<ApiResponse<PantryItem>> {
     return this.http.post<ApiResponse<PantryItem>>(
       apiConfig.pantry.addItem,
+      payload
+    );
+  }
+
+  updateItem(
+    pantryId: number,
+    payload: UpdatePantryItemPayload
+  ): Observable<ApiResponse<PantryItem>> {
+    return this.http.put<ApiResponse<PantryItem>>(
+      apiConfig.pantry.update(pantryId),
       payload
     );
   }

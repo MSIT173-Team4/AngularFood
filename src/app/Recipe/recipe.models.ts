@@ -40,7 +40,10 @@ export interface RecipeDetail {
   likes: number;
   favorites: number;
   categoryName: string | null;
+  authorId?: number;
   authorName: string;
+  authorImageUrl?: string | null;
+  authorRecipeCount?: number;
   tags: string[];
   ingredients: RecipeIngredient[];
   steps: RecipeStep[];
@@ -59,7 +62,10 @@ export interface RecipeSummary {
   favorites: number;
   isAiGenerated: boolean;
   categoryName: string | null;
+  authorId?: number;
   authorName: string;
+  authorImageUrl?: string | null;
+  authorRecipeCount?: number;
   tags: string[];
 }
 
@@ -253,4 +259,50 @@ export interface IngredientLocalization {
 export interface ChefRecommendation {
   recommendation: string;
   generatedAt: string;
+}
+
+export interface RecipeIngredientAvailability {
+  ingredientId: number;
+  ingredientName: string;
+  requiredAmount: number;
+  availableAmount: number;
+  unit: string;
+  isSufficient: boolean;
+}
+
+export interface RecipeAvailability {
+  recipeId: number;
+  userId: number;
+  targetServings: number;
+  ingredients: RecipeIngredientAvailability[];
+}
+
+export interface RecipeShoppingListItem {
+  shoppingItemId: number;
+  ingredientId: number;
+  ingredientName: string;
+  quantity: number;
+  unit: string;
+  isPurchased: boolean;
+  note: string | null;
+}
+
+export interface RecipeShoppingList {
+  shoppingListId: number;
+  userId: number;
+  listName: string;
+  status: string;
+  updatedTime: string | null;
+  items: RecipeShoppingListItem[];
+}
+
+export interface SaveRecipeShoppingListPayload {
+  listName: string;
+  items: Array<{
+    ingredientId: number;
+    quantity: number;
+    unit: string;
+    isPurchased: boolean;
+    note: string | null;
+  }>;
 }
