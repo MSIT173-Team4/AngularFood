@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { apiConfig } from '../api.config';
 import {
@@ -13,12 +13,15 @@ import {
   PantryItem,
   ParsedRecipe,
   RecipeAsset,
+  RecipeAvailability,
   RecipeDetail,
   RecipeEngagement,
   RecipeMetadata,
   RecipeRecommendation,
+  RecipeShoppingList,
   RecipeSummary,
   RecipeView,
+  SaveRecipeShoppingListPayload,
   TrendingRecipe
 } from '../recipe.models';
 
@@ -26,8 +29,15 @@ import {
 export class RecipeService {
   private readonly http = inject(HttpClient);
 
-  getRecipes(): Observable<ApiResponse<RecipeSummary[]>> {
-    return this.http.get<ApiResponse<RecipeSummary[]>>(apiConfig.recipes.list);
+  getRecipes(userId?: number): Observable<ApiResponse<RecipeSummary[]>> {
+    const params = userId
+      ? new HttpParams().set('userId', userId)
+      : undefined;
+
+    return this.http.get<ApiResponse<RecipeSummary[]>>(
+      apiConfig.recipes.list,
+      { params }
+    );
   }
 
   getRecipeById(id: number): Observable<ApiResponse<RecipeDetail>> {
@@ -87,6 +97,32 @@ export class RecipeService {
     );
   }
 
+  getAvailability(
+    recipeId: number,
+    userId: number,
+    targetServings: number
+  ): Observable<ApiResponse<RecipeAvailability>> {
+    return this.http.get<ApiResponse<RecipeAvailability>>(
+      apiConfig.recipes.availability(recipeId, userId, targetServings)
+    );
+  }
+
+  getShoppingList(userId: number): Observable<ApiResponse<RecipeShoppingList>> {
+    return this.http.get<ApiResponse<RecipeShoppingList>>(
+      apiConfig.recipes.shoppingList(userId)
+    );
+  }
+
+  saveShoppingList(
+    userId: number,
+    payload: SaveRecipeShoppingListPayload
+  ): Observable<ApiResponse<RecipeShoppingList>> {
+    return this.http.put<ApiResponse<RecipeShoppingList>>(
+      apiConfig.recipes.shoppingList(userId),
+      payload
+    );
+  }
+
   createRecipe(payload: CreateRecipePayload): Observable<ApiResponse<RecipeDetail>> {
     return this.http.post<ApiResponse<RecipeDetail>>(apiConfig.recipes.create, payload);
   }
@@ -97,6 +133,16 @@ export class RecipeService {
 
     return this.http.post<ApiResponse<RecipeAsset>>(
       apiConfig.recipes.uploadCover,
+      formData
+    );
+  }
+
+  uploadStepImage(file: File): Observable<ApiResponse<RecipeAsset>> {
+    const formData = new FormData();
+    formData.append('file', file, file.name);
+
+    return this.http.post<ApiResponse<RecipeAsset>>(
+      apiConfig.recipes.uploadStepImage,
       formData
     );
   }
