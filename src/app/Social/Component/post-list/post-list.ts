@@ -53,3 +53,5 @@ export class PostListComponent implements OnInit {
     this.router.navigate(['/create-post']);
   }
 }
+
+export type { PostList };
