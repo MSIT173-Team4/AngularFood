@@ -55,6 +55,14 @@ export const routes: Routes = [
       )
   },
   {
+    path: 'shopping-list',
+    title: '料理採購清單｜友料美食生活平台',
+    loadComponent: () =>
+      import('./Recipe/shopping-list/shopping-list').then(
+        (module) => module.ShoppingList
+      )
+  },
+  {
     path: 'forum',
     title: '討論區｜友料美食生活平台',
     loadComponent: () =>

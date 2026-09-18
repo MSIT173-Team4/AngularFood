@@ -54,13 +54,26 @@
               {{ item.unit }}
             </small>
           </div>
-          <p-button
-            icon="pi pi-check"
-            ariaLabel="標記已使用"
-            severity="secondary"
-            [rounded]="true"
-            (onClick)="removeItem(item.pantryId)"
-          />
+          <div class="flex flex-wrap justify-end gap-1">
+            <p-button
+              label="編輯"
+              icon="pi pi-pencil"
+              ariaLabel="編輯庫存"
+              severity="secondary"
+              size="small"
+              [text]="true"
+              (onClick)="openEditDialog(item)"
+            />
+            <p-button
+              label="移除"
+              icon="pi pi-trash"
+              ariaLabel="移除庫存"
+              severity="danger"
+              size="small"
+              [text]="true"
+              (onClick)="requestRemoveItem(item)"
+            />
+          </div>
         </div>
       } @empty {
         <div class="empty-pantry">
@@ -78,65 +91,35 @@
       }
     </article>
 
-    <article class="recommendation">
-      @if (isLoadingRecommendations()) {
-        <div class="recommendation-state" role="status">
-          <p-progressSpinner strokeWidth="5" ariaLabel="推薦計算中" />
-          <strong>正在計算冰箱食材吻合度……</strong>
+    <article class="bg-[#fffaf4] shadow-sm">
+      <div class="mb-4 flex items-start justify-between gap-4">
+        <div>
+          <span class="section-kicker">優先處理</span>
+          <h2><i class="pi pi-bell" aria-hidden="true"></i> 即期提醒</h2>
         </div>
-      } @else if (selectedRecommendation(); as recommendation) {
-        <div class="recommendation-counter">
-          <span>清冰箱推薦 {{ selectedRecommendationIndex() + 1 }} / {{ recommendations().length }}</span>
-          @if (recommendations().length > 1) {
-            <div>
-              <button type="button" aria-label="上一道推薦" (click)="showPreviousRecommendation()">
-                <i class="pi pi-chevron-left"></i>
-              </button>
-              <button type="button" aria-label="下一道推薦" (click)="showNextRecommendation()">
-                <i class="pi pi-chevron-right"></i>
-              </button>
-            </div>
-          }
-        </div>
-        <p-tag
-          [value]="'食材吻合度 ' + recommendation.matchPercentage + '%'"
-          severity="success"
-          [rounded]="true"
-        />
-        <h2>{{ recommendation.title }}</h2>
-        <p>{{ recommendation.explanation }}</p>
-        <div class="match-details">
-          <span>
-            <i class="pi pi-check-circle" aria-hidden="true"></i>
-            已有：
-            {{ joinIngredientNames(recommendation.availableIngredients, '尚無吻合食材') }}
-          </span>
-          <span>
-            <i class="pi pi-shopping-cart" aria-hidden="true"></i>
-            缺少：
-            {{ joinIngredientNames(recommendation.missingIngredients, '無，可直接料理') }}
-          </span>
-        </div>
-        <p-button
-          label="查看推薦食譜"
-          icon="pi pi-arrow-right"
-          iconPos="right"
-          [routerLink]="['/recipes', recommendation.recipeId]"
-          severity="danger"
-          [rounded]="true"
-        />
-        @if (recommendation.missingIngredients.length) {
-          <small class="recommendation-shopping-hint">
-            進入詳情後可將缺少的 {{ recommendation.missingIngredients.length }} 種食材加入會員採購清單。
-          </small>
+        <p-tag [value]="expiringItems().length + ' 項'" severity="warn" [rounded]="true" />
+      </div>
+
+      <div class="grid max-h-[330px] gap-3 overflow-y-auto pr-1">
+        @for (item of expiringItems().slice(0, 5); track item.pantryId) {
+          <button type="button" class="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 rounded-xl border border-[#eddcd2] bg-white p-3 text-left transition hover:-translate-y-px hover:border-[#d79772]" (click)="openEditDialog(item)">
+            <span class="grid h-10 w-10 place-items-center rounded-xl bg-[#406840] font-bold text-white">{{ item.ingredientName.slice(0, 1) }}</span>
+            <span class="grid gap-1">
+              <strong>{{ item.ingredientName }}</strong>
+              <small class="text-[#806b62]">{{ item.amount }} {{ item.unit }}．{{ item.storageLocation }}</small>
+            </span>
+            <b class="whitespace-nowrap text-xs text-[#a04b12]" [class.text-red-700]="item.daysLeft < 0">
+              {{ item.daysLeft < 0 ? '已過期' : item.daysLeft === 0 ? '今天到期' : '剩 ' + item.daysLeft + ' 天' }}
+            </b>
+          </button>
+        } @empty {
+          <div class="grid min-h-60 place-content-center justify-items-center gap-2 text-center text-[#6d5a51]">
+            <i class="pi pi-check-circle text-3xl text-[#406840]" aria-hidden="true"></i>
+            <strong>目前沒有三天內到期食材</strong>
+            <span class="max-w-80 text-xs leading-6">保存狀況良好，仍建議定期確認實際外觀與氣味。</span>
+          </div>
         }
-      } @else {
-        <div class="recommendation-state">
-          <i class="pi pi-inbox" aria-hidden="true"></i>
-          <strong>目前沒有可配對的食譜</strong>
-          <span>新增冰箱食材後，系統會重新計算推薦。</span>
-        </div>
-      }
+      </div>
     </article>
   </div>
 
@@ -173,12 +156,12 @@
               <small>{{ item.amount }} {{ item.unit }}．{{ item.storageLocation }}</small>
             </div>
             <p-button
-              icon="pi pi-check"
-              ariaLabel="標記已使用"
+              icon="pi pi-pencil"
+              ariaLabel="編輯到期食材"
               severity="secondary"
               [rounded]="true"
               [text]="true"
-              (onClick)="removeItem(item.pantryId)"
+              (onClick)="openEditDialog(item)"
             />
           </div>
         } @empty {
@@ -191,7 +174,116 @@
       </div>
     </div>
   </section>
+
+  <section class="mt-6 grid min-h-[690px] overflow-hidden rounded-2xl bg-[#1b3f1b] text-white shadow-xl md:h-[420px] md:min-h-[420px] md:grid-cols-2" aria-label="智慧清冰箱推薦">
+    @if (isLoadingRecommendations()) {
+      <div class="recommendation-state" role="status">
+        <p-progressSpinner strokeWidth="5" ariaLabel="推薦計算中" />
+        <strong>正在計算冰箱食材吻合度……</strong>
+      </div>
+    } @else if (selectedRecommendation(); as recommendation) {
+      <div class="relative h-[270px] overflow-hidden bg-[#315331] md:h-[420px]">
+        @if (recommendation.coverImageUrl) {
+          <img class="h-full w-full object-cover" [src]="recommendation.coverImageUrl" [alt]="recommendation.title + '食譜封面'" />
+        } @else {
+          <div class="grid h-full w-full place-items-center text-5xl text-[#d8ead4]">
+            <i class="pi pi-image" aria-hidden="true"></i>
+          </div>
+        }
+        <p-tag
+          class="absolute left-4 top-4 z-10"
+          [value]="'食材吻合度 ' + recommendation.matchPercentage + '%'"
+          severity="success"
+          [rounded]="true"
+        />
+      </div>
+      <div class="flex min-h-[420px] flex-col justify-center p-6 md:p-10">
+        <div class="recommendation-counter">
+          <span>清冰箱推薦 {{ selectedRecommendationIndex() + 1 }} / {{ recommendations().length }}</span>
+          @if (recommendations().length > 1) {
+            <div>
+              <button type="button" aria-label="上一道推薦" (click)="showPreviousRecommendation()">
+                <i class="pi pi-chevron-left"></i>
+              </button>
+              <button type="button" aria-label="下一道推薦" (click)="showNextRecommendation()">
+                <i class="pi pi-chevron-right"></i>
+              </button>
+            </div>
+          }
+        </div>
+        <span class="section-kicker">依即期庫存推薦</span>
+        <h2 class="my-2 line-clamp-2 min-h-[2.7em] text-3xl leading-[1.35] md:text-4xl">{{ recommendation.title }}</h2>
+        <p class="line-clamp-2 min-h-[3.4em] leading-7 text-[#e6f5e3]">{{ recommendation.explanation }}</p>
+        <div class="match-details min-h-[6.1rem]">
+          <span class="overflow-hidden text-ellipsis whitespace-nowrap"><i class="pi pi-check-circle"></i> 已有：{{ joinIngredientNames(recommendation.availableIngredients, '尚無吻合食材') }}</span>
+          <span class="overflow-hidden text-ellipsis whitespace-nowrap"><i class="pi pi-shopping-cart"></i> 缺少：{{ joinIngredientNames(recommendation.missingIngredients, '無，可直接料理') }}</span>
+        </div>
+        <p-button
+          label="查看推薦食譜"
+          icon="pi pi-arrow-right"
+          iconPos="right"
+          [routerLink]="['/recipes', recommendation.recipeId]"
+          severity="danger"
+          [rounded]="true"
+        />
+      </div>
+    } @else {
+      <div class="recommendation-state md:col-span-2">
+        <i class="pi pi-inbox" aria-hidden="true"></i>
+        <strong>目前沒有可配對的食譜</strong>
+        <span>新增冰箱食材後，系統會重新計算推薦。</span>
+      </div>
+    }
+  </section>
 </section>
+
+<p-dialog
+  header="編輯冰箱庫存"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: 'min(92vw, 560px)' }"
+  [visible]="editDialogVisible()"
+  (visibleChange)="editDialogVisible.set($event)"
+>
+  @if (editingPantryItem(); as item) {
+    @if (editForm(); as form) {
+      <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div class="flex items-center gap-3 rounded-xl bg-[#edf5ea] p-3 md:col-span-2">
+          <span class="grid h-10 w-10 place-items-center rounded-xl bg-[#406840] font-bold text-white">{{ item.ingredientName.slice(0, 1) }}</span>
+          <div class="grid gap-1"><small class="text-xs font-bold text-[#76564b]">標準食材名稱</small><strong>{{ item.ingredientName }}</strong></div>
+        </div>
+        <label class="grid gap-1"><span>數量</span><p-inputNumber class="w-full" [ngModel]="form.amount" (ngModelChange)="updateEditForm('amount', $event ?? 0)" [min]="0.01" [max]="99999" [maxFractionDigits]="2" /></label>
+        <label class="grid gap-1"><span>單位</span><p-select class="w-full" [options]="unitOptions" [ngModel]="form.unit" (ngModelChange)="updateEditForm('unit', $event)" appendTo="body" /></label>
+        <label class="grid gap-1"><span>存放溫層</span><p-select class="w-full" [options]="storageLocations" [ngModel]="form.storageLocation" (ngModelChange)="updateEditForm('storageLocation', $event)" appendTo="body" /></label>
+        <label class="grid gap-1"><span>到期日</span><input class="w-full" pInputText type="date" [ngModel]="form.expirationDate" (ngModelChange)="updateEditForm('expirationDate', $event)" /></label>
+        <label class="grid gap-1 md:col-span-2"><span>備註</span><input class="w-full" pInputText maxlength="150" [ngModel]="form.note" (ngModelChange)="updateEditForm('note', $event)" /></label>
+      </div>
+    }
+  }
+  <ng-template #footer>
+    <p-button label="取消" severity="secondary" [text]="true" (onClick)="editDialogVisible.set(false)" />
+    <p-button label="儲存變更" icon="pi pi-save" severity="success" [loading]="isUpdating()" (onClick)="savePantryEdit()" />
+  </ng-template>
+</p-dialog>
+
+<p-dialog
+  header="移除冰箱食材"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: 'min(92vw, 440px)' }"
+  [visible]="removeDialogVisible()"
+  (visibleChange)="removeDialogVisible.set($event)"
+>
+  @if (pendingRemovalItem(); as item) {
+    <p class="remove-confirmation">確定要從冰箱移除「{{ item.ingredientName }}」嗎？此動作不代表已完成料理。</p>
+  }
+  <ng-template #footer>
+    <p-button label="保留庫存" severity="secondary" [text]="true" (onClick)="removeDialogVisible.set(false)" />
+    <p-button label="確認移除" icon="pi pi-trash" severity="danger" (onClick)="confirmRemoveItem()" />
+  </ng-template>
+</p-dialog>
 
 <p-dialog
   header="拍得清楚，AI 才能判斷得更完整"

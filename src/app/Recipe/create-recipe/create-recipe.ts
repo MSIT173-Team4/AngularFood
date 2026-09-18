@@ -31,6 +31,29 @@ import {
 } from '../recipe.models';
 import { RecipeService } from '../service/recipe.service';
 
+interface IngredientEditorRow {
+  ingredientId: number | null;
+  name: string;
+  amount: number;
+  unit: string;
+}
+
+interface RecipeEditorDraft {
+  title: string;
+  description: string;
+  servings: number;
+  cookingMinutes: number;
+  totalCalories: number;
+  ingredients: IngredientEditorRow[];
+  instructions: string;
+  stepImageUrls: Array<string | null>;
+  youTubeUrl: string;
+  categoryId: number | null;
+  selectedTagIds: number[];
+  coverImageUrl: string | null;
+  savedAt: string;
+}
+
 @Component({
   selector: 'app-create-recipe',
   imports: [
@@ -51,6 +74,7 @@ import { RecipeService } from '../service/recipe.service';
   styleUrl: './create-recipe.css'
 })
 export class CreateRecipe implements OnInit, OnDestroy {
+  private static readonly DraftStorageKey = `friendlyfood.recipe-draft.${recipeDemoConfig.userId}`;
   private readonly recipeService = inject(RecipeService);
   private readonly messageService = inject(MessageService);
   private readonly router = inject(Router);
@@ -62,7 +86,9 @@ export class CreateRecipe implements OnInit, OnDestroy {
   readonly servings = signal(2);
   readonly cookingMinutes = signal(0);
   readonly totalCalories = signal(0);
-  readonly ingredientDraft = signal('');
+  readonly ingredientRows = signal<IngredientEditorRow[]>([
+    { ingredientId: null, name: '', amount: 1, unit: '顆' }
+  ]);
   readonly instructionDraft = signal('');
   readonly stepImageUrls = signal<Array<string | null>>([]);
   readonly stepPreviewUrls = signal<Record<number, string>>({});
@@ -81,10 +107,14 @@ export class CreateRecipe implements OnInit, OnDestroy {
   readonly isAiGenerated = signal(false);
   readonly statusMessage = signal('');
   readonly createdRecipeId = signal<number | null>(null);
+  readonly unitOptions = [
+    '份', '個', '顆', '根', '把', '束', '支', '尾', '塊', '片', '包', '盒',
+    '瓶', '罐', '公克', '公斤', '毫升', '公升', '大匙', '小匙'
+  ];
 
   readonly canSubmit = computed(
     () => this.title().trim().length > 0
-      && this.ingredientDraft().trim().length > 0
+      && this.ingredientRows().some((ingredient) => ingredient.name.trim().length > 0)
       && this.instructionDraft().trim().length > 0
       && this.categoryId() !== null
       && !this.isSaving()
@@ -100,6 +130,7 @@ export class CreateRecipe implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadMetadata();
+    this.restoreDraft();
   }
 
   ngOnDestroy(): void {
@@ -203,7 +234,9 @@ export class CreateRecipe implements OnInit, OnDestroy {
       this.title(),
       this.description(),
       '食材：',
-      this.ingredientDraft(),
+      ...this.ingredientRows()
+        .filter((ingredient) => ingredient.name.trim())
+        .map((ingredient) => `${ingredient.name} ${ingredient.amount} ${ingredient.unit}`),
       '步驟：',
       this.instructionDraft()
     ].join('\n');
@@ -218,11 +251,12 @@ export class CreateRecipe implements OnInit, OnDestroy {
         }
 
         this.title.set(response.data.recipeTitle || this.title());
-        this.ingredientDraft.set(
-          response.data.ingredients
-            .map((item) => `${item.name} ${item.amount} ${item.unit}`)
-            .join('\n')
-        );
+        this.ingredientRows.set(response.data.ingredients.map((item) => ({
+          ingredientId: null,
+          name: item.name,
+          amount: item.amount,
+          unit: this.toSupportedUnit(item.unit)
+        })));
         this.instructionDraft.set(
           response.data.steps
             .map((step) => `${step.stepNumber}. ${step.description}`)
@@ -241,7 +275,7 @@ export class CreateRecipe implements OnInit, OnDestroy {
   }
 
   normalizeIngredients(): void {
-    const ingredients = this.parseIngredientDraft();
+    const ingredients = this.parseIngredientRows();
     if (!ingredients.length) {
       this.showError('請先輸入至少一項食材。');
       return;
@@ -257,15 +291,25 @@ export class CreateRecipe implements OnInit, OnDestroy {
     ).subscribe({
       next: (responses) => {
         this.isNormalizing.set(false);
-        const normalizedLines = responses.map((response, index) => {
+        const normalizedRows = responses.map((response, index): IngredientEditorRow => {
           if (!response.success || !response.data) {
             const original = ingredients[index];
-            return `${original.name} ${original.displayAmount}`;
+            return {
+              ingredientId: original.ingredientId,
+              name: original.name,
+              amount: original.baseAmount ?? 1,
+              unit: original.standardUnit ?? '份'
+            };
           }
 
-          return `${response.data.standardIngredientName} ${response.data.displayAmount}`;
+          return {
+            ingredientId: response.data.ingredientId,
+            name: response.data.standardIngredientName,
+            amount: response.data.standardAmount,
+            unit: this.toSupportedUnit(response.data.standardUnit)
+          };
         });
-        this.ingredientDraft.set(normalizedLines.join('\n'));
+        this.ingredientRows.set(normalizedRows);
         this.statusMessage.set('食材名稱與可換算單位已完成標準化。');
       },
       error: (error: HttpErrorResponse) => {
@@ -277,7 +321,7 @@ export class CreateRecipe implements OnInit, OnDestroy {
 
   submitRecipe(): void {
     const categoryId = this.categoryId();
-    const ingredients = this.parseIngredientDraft();
+    const ingredients = this.parseIngredientRows();
     const steps = this.parseInstructionDraft();
 
     if (!categoryId || !ingredients.length || !steps.length || !this.title().trim()) {
@@ -312,6 +356,7 @@ export class CreateRecipe implements OnInit, OnDestroy {
         }
 
         this.createdRecipeId.set(response.data.recipeId);
+        localStorage.removeItem(CreateRecipe.DraftStorageKey);
         this.statusMessage.set(`「${response.data.title}」已成功寫入 FriendlyFoodDb。`);
         this.messageService.add({
           severity: 'success',
@@ -333,6 +378,60 @@ export class CreateRecipe implements OnInit, OnDestroy {
     }
   }
 
+  addIngredientRow(): void {
+    this.ingredientRows.update((rows) => [
+      ...rows,
+      { ingredientId: null, name: '', amount: 1, unit: '顆' }
+    ]);
+  }
+
+  updateIngredientRow<K extends keyof IngredientEditorRow>(
+    index: number,
+    field: K,
+    value: IngredientEditorRow[K]
+  ): void {
+    this.ingredientRows.update((rows) => rows.map((row, rowIndex) =>
+      rowIndex === index
+        ? { ...row, [field]: value, ingredientId: field === 'name' ? null : row.ingredientId }
+        : row
+    ));
+  }
+
+  removeIngredientRow(index: number): void {
+    this.ingredientRows.update((rows) => {
+      const remainingRows = rows.filter((_, rowIndex) => rowIndex !== index);
+      return remainingRows.length
+        ? remainingRows
+        : [{ ingredientId: null, name: '', amount: 1, unit: '顆' }];
+    });
+  }
+
+  saveDraft(): void {
+    const draft: RecipeEditorDraft = {
+      title: this.title(),
+      description: this.description(),
+      servings: this.servings(),
+      cookingMinutes: this.cookingMinutes(),
+      totalCalories: this.totalCalories(),
+      ingredients: this.ingredientRows(),
+      instructions: this.instructionDraft(),
+      stepImageUrls: this.stepImageUrls(),
+      youTubeUrl: this.youTubeUrl(),
+      categoryId: this.categoryId(),
+      selectedTagIds: this.selectedTagIds(),
+      coverImageUrl: this.coverImageUrl(),
+      savedAt: new Date().toISOString()
+    };
+
+    localStorage.setItem(CreateRecipe.DraftStorageKey, JSON.stringify(draft));
+    this.statusMessage.set('草稿已保存在此瀏覽器，下次回到本頁會自動載入。');
+    this.messageService.add({
+      severity: 'success',
+      summary: '草稿已儲存',
+      detail: '尚未公開，也不會出現在食譜首頁。'
+    });
+  }
+
   private loadMetadata(): void {
     this.recipeService.getMetadata().subscribe({
       next: (response) => {
@@ -343,7 +442,11 @@ export class CreateRecipe implements OnInit, OnDestroy {
 
         this.categories.set(response.data.categories);
         this.tags.set(response.data.tags);
-        this.categoryId.set(null);
+        const currentCategoryId = this.categoryId();
+        if (currentCategoryId !== null &&
+            !response.data.categories.some((category) => category.categoryId === currentCategoryId)) {
+          this.categoryId.set(null);
+        }
       },
       error: (error: HttpErrorResponse) => {
         this.showError(this.readApiError(error, '無法載入食譜分類與標籤。'));
@@ -351,27 +454,58 @@ export class CreateRecipe implements OnInit, OnDestroy {
     });
   }
 
-  private parseIngredientDraft(): RecipeIngredientInput[] {
-    return this.ingredientDraft()
-      .split(/\r?\n/)
-      .map((line) => line.trim())
-      .filter(Boolean)
-      .map((line, index) => {
-        const match = line.match(/^(.+?)\s+(\d+(?:\.\d+)?)\s*(\S+)?$/);
-        const name = match?.[1]?.trim() || line;
-        const amount = match ? Number(match[2]) : 1;
-        const unit = match?.[3]?.trim() || '份';
+  private parseIngredientRows(): RecipeIngredientInput[] {
+    return this.ingredientRows()
+      .filter((ingredient) => ingredient.name.trim() && ingredient.amount > 0)
+      .map((ingredient, index) => ({
+        ingredientId: ingredient.ingredientId,
+        name: ingredient.name.trim(),
+        displayAmount: `${ingredient.amount} ${ingredient.unit}`,
+        baseAmount: ingredient.amount,
+        standardUnit: ingredient.unit,
+        isMain: index < 3,
+        sortOrder: index + 1
+      }));
+  }
 
-        return {
-          ingredientId: null,
-          name,
-          displayAmount: `${amount} ${unit}`,
-          baseAmount: amount,
-          standardUnit: unit,
-          isMain: index < 3,
-          sortOrder: index + 1
-        };
-      });
+  private restoreDraft(): void {
+    const storedDraft = localStorage.getItem(CreateRecipe.DraftStorageKey);
+    if (!storedDraft) {
+      return;
+    }
+
+    try {
+      const draft = JSON.parse(storedDraft) as RecipeEditorDraft;
+      this.title.set(draft.title ?? '');
+      this.description.set(draft.description ?? '');
+      this.servings.set(draft.servings ?? 2);
+      this.cookingMinutes.set(draft.cookingMinutes ?? 0);
+      this.totalCalories.set(draft.totalCalories ?? 0);
+      this.ingredientRows.set(draft.ingredients?.length
+        ? draft.ingredients
+        : [{ ingredientId: null, name: '', amount: 1, unit: '顆' }]);
+      this.instructionDraft.set(draft.instructions ?? '');
+      this.stepImageUrls.set(draft.stepImageUrls ?? []);
+      this.youTubeUrl.set(draft.youTubeUrl ?? '');
+      this.categoryId.set(draft.categoryId ?? null);
+      this.selectedTagIds.set(draft.selectedTagIds ?? []);
+      this.coverImageUrl.set(draft.coverImageUrl ?? null);
+      this.statusMessage.set('已載入上次保存在此瀏覽器的食譜草稿。');
+    } catch {
+      localStorage.removeItem(CreateRecipe.DraftStorageKey);
+    }
+  }
+
+  private toSupportedUnit(unit: string): string {
+    const aliases: Record<string, string> = {
+      g: '公克',
+      kg: '公斤',
+      ml: '毫升',
+      l: '公升',
+      匙: '大匙'
+    };
+    const normalizedUnit = aliases[unit.trim().toLocaleLowerCase()] ?? unit.trim();
+    return this.unitOptions.includes(normalizedUnit) ? normalizedUnit : '份';
   }
 
   private parseInstructionDraft(): RecipeStepInput[] {

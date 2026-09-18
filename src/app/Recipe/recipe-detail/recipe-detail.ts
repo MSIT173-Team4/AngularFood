@@ -1,5 +1,15 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  computed,
+  inject,
+  signal
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -45,11 +55,15 @@ interface RecipeAttribution {
   templateUrl: './recipe-detail.html',
   styleUrl: './recipe-detail.css'
 })
-export class RecipeDetail implements OnInit {
+export class RecipeDetail implements OnInit, AfterViewInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly recipeService = inject(RecipeService);
   private readonly messageService = inject(MessageService);
   private readonly sanitizer = inject(DomSanitizer);
+  private nutritionObserver: IntersectionObserver | null = null;
+
+  @ViewChild('nutritionPanel')
+  private nutritionPanel?: ElementRef<HTMLElement>;
 
   readonly recipe = signal<RecipeDetailModel | null>(null);
   readonly dataNotice = signal('');
@@ -66,6 +80,7 @@ export class RecipeDetail implements OnInit {
   readonly shoppingDraft = signal<RecipeShoppingListItem[]>([]);
   readonly shoppingDialogVisible = signal(false);
   readonly isSavingShoppingList = signal(false);
+  readonly nutritionVisible = signal(false);
 
   readonly recipeAttribution = computed<RecipeAttribution | null>(() => {
     const attributionText = this.recipe()?.aiPrepTips?.trim();
@@ -136,6 +151,40 @@ export class RecipeDetail implements OnInit {
     this.shoppingList()?.items.filter((item) => !item.isPurchased).length ?? 0
   );
 
+  readonly nutritionProfile = computed(() => {
+    const recipe = this.recipe();
+    if (!recipe) {
+      return { carbohydrates: 45, protein: 25, fat: 30, caloriesPerServing: 0 };
+    }
+
+    const labels = [recipe.categoryName ?? '', ...recipe.tags].join('');
+    let carbohydrates = 45;
+    let protein = 25;
+    let fat = 30;
+    if (/高蛋白|健身|雞胸|魚/.test(labels)) {
+      carbohydrates = 35;
+      protein = 40;
+      fat = 25;
+    } else if (/低醣|低碳|生酮/.test(labels)) {
+      carbohydrates = 20;
+      protein = 35;
+      fat = 45;
+    }
+
+    return {
+      carbohydrates,
+      protein,
+      fat,
+      caloriesPerServing: Math.round(recipe.totalCalories / Math.max(recipe.defaultServings, 1))
+    };
+  });
+
+  readonly nutritionGradient = computed(() => {
+    const profile = this.nutritionProfile();
+    const proteinEnd = profile.carbohydrates + profile.protein;
+    return `conic-gradient(#5b8def 0 ${profile.carbohydrates}%, #e4a000 ${profile.carbohydrates}% ${proteinEnd}%, #d94c4c ${proteinEnd}% 100%)`;
+  });
+
   ngOnInit(): void {
     const pageData = this.route.snapshot.data['pageData'] as RecipeDetailPageData;
     this.recipe.set(pageData.recipe);
@@ -150,6 +199,32 @@ export class RecipeDetail implements OnInit {
       this.loadAvailability();
       this.loadShoppingList();
     }
+
+    if (typeof window !== 'undefined') {
+      window.requestAnimationFrame(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      });
+    }
+  }
+
+  ngAfterViewInit(): void {
+    const nutritionElement = this.nutritionPanel?.nativeElement;
+    if (!nutritionElement || typeof IntersectionObserver === 'undefined') {
+      this.nutritionVisible.set(true);
+      return;
+    }
+
+    this.nutritionObserver = new IntersectionObserver(
+      ([entry]) => {
+        this.nutritionVisible.set(entry.isIntersecting);
+      },
+      { threshold: 0.35, rootMargin: '0px 0px -8% 0px' }
+    );
+    this.nutritionObserver.observe(nutritionElement);
+  }
+
+  ngOnDestroy(): void {
+    this.nutritionObserver?.disconnect();
   }
 
   decreaseServings(): void {

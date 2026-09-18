@@ -16,7 +16,8 @@ import { forkJoin } from 'rxjs';
 
 import {
   AddPantryItemPayload,
-  PantryAiDiagnosticDto
+  PantryAiDiagnosticDto,
+  UpdatePantryItemPayload
 } from '../pantry/pantry.models';
 import { PantryService } from '../pantry/pantry.service';
 import { recipeDemoConfig } from '../api.config';
@@ -57,10 +58,13 @@ export class SmartPantry implements OnInit, OnDestroy {
   readonly dataNotice = signal('');
   readonly dialogVisible = signal(false);
   readonly guideVisible = signal(false);
+  readonly editDialogVisible = signal(false);
+  readonly removeDialogVisible = signal(false);
   readonly isAnalyzing = signal(false);
   readonly isManualEntry = signal(false);
   readonly analysisError = signal('');
   readonly isSaving = signal(false);
+  readonly isUpdating = signal(false);
   readonly previewUrl = signal<string | null>(null);
   readonly diagnostics = signal<PantryAiDiagnosticDto[]>([]);
   readonly recommendations = signal<RecipeRecommendation[]>([]);
@@ -68,6 +72,9 @@ export class SmartPantry implements OnInit, OnDestroy {
   readonly isLoadingRecommendations = signal(false);
   readonly selectedCalendarDate = signal<Date>(new Date());
   readonly pantryForms = signal<AddPantryItemPayload[]>([]);
+  readonly editingPantryItem = signal<PantryItem | null>(null);
+  readonly pendingRemovalItem = signal<PantryItem | null>(null);
+  readonly editForm = signal<UpdatePantryItemPayload | null>(null);
   readonly validationErrors = signal<ValidationErrors>({});
   readonly storageLocations: AddPantryItemPayload['storageLocation'][] = [
     '冷藏',
@@ -101,6 +108,12 @@ export class SmartPantry implements OnInit, OnDestroy {
       .filter((item) => item.expirationDate === selectedDate)
       .sort((left, right) => left.ingredientName.localeCompare(right.ingredientName, 'zh-TW'));
   });
+
+  readonly expiringItems = computed(() =>
+    [...this.pantryItems()]
+      .filter((item) => item.daysLeft <= 3)
+      .sort((left, right) => left.daysLeft - right.daysLeft)
+  );
 
   readonly selectedRecommendation = computed(() =>
     this.recommendations()[this.selectedRecommendationIndex()] ?? null
@@ -173,6 +186,79 @@ export class SmartPantry implements OnInit, OnDestroy {
     if (value) {
       this.selectedCalendarDate.set(value);
     }
+  }
+
+  openEditDialog(item: PantryItem): void {
+    this.editingPantryItem.set(item);
+    this.editForm.set({
+      userId: recipeDemoConfig.userId,
+      amount: item.amount,
+      unit: item.unit,
+      storageLocation: this.toStorageLocation(item.storageLocation),
+      expirationDate: item.expirationDate ?? this.toLocalDateInput(new Date()),
+      note: item.note ?? ''
+    });
+    this.editDialogVisible.set(true);
+  }
+
+  updateEditForm<K extends keyof UpdatePantryItemPayload>(
+    field: K,
+    value: UpdatePantryItemPayload[K]
+  ): void {
+    this.editForm.update((form) => form ? { ...form, [field]: value } : form);
+  }
+
+  savePantryEdit(): void {
+    const item = this.editingPantryItem();
+    const payload = this.editForm();
+    if (!item || !payload || payload.amount <= 0 || !this.unitOptions.includes(payload.unit)) {
+      this.showError('請確認數量大於零，並從選單選擇單位。');
+      return;
+    }
+
+    this.isUpdating.set(true);
+    this.pantryService.updateItem(item.pantryId, payload).subscribe({
+      next: (response) => {
+        this.isUpdating.set(false);
+        if (!response.success || !response.data) {
+          this.showError(response.message);
+          return;
+        }
+
+        this.pantryItems.update((items) => items.map((current) =>
+          current.pantryId === response.data!.pantryId ? response.data! : current
+        ));
+        this.editDialogVisible.set(false);
+        this.editingPantryItem.set(null);
+        this.editForm.set(null);
+        this.messageService.add({
+          severity: 'success',
+          summary: '庫存已更新',
+          detail: response.message
+        });
+        this.loadRecommendations();
+      },
+      error: (error: HttpErrorResponse) => {
+        this.isUpdating.set(false);
+        this.showError(this.readApiError(error, '更新冰箱食材失敗，請稍後再試。'));
+      }
+    });
+  }
+
+  requestRemoveItem(item: PantryItem): void {
+    this.pendingRemovalItem.set(item);
+    this.removeDialogVisible.set(true);
+  }
+
+  confirmRemoveItem(): void {
+    const item = this.pendingRemovalItem();
+    if (!item) {
+      return;
+    }
+
+    this.removeDialogVisible.set(false);
+    this.pendingRemovalItem.set(null);
+    this.removeItem(item.pantryId);
   }
 
   formatExpirationDate(value: string | null): string {
@@ -510,6 +596,12 @@ export class SmartPantry implements OnInit, OnDestroy {
       expirationDate: this.toLocalDateInput(defaultExpirationDate),
       note: ''
     };
+  }
+
+  private toStorageLocation(value: string): UpdatePantryItemPayload['storageLocation'] {
+    return this.storageLocations.includes(value as UpdatePantryItemPayload['storageLocation'])
+      ? value as UpdatePantryItemPayload['storageLocation']
+      : '冷藏';
   }
 
   toLocalDateInput(date: Date): string {

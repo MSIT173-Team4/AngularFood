@@ -16,3 +16,12 @@ export interface AddPantryItemPayload {
   expirationDate: string;
   note: string;
 }
+
+export interface UpdatePantryItemPayload {
+  userId: number;
+  amount: number;
+  unit: string;
+  storageLocation: '冷藏' | '冷凍' | '常溫';
+  expirationDate: string;
+  note: string;
+}

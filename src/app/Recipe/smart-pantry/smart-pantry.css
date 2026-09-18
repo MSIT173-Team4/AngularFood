@@ -112,22 +112,6 @@
   font-weight: 700;
 }
 
-.recommendation {
-  color: white;
-  background: linear-gradient(145deg, #406840, #1b3f1b) !important;
-  box-shadow: 0 16px 40px rgba(32, 75, 33, .18);
-}
-
-.recommendation h2 {
-  margin-top: 1.5rem;
-  font-size: clamp(1.8rem, 3vw, 2.4rem);
-}
-
-.recommendation p {
-  color: #e6f5e3;
-  line-height: 1.7;
-}
-
 .match-details {
   display: grid;
   gap: .65rem;
@@ -148,6 +132,7 @@
   white-space: nowrap;
   border: 0;
 }
+
 
 .recommendation-counter {
   display: flex;
@@ -175,13 +160,6 @@
   color: #fff;
   background: rgba(255, 255, 255, .08);
   cursor: pointer;
-}
-
-.recommendation-shopping-hint {
-  display: block;
-  margin-top: 1rem;
-  color: #cde5c9;
-  line-height: 1.55;
 }
 
 .empty-pantry {
@@ -232,6 +210,12 @@
   border-radius: 1.25rem;
   background: #fff;
   box-shadow: 0 12px 32px rgba(58, 36, 28, .06);
+}
+
+.remove-confirmation {
+  margin: 0;
+  color: #594139;
+  line-height: 1.7;
 }
 
 .calendar-heading {
