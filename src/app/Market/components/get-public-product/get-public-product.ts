@@ -176,10 +176,8 @@ export class GetPublicProduct implements OnInit, OnDestroy {
 
   // 點分類時篩選商品
   onCategorySelect(categoryNo: string | null, topId: number): void {
-    console.log('onCategorySelect 被呼叫', categoryNo, topId); //除錯
     this.selectedCategoryNo = categoryNo;
     this.activeCategoryTopId = topId;   // 記住目前點的是哪個頂層，讓「全部商品」的 active 判斷正確
-    console.log('更新後的值', this.selectedCategoryNo, this.activeCategoryTopId); // 除錯
     this.currentPage = 1;
     this.loadProducts();
   }
