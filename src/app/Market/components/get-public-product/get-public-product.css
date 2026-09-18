@@ -1,4 +1,4 @@
-/* ── 色彩變數（對應設計稿的 Tailwind token） ── */
+/* ── 色彩變數 ── */
 :host {
   --primary: #832600;
   --primary-container: #ab3500;
@@ -45,18 +45,58 @@
 @media (max-width: 1024px) { .main-layout { grid-template-columns: 1fr; } .sidebar { display: none; } }
 
 /* ── Sidebar ── */
+.sidebar { display: flex; flex-direction: column; gap: 1rem; }
 .sidebar-card { background: var(--surface-container-lowest); border-radius: 1rem; padding: 1.25rem; box-shadow: 0 1px 4px rgba(38,24,20,.06); }
 .sidebar-header { font-size: 18px; font-weight: 600; color: var(--on-surface); margin-bottom: 0.75rem; }
 .category-nav { display: flex; flex-direction: column; gap: 0.25rem; }
-.category-link { display: flex; justify-content: space-between; padding: 0.4rem 0.6rem; border-radius: 0.5rem; font-size: 14px; color: var(--on-surface-variant); text-decoration: none; transition: background .15s; }
-.category-link:hover { background: var(--surface-container-low); }
-.category-link.active { background: var(--primary); color: #fff; font-weight: 600; }
+
+.category-link {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 14px;
+  color: var(--on-surface-variant);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background .15s;
+}
+
+.category-link:hover,
+.category-link:focus {
+  background: var(--surface-container-low)!important;
+}
+
+.category-link.active {
+  background: var(--primary);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.show-more-btn {
+  width: 100%;
+  padding: 0.4rem 0.75rem;
+  background: transparent;
+  border: none;
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  border-radius: 0.5rem;
+  transition: background .15s;
+  margin-top: 0.25rem;
+}
+
+.show-more-btn:hover {
+  background: var(--surface-container-low);
+}
 
 /* ── 商品區 ── */
 .product-area { display: flex; flex-direction: column; gap: 1.5rem; }
 .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.25rem; }
 .loading-state, .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4rem; gap: 1rem; background: var(--surface-container-lowest); border-radius: 1rem; color: var(--on-surface-variant); text-align: center; }
-.product-grid app-product-card {
-  display: block;  /* 確保子 Component 的根元素是 block，才能被 Grid 正確分欄 */
-  min-width: 0;    /* 防止 Grid 子項目因為內容太寬而撐破欄位 */
-}
+.product-grid app-product-card { display: block; min-width: 0; }

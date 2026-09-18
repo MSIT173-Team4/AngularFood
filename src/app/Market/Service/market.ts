@@ -51,6 +51,13 @@ export class MarketService {
     return this.http.get<MarketProduct[]>(
       `${this.baseUrl}/public?page=${page}`
     );
+
+  }
+
+  getCategories(): Observable<MarketCategory[]> {
+    return this.http.get<MarketCategory[]>(
+      'https://localhost:7164/api/MarketCategory'
+    );
   }
 
   // 搜尋 + 篩選（接 GET /api/MarketProduct/search）
@@ -74,4 +81,12 @@ export class MarketService {
   createProduct(formData: FormData): Observable<any> {
     return this.http.post(`${this.baseUrl}`, formData);
   }
+}
+
+export interface MarketCategory {
+  categoryId: number;
+  categoryNo: string;
+  categoryName: string;
+  parentCategoryId: number | null;
+  children: MarketCategory[];
 }

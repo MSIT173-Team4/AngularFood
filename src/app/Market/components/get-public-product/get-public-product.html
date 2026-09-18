@@ -82,17 +82,48 @@
     <div class="main-layout">
 
       <!-- 左側分類 Sidebar（目前靜態，之後可接 API） -->
+      <p>selectedCategoryNo: {{ selectedCategoryNo }} | activeCategoryTopId: {{ activeCategoryTopId }}</p>
       <aside class="sidebar">
+        @for (top of categories; track top.categoryId) {
         <div class="sidebar-card">
-          <div class="sidebar-header">
-            <span>食品類別</span>
-          </div>
+
+          <div class="sidebar-header">{{ top.categoryName }}</div>
+
           <nav class="category-nav">
-            <a href="#" class="category-link active">調味・乾貨<span>86</span></a>
-            <a href="#" class="category-link">食材・生鮮<span>142</span></a>
-            <a href="#" class="category-link">烘焙手作原料<span>48</span></a>
+
+            <div class="category-link" [class.active]="!selectedCategoryNo && activeCategoryTopId === top.categoryId"
+              (click)="onCategorySelect(null, top.categoryId)">
+              全部商品
+            </div>
+
+            @for (child of top.children.slice(0, 3); track child.categoryId) {
+            <div class="category-link" [class.active]="selectedCategoryNo === child.categoryNo"
+              (click)="onCategorySelect(child.categoryNo, top.categoryId)">
+              {{ child.categoryName }}
+            </div>
+            }
+
+            @if (top.children.length > 3) {
+            @if (expandedCategoryId === top.categoryId) {
+            @for (child of top.children.slice(3); track child.categoryId) {
+            <div class="category-link" [class.active]="selectedCategoryNo === child.categoryNo"
+              (click)="onCategorySelect(child.categoryNo, top.categoryId)">
+              {{ child.categoryName }}
+            </div>
+            }
+            }
+
+            <button class="show-more-btn" (click)="toggleExpand(top.categoryId)">
+              {{ expandedCategoryId === top.categoryId ? '收起品項' : '顯示更多品項 (' + (top.children.length - 3) + ')' }}
+              <i class="pi" [class.pi-chevron-down]="expandedCategoryId !== top.categoryId"
+                [class.pi-chevron-up]="expandedCategoryId === top.categoryId">
+              </i>
+            </button>
+            }
+
           </nav>
         </div>
+        }
       </aside>
 
       <!-- 右側商品區 -->

@@ -11,7 +11,7 @@ import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 
-import { MarketService, MarketProduct, ProductSearchParams } from '../../Service/market';
+import { MarketService, MarketProduct, ProductSearchParams, MarketCategory } from '../../Service/market';
 
 @Component({
   selector: 'app-get-public-product',
@@ -35,6 +35,12 @@ export class GetPublicProduct implements OnInit, OnDestroy {
   // ── 商品資料 ──────────────────────────────────────────
   products: MarketProduct[] = [];
   isLoading = false;
+
+  //分類選單
+  categories: MarketCategory[] = [];
+  selectedCategoryNo: string | null | undefined = null;
+  expandedCategoryId: number | null = null;
+  activeCategoryTopId: number | null = null;
 
   // ── 搜尋 & 篩選狀態 ───────────────────────────────────
   keyword = '';
@@ -66,6 +72,7 @@ export class GetPublicProduct implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     // 5. 頁面一進來就先打一次 API 拿商品
+    this.loadCategories();//下載分類
     this.loadProducts();
   }
 
@@ -81,6 +88,7 @@ export class GetPublicProduct implements OnInit, OnDestroy {
 
     const params: ProductSearchParams = {
       keyword: this.keyword || undefined,
+      categoryNo: this.selectedCategoryNo ?? undefined,
       minPrice: this.minPrice ?? undefined,
       maxPrice: this.maxPrice ?? undefined,
       sortBy: this.selectedSortBy,
@@ -153,5 +161,31 @@ export class GetPublicProduct implements OnInit, OnDestroy {
       detail: `「${product.productName}」已加入收藏清單`,
       life: 2000
     });
+  }
+
+  loadCategories(): void {
+    this.marketService.getCategories()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.categories = data;
+        },
+        error: (err) => console.error('載入分類失敗', err)
+      });
+  }
+
+  // 點分類時篩選商品
+  onCategorySelect(categoryNo: string | null, topId: number): void {
+    console.log('onCategorySelect 被呼叫', categoryNo, topId); //除錯
+    this.selectedCategoryNo = categoryNo;
+    this.activeCategoryTopId = topId;   // 記住目前點的是哪個頂層，讓「全部商品」的 active 判斷正確
+    console.log('更新後的值', this.selectedCategoryNo, this.activeCategoryTopId); // 除錯
+    this.currentPage = 1;
+    this.loadProducts();
+  }
+
+  // 新增折疊方法
+  toggleExpand(topId: number): void {
+    this.expandedCategoryId = this.expandedCategoryId === topId ? null : topId;
   }
 }
