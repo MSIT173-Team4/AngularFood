@@ -16,7 +16,7 @@
           <p-button label="搜尋" (onClick)="onSearch()" size="small" />
         </div>
 
-        <p-button [label]="showAdvancedFilter ? '收合進階篩選' : '進階篩選'" icon="pi pi-sliders-h" severity="secondary"
+        <p-button [label]="showAdvancedFilter ? '收合進階篩選' : '進階篩選'" icon="pi pi-sliders-h"
           (onClick)="showAdvancedFilter = !showAdvancedFilter" />
       </div>
 
@@ -38,12 +38,18 @@
 
           <!-- 快捷價格按鈕 -->
           <div class="quick-price-chips">
-            <p-button label="100-300元" size="small" severity="secondary" [outlined]="true"
-              (onClick)="minPrice=100; maxPrice=300" />
-            <p-button label="300-500元" size="small" severity="secondary" [outlined]="true"
-              (onClick)="minPrice=300; maxPrice=500" />
-            <p-button label="500元以上" size="small" severity="secondary" [outlined]="true"
-              (onClick)="minPrice=500; maxPrice=null" />
+            <button class="quick-price-chip" [class.active]="selectedQuickPrice === '100-300'"
+              (click)="onQuickPrice(100, 300, '100-300')">
+              100-300元
+            </button>
+            <button class="quick-price-chip" [class.active]="selectedQuickPrice === '300-500'"
+              (click)="onQuickPrice(300, 500, '300-500')">
+              300-500元
+            </button>
+            <button class="quick-price-chip" [class.active]="selectedQuickPrice === '500+'"
+              (click)="onQuickPrice(500, null, '500+')">
+              500元以上
+            </button>
           </div>
         </div>
 

@@ -116,3 +116,14 @@
   font-weight: 700;
   color: #261814;
 }
+
+商品卡片的按鈕顏色
+.product-card .p-button {
+  background: #832600 !important;
+  border-color: #832600 !important;
+}
+
+.product-card .p-button:hover {
+  background: #ab3500 !important;
+  border-color: #ab3500 !important;
+}

@@ -48,6 +48,7 @@ export class GetPublicProduct implements OnInit, OnDestroy {
   maxPrice: number | null = null;
   selectedSortBy = 'newest';  // 預設排序
   showAdvancedFilter = true;
+  selectedQuickPrice: string | null = null;
 
   // ── 分頁狀態 ──────────────────────────────────────────
   currentPage = 1;          // 後端是 1-based
@@ -60,6 +61,7 @@ export class GetPublicProduct implements OnInit, OnDestroy {
     { label: '價格低至高', value: 'price_asc' },
     { label: '價格高至低', value: 'price_desc' },
   ];
+
 
   // ── RxJS 生命週期管理 ─────────────────────────────────
   // 4. 這個 Subject 用來在 Component 銷毀時取消所有訂閱
@@ -121,11 +123,18 @@ export class GetPublicProduct implements OnInit, OnDestroy {
     this.loadProducts();
   }
 
+  onQuickPrice(min: number, max: number | null, label: string): void {
+    this.minPrice = min;
+    this.maxPrice = max;
+    this.selectedQuickPrice = label;
+  }
+
   onResetFilter(): void {
     this.keyword = '';
     this.minPrice = null;
     this.maxPrice = null;
     this.selectedSortBy = 'newest';
+    this.selectedQuickPrice = null;
     this.currentPage = 1;
     this.loadProducts();
   }
