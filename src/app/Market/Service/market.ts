@@ -274,6 +274,13 @@ export class MarketService {
       'https://localhost:7164/api/ShoppingCartUsers/profile'
     );
   }
+
+  // 建立訂單（結帳用）
+  createOrder(dto: { cartItemIds: number[] }): Observable<{ batchId: number; bathNo: string; totalAmount: number }> {
+    return this.http.post<{ batchId: number; bathNo: string; totalAmount: number }>(
+      'https://localhost:7164/api/Checkout/CreateOrder', dto
+    );
+  }
 }
 
 

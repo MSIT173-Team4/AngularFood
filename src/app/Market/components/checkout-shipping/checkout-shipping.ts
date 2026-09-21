@@ -10,6 +10,7 @@ import { MessageService } from 'primeng/api';
 import { CheckoutStepsComponent } from '../checkout-steps/checkout-steps';
 import { MarketService, UserProfileDto, ShippingAddress, CartSellerGroupDto } from '../../Service/market';
 import { TAIWAN_CITIES, City } from '../../data/taiwan-districts';
+import { CheckoutStateService, CheckoutShippingData } from '../../Service/checkout-state.service';
 
 @Component({
   selector: 'app-checkout-shipping',
@@ -50,12 +51,23 @@ export class CheckoutShippingComponent implements OnInit, OnDestroy {
   constructor(
     private marketService: MarketService,
     private messageService: MessageService,
-    private router: Router
+    private router: Router,
+    private checkoutState: CheckoutStateService
   ) { }
 
   selectedPayment = 'ecpay';
+  cartItemIds: number[] = [];
+  isSubmitting = false;
 
   ngOnInit(): void {
+    // 從 CheckoutStateService 拿購物車勾選資料
+    const state = this.checkoutState.getCheckoutData();
+    if (!state || state.cartItemIds.length === 0) {
+      // 沒有資料，導回購物車
+      this.router.navigate(['/market/cart']);
+      return;
+    }
+    this.cartItemIds = state.cartItemIds;
     this.loadUserProfile();
     this.loadCart();
   }
@@ -170,6 +182,7 @@ export class CheckoutShippingComponent implements OnInit, OnDestroy {
 
   // 表單驗證
   isFormValid(): boolean {
+    if (this.isSubmitting) return false;
     // 全域收件人必填
     if (!this.globalRecipient.name || !this.globalRecipient.phone ||
       !this.globalRecipient.city || !this.globalRecipient.district ||
@@ -198,13 +211,28 @@ export class CheckoutShippingComponent implements OnInit, OnDestroy {
       });
       return;
     }
-    // TODO: 之後這裡傳資料到確認付款頁面（步驟 3）
-    this.messageService.add({
-      severity: 'success',
-      summary: '繼續',
-      detail: '正在前往確認付款...',
-      life: 1500
-    });
+
+    this.isSubmitting = true;
+
+    // Step 1：建立訂單
+    this.marketService.createOrder({ cartItemIds: this.cartItemIds })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (result) => {
+          // Step 2：拿到 batchId，導到綠界付款頁面
+          // 直接用 window.location.href 導到後端產生的 ECPay 表單
+          window.location.href = `https://localhost:7164/api/Checkout/Pay/${result.batchId}`;
+        },
+        error: (err) => {
+          this.isSubmitting = false;
+          this.messageService.add({
+            severity: 'error',
+            summary: '建立訂單失敗',
+            detail: err.error?.message ?? '請稍後再試',
+            life: 3000
+          });
+        }
+      });
   }
 
   getGroupSubtotal(group: CartSellerGroupDto): number {

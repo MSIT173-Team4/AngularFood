@@ -197,7 +197,11 @@
             <i class="pi pi-arrow-left"></i> 返回購物清單確認
           </button>
           <button class="next-btn" (click)="onSubmit()" [disabled]="!isFormValid()">
-            下一步：前往確認付款 <i class="pi pi-arrow-right"></i>
+            @if (isSubmitting) {
+              <i class="pi pi-spin pi-spinner"></i> 建立訂單中...
+            } @else {
+              下一步：前往確認付款 <i class="pi pi-arrow-right"></i>
+            }
           </button>
         </div>
 

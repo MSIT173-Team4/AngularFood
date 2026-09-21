@@ -231,7 +231,7 @@
 
           <!-- 結帳按鈕 -->
           <button class="checkout-btn" [disabled]="checkedCount === 0"
-                  routerLink="/market/checkout/shipping">
+                  (click)="goToCheckout()">
             前往結帳
             <i class="pi pi-arrow-right"></i>
           </button>

@@ -7,6 +7,8 @@ import { ButtonModule } from 'primeng/button';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { CheckoutStepsComponent } from '../checkout-steps/checkout-steps';
+import { Router } from '@angular/router';
+
 
 import {
   MarketService,
@@ -15,6 +17,8 @@ import {
   ValidateCouponResultDto,
   AppliedSellerCoupon
 } from '../../Service/market';
+
+import { CheckoutStateService } from '../../Service/checkout-state.service';
 
 @Component({
   selector: 'app-shopping-cart',
@@ -49,7 +53,9 @@ export class ShoppingCartComponent implements OnInit, OnDestroy {
 
   constructor(
     private marketService: MarketService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private router: Router,
+    private checkoutState: CheckoutStateService
   ) { }
 
   ngOnInit(): void {
@@ -316,5 +322,22 @@ export class ShoppingCartComponent implements OnInit, OnDestroy {
       detail: `「${item.productName}」已加入收藏清單`,
       life: 2000
     });
+  }
+
+  goToCheckout(): void {
+    if (this.checkedCount === 0) return;
+
+    // 把勾選的 cartItemIds 存進 CheckoutStateService
+    const cartItemIds = this.checkedItemList.map(i => i.cartItemId);
+
+    this.checkoutState.setCheckoutData({
+      cartItemIds,
+      globalRecipient: { name: '', phone: '', city: '', district: '', streetAddress: '' },
+      sellerShipping: [],
+      paymentMethod: 'ecpay',
+      totalAmount: this.grandTotal
+    });
+
+    this.router.navigate(['/market/checkout/shipping']);
   }
 }
