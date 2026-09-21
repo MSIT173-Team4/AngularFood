@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+
 // ── 對應後端 MarketPublicProductListDto ──────────────────────────
 // .NET JSON 序列化預設把 PascalCase → camelCase
 // 所以後端的 ProductId 到前端就是 productId，不需要額外設定
@@ -22,18 +23,133 @@ export interface MarketProduct {
 export interface ProductSearchParams {
   keyword?: string;
   categoryNo?: string;
+  parentCategoryId?: number;
   minPrice?: number;
   maxPrice?: number;
   sortBy?: string;
   page?: number;
 }
 
-// ── 分頁結果包裝，對應後端 MarketProductPagedResultDto ───────────
-// 如果你後端還沒改成回傳這個格式，先用 MarketProduct[] 就好
-// 等後端改完再換回來
+//分頁
 export interface PagedResult<T> {
   items: T[];
   totalCount: number;
+}
+
+//商品分類
+export interface MarketCategory {
+  categoryId: number;
+  categoryNo: string;
+  categoryName: string;
+  parentCategoryId: number | null;
+  children: MarketCategory[];
+}
+
+export interface MarketProductDetail {
+  productId: number;
+  productName: string;
+  description: string | null;
+  stock: number;
+  price: number;
+  brandOrOrigin: string | null;
+  manufacturingDate: string | null;
+  expirationDate: string | null;
+  productStatus: number;
+  imageUrls: string[];
+  averageRating: number;
+  reviewCount: number;
+  sellerId: number;
+  sellerName: string;
+  sellerDescription: string | null;
+  sellerProductCount: number;
+}
+
+export interface MarketReview {
+  reviewId: number;
+  reviewerName: string;
+  rating: number;
+  comment: string | null;
+  createdDate: string;
+}
+
+export interface MarketReviewPaged {
+  items: MarketReview[];
+  totalCount: number;
+}
+
+export interface MarketRelatedRecipe {
+  recipeId: number;
+  recipeName: string;
+  imageUrl: string | null;
+  cookingTime: number;
+}
+
+//加入購物車
+export interface AddToCartDto {
+  productId: number;
+  quantity: number;
+}
+
+// 購物車相關 interface
+export interface CartItemDto {
+  cartItemId: number;
+  productId: number;
+  productName: string;
+  imageUrl: string | null;
+  price: number;
+  stock: number;
+  quantity: number;
+  subtotal: number;
+}
+
+export interface CartSellerGroupDto {
+  sellerId: number;
+  sellerName: string;
+  items: CartItemDto[];
+}
+
+// 優惠券相關 interface
+export interface ValidateCouponDto {
+  code: string;
+  orderAmount: number;
+  sellerId?: number;
+}
+
+export interface ValidateCouponResultDto {
+  couponId: number;
+  couponName: string;
+  scopeType: string;
+  discountType: string;
+  discountValue: number;
+  appliedAmount: number;
+  message: string;
+}
+
+// 賣家套用的優惠券（前端狀態用）
+export interface AppliedSellerCoupon {
+  sellerId: number;
+  couponId: number;
+  couponName: string;
+  appliedAmount: number;
+  message: string;
+}
+
+// 使用者資料
+export interface UserProfileDto {
+  userId: number;
+  username: string;
+  phone: string;
+  address: string;
+}
+
+// 收件人資料（每個賣家各自的配送資訊）
+export interface ShippingAddress {
+  recipientName: string;
+  phone: string;
+  city: string;
+  district: string;
+  streetAddress: string;
+  useDefault: boolean;  // true=套用全域預設，false=個別指定
 }
 
 @Injectable({
@@ -43,6 +159,8 @@ export class MarketService {
 
   // 用 7164（你跑的是 https profile，7164 是主要 port）
   private readonly baseUrl = 'https://localhost:7164/api/MarketProduct';
+  private readonly cartUrl = 'https://localhost:7164/api/ShoppingCart';
+  private readonly couponUrl = 'https://localhost:7164/api/MarketCoupon';
 
   constructor(private http: HttpClient) { }
 
@@ -66,6 +184,7 @@ export class MarketService {
 
     if (params.keyword) httpParams = httpParams.set('keyword', params.keyword);
     if (params.categoryNo) httpParams = httpParams.set('categoryNo', params.categoryNo);
+    if (params.parentCategoryId != null) httpParams = httpParams.set('parentCategoryId', params.parentCategoryId);
     if (params.minPrice != null) httpParams = httpParams.set('minPrice', params.minPrice);
     if (params.maxPrice != null) httpParams = httpParams.set('maxPrice', params.maxPrice);
     if (params.sortBy) httpParams = httpParams.set('sortBy', params.sortBy);
@@ -81,12 +200,80 @@ export class MarketService {
   createProduct(formData: FormData): Observable<any> {
     return this.http.post(`${this.baseUrl}`, formData);
   }
+
+  // 商品詳情
+  getProductDetail(id: number): Observable<MarketProductDetail> {
+    return this.http.get<MarketProductDetail>(`${this.baseUrl}/${id}`);
+  }
+
+  // 評論（分頁）
+  getProductReviews(id: number, page: number = 1, pageSize: number = 3): Observable<MarketReviewPaged> {
+    return this.http.get<MarketReviewPaged>(
+      `${this.baseUrl}/${id}/reviews?page=${page}&pageSize=${pageSize}`
+    );
+  }
+
+  // 相關食譜
+  getRelatedRecipes(id: number): Observable<MarketRelatedRecipe[]> {
+    return this.http.get<MarketRelatedRecipe[]>(`${this.baseUrl}/${id}/recipes`);
+  }
+
+  // 收藏 Toggle
+  toggleFavorite(productId: number): Observable<{ isFavorite: boolean; message: string }> {
+    return this.http.post<{ isFavorite: boolean; message: string }>(
+      `https://localhost:7164/api/MarketFavorite/toggle/${productId}`, {},
+      { withCredentials: true }
+    );
+  }
+
+  // 確認是否已收藏
+  checkFavorite(productId: number): Observable<{ isFavorite: boolean }> {
+    return this.http.get<{ isFavorite: boolean }>(
+      `https://localhost:7164/api/MarketFavorite/check/${productId}`,
+      { withCredentials: true }
+    );
+  }
+
+  //加入購物車
+  addToCart(dto: AddToCartDto): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(
+      'https://localhost:7164/api/ShoppingCart/add', dto
+    );
+  }
+
+  // 取得購物車
+  getCart(): Observable<CartSellerGroupDto[]> {
+    return this.http.get<CartSellerGroupDto[]>(this.cartUrl);
+  }
+
+  // 修改數量
+  updateCartItem(cartItemId: number, quantity: number): Observable<{ message: string; quantity: number; subtotal: number }> {
+    return this.http.put<{ message: string; quantity: number; subtotal: number }>(
+      `${this.cartUrl}/${cartItemId}`, { quantity }
+    );
+  }
+
+  // 刪除單筆
+  deleteCartItem(cartItemId: number): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${this.cartUrl}/${cartItemId}`);
+  }
+
+  // 清空購物車
+  clearCart(): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${this.cartUrl}/all`);
+  }
+
+  // 驗證優惠券
+  validateCoupon(dto: ValidateCouponDto): Observable<ValidateCouponResultDto> {
+    return this.http.post<ValidateCouponResultDto>(`${this.couponUrl}/validate`, dto);
+  }
+
+  // 取得使用者資料（填寫送貨地址用）
+  getUserProfile(): Observable<UserProfileDto> {
+    return this.http.get<UserProfileDto>(
+      'https://localhost:7164/api/ShoppingCartUsers/profile'
+    );
+  }
 }
 
-export interface MarketCategory {
-  categoryId: number;
-  categoryNo: string;
-  categoryName: string;
-  parentCategoryId: number | null;
-  children: MarketCategory[];
-}
+

@@ -1,7 +1,8 @@
 <div class="product-card" [class.sold-out]="isSoldOut">
 
   <!-- 商品圖片區 -->
-  <div class="card-image-wrapper">
+  <div class="card-image-wrapper" [routerLink]="['/market/products', product.productId]"
+       style="cursor: pointer;">
     <img [src]="firstImageUrl" [alt]="product.productName" class="card-image" [class.grayscale]="isSoldOut" />
 
     <!-- 售完遮罩 -->
@@ -12,14 +13,14 @@
     }
 
     <!-- 收藏按鈕 -->
-    <button class="favorite-btn" (click)="onToggleFavorite()">
+    <button class="favorite-btn" (click)="onToggleFavorite(); $event.stopPropagation()">
       <i class="pi pi-heart"></i>
     </button>
   </div>
 
   <!-- 商品資訊區 -->
   <div class="card-body">
-    <div>
+    <div [routerLink]="['/market/products', product.productId]" style="cursor: pointer;">
       <h3 class="product-name">{{ product.productName }}</h3>
       <p class="product-brand">{{ product.brandOrOrigin }}</p>
     </div>

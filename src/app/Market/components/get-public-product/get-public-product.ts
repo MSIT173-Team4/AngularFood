@@ -11,7 +11,7 @@ import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 
-import { MarketService, MarketProduct, ProductSearchParams, MarketCategory } from '../../Service/market';
+import { MarketService, MarketProduct, ProductSearchParams, MarketCategory, AddToCartDto } from '../../Service/market';
 
 @Component({
   selector: 'app-get-public-product',
@@ -41,6 +41,8 @@ export class GetPublicProduct implements OnInit, OnDestroy {
   selectedCategoryNo: string | null | undefined = null;
   expandedCategoryId: number | null = null;
   activeCategoryTopId: number | null = null;
+  selectedCategoryName: string | null = null;
+  selectedParentCategoryId: number | null = null;
 
   // ── 搜尋 & 篩選狀態 ───────────────────────────────────
   keyword = '';
@@ -91,6 +93,7 @@ export class GetPublicProduct implements OnInit, OnDestroy {
     const params: ProductSearchParams = {
       keyword: this.keyword || undefined,
       categoryNo: this.selectedCategoryNo ?? undefined,
+      parentCategoryId: this.selectedParentCategoryId ?? undefined,
       minPrice: this.minPrice ?? undefined,
       maxPrice: this.maxPrice ?? undefined,
       sortBy: this.selectedSortBy,
@@ -154,13 +157,31 @@ export class GetPublicProduct implements OnInit, OnDestroy {
 
   // ── 子 Component 的事件 ───────────────────────────────
   onAddToCart(product: MarketProduct): void {
-    // 目前先用 Toast 示意，之後這裡呼叫購物車 Service
-    this.messageService.add({
-      severity: 'success',
-      summary: '已加入購物車',
-      detail: `「${product.productName}」已放入採買清單！`,
-      life: 2500
-    });
+    const dto: AddToCartDto = {
+      productId: product.productId,
+      quantity: 1  // 商品列表頁固定加 1 個
+    };
+
+    this.marketService.addToCart(dto)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: '已加入購物車',
+            detail: `「${product.productName}」已放入採買清單！`,
+            life: 2500
+          });
+        },
+        error: (err) => {
+          this.messageService.add({
+            severity: 'error',
+            summary: '加入失敗',
+            detail: err.error?.message ?? '加入購物車失敗，請稍後再試',
+            life: 3000
+          });
+        }
+      });
   }
 
   onToggleFavorite(product: MarketProduct): void {
@@ -184,9 +205,11 @@ export class GetPublicProduct implements OnInit, OnDestroy {
   }
 
   // 點分類時篩選商品
-  onCategorySelect(categoryNo: string | null, topId: number): void {
+  onCategorySelect(categoryNo: string | null, topId: number, categoryName: string | null, parentCategoryId: number | null = null): void {
     this.selectedCategoryNo = categoryNo;
+    this.selectedParentCategoryId = parentCategoryId;
     this.activeCategoryTopId = topId;   // 記住目前點的是哪個頂層，讓「全部商品」的 active 判斷正確
+    this.selectedCategoryName = categoryName;
     this.currentPage = 1;
     this.loadProducts();
   }

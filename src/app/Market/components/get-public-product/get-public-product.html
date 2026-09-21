@@ -70,7 +70,10 @@
         <a href="#">首頁</a>
         <i class="pi pi-chevron-right"></i>
         <span>友善商城</span>
-        <span class="count-badge">{{ products.length }} 件好物</span>
+        @if (selectedCategoryName) {
+          <i class="pi pi-chevron-right"></i>
+          <span>{{ selectedCategoryName }}</span>
+        }
       </nav>
 
       <!-- 排序按鈕群 -->
@@ -95,15 +98,16 @@
           <div class="sidebar-header">{{ top.categoryName }}</div>
 
           <nav class="category-nav">
-
-            <div class="category-link" [class.active]="!selectedCategoryNo && activeCategoryTopId === top.categoryId"
-              (click)="onCategorySelect(null, top.categoryId)">
+            <!-- 全部商品 -->
+            <div class="category-link"
+                [class.active]="!selectedCategoryNo && activeCategoryTopId === top.categoryId"
+                (click)="onCategorySelect(null, top.categoryId, top.categoryName, top.categoryId)">
               全部商品
             </div>
 
             @for (child of top.children.slice(0, 3); track child.categoryId) {
             <div class="category-link" [class.active]="selectedCategoryNo === child.categoryNo"
-              (click)="onCategorySelect(child.categoryNo, top.categoryId)">
+                (click)="onCategorySelect(child.categoryNo, top.categoryId, child.categoryName)">
               {{ child.categoryName }}
             </div>
             }
@@ -111,9 +115,12 @@
             @if (top.children.length > 3) {
             @if (expandedCategoryId === top.categoryId) {
             @for (child of top.children.slice(3); track child.categoryId) {
-            <div class="category-link" [class.active]="selectedCategoryNo === child.categoryNo"
-              (click)="onCategorySelect(child.categoryNo, top.categoryId)">
+            <!-- 子分類 -->
+            <div class="category-link"
+                [class.active]="selectedCategoryNo === child.categoryNo"
+                (click)="onCategorySelect(child.categoryNo, top.categoryId, child.categoryName)">
               {{ child.categoryName }}
+
             </div>
             }
             }

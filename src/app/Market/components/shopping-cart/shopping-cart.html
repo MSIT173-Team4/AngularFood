@@ -1,0 +1,251 @@
+<p-toast position="bottom-right" />
+
+@if (isLoading) {
+  <div class="cart-loading">
+    <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+    <p>載入購物車中...</p>
+  </div>
+}
+
+@if (!isLoading) {
+<section class="cart-section">
+  <div class="cart-container">
+
+    <!-- 進度條 -->
+    <app-checkout-steps [currentStep]="1" />
+
+    <h1 class="cart-title">
+      <i class="pi pi-shopping-bag"></i> 採買清單
+    </h1>
+
+    @if (sellerGroups.length === 0) {
+      <div class="empty-cart">
+        <i class="pi pi-shopping-bag" style="font-size: 3rem; color: #e1bfb5;"></i>
+        <h3>購物車是空的</h3>
+        <p>快去逛逛友善商城，找到你喜愛的好物！</p>
+        <p-button label="去逛逛" icon="pi pi-arrow-right"
+                  routerLink="/market/products" />
+      </div>
+    }
+
+    @if (sellerGroups.length > 0) {
+    <div class="cart-layout">
+
+      <!-- ══ 左側：購物車商品 ══════════════════════════ -->
+      <div class="cart-left">
+
+        <!-- 全選列 -->
+        <div class="select-all-bar">
+          <label class="check-label">
+            <input type="checkbox"
+                   [checked]="allChecked"
+                   (change)="toggleAll($any($event.target).checked)" />
+            <span>全選所有商品</span>
+          </label>
+          <div class="select-all-actions">
+            <span>已選取 <strong>{{ checkedCount }}</strong> 件商品</span>
+            <button class="delete-checked-btn" (click)="deleteCheckedItems()"
+                    [disabled]="checkedCount === 0">
+              <i class="pi pi-trash"></i> 全部刪除
+            </button>
+          </div>
+        </div>
+
+        <!-- 依賣家分組 -->
+        @for (group of sellerGroups; track group.sellerId) {
+          <div class="seller-group">
+
+            <!-- 賣家 Header -->
+            <div class="seller-header">
+              <label class="check-label">
+                <input type="checkbox"
+                       [checked]="isSellerAllChecked(group)"
+                       (change)="toggleSellerAll(group, $any($event.target).checked)" />
+                <i class="pi pi-shop" style="color: #832600;"></i>
+                <span class="seller-name">{{ group.sellerName }}</span>
+              </label>
+              <a class="visit-store-link" [routerLink]="['/market/products']"
+                 [queryParams]="{ sellerId: group.sellerId }">
+                逛逛賣場 <i class="pi pi-chevron-right"></i>
+              </a>
+            </div>
+
+            <!-- 商品列表 -->
+            @for (item of group.items; track item.cartItemId) {
+              <div class="cart-item">
+                <input type="checkbox"
+                       [(ngModel)]="checkedItems[item.cartItemId]"
+                       class="item-check" />
+
+                <img [src]="item.imageUrl || 'assets/images/product-placeholder.png'"
+                     [alt]="item.productName"
+                     class="item-image"
+                     [routerLink]="['/market/products', item.productId]"
+                     style="cursor: pointer;" />
+
+                <div class="item-info">
+                  <p class="item-name"
+                     [routerLink]="['/market/products', item.productId]"
+                     style="cursor: pointer;">
+                    {{ item.productName }}
+                  </p>
+                  <p class="item-price">NT$ {{ item.price | number }}</p>
+                </div>
+
+                <div class="item-qty-control">
+                  <button (click)="updateQuantity(item, -1)" [disabled]="item.quantity <= 1">
+                    <i class="pi pi-minus"></i>
+                  </button>
+                  <span>{{ item.quantity }}</span>
+                  <button (click)="updateQuantity(item, 1)" [disabled]="item.quantity >= item.stock">
+                    <i class="pi pi-plus"></i>
+                  </button>
+                </div>
+
+                <div class="item-subtotal">
+                  NT$ {{ item.subtotal | number }}
+                </div>
+
+                <!-- 收藏按鈕 -->
+                <button class="item-favorite-btn" (click)="toggleItemFavorite(item)"
+                        title="加入收藏">
+                  <i class="pi pi-heart"></i>
+                </button>
+
+                <!-- 刪除按鈕 -->
+                <button class="item-delete-btn" (click)="deleteItem(item)">
+                  <i class="pi pi-trash"></i>
+                </button>
+              </div>
+            }
+
+            <!-- 賣家優惠券 + 本店小計 -->
+            <div class="seller-footer">
+              <div class="seller-coupon-area">
+                <div class="seller-coupon-input">
+                  <i class="pi pi-tag" style="color: #832600;"></i>
+                  <span class="seller-coupon-label">賣家專屬優惠券</span>
+                  <input type="text"
+                         [(ngModel)]="sellerCouponCodes[group.sellerId]"
+                         placeholder="輸入賣家優惠代碼"
+                         (keyup.enter)="applySellerCoupon(group)" />
+                  <button (click)="applySellerCoupon(group)">套用</button>
+                </div>
+
+                @if (appliedSellerCoupons[group.sellerId]) {
+                  <div class="applied-coupon-chip">
+                    <i class="pi pi-check-circle"></i>
+                    <span>{{ appliedSellerCoupons[group.sellerId].message }}</span>
+                    <button (click)="removeSellerCoupon(group.sellerId)">✕</button>
+                  </div>
+                }
+              </div>
+
+              <!-- 本店小計 -->
+              <div class="seller-subtotal">
+                <span class="seller-subtotal-label">本店小計：</span>
+                @if (appliedSellerCoupons[group.sellerId]) {
+                  <span class="seller-subtotal-original">
+                    原價 NT$ {{ getSellerSubtotal(group) + appliedSellerCoupons[group.sellerId].appliedAmount | number }}
+                  </span>
+                  <span class="seller-subtotal-discount">
+                    折抵 NT$ {{ appliedSellerCoupons[group.sellerId].appliedAmount | number }}
+                  </span>
+                }
+                <span class="seller-subtotal-amount">
+                  NT$ {{ getSellerSubtotal(group) | number }}
+                </span>
+              </div>
+            </div>
+
+          </div>
+        }
+      </div>
+
+      <!-- ══ 右側：訂單明細 ════════════════════════════ -->
+      <div class="cart-right">
+        <div class="order-summary">
+
+          <h2 class="summary-title">訂單明細</h2>
+
+          <!-- 全站優惠代碼 -->
+          <div class="platform-coupon-group">
+            <label>全站優惠代碼
+              <span class="coupon-hint">全站活動優惠</span>
+            </label>
+            <div class="coupon-input-row">
+              <input type="text"
+                     [(ngModel)]="platformCouponCode"
+                     placeholder="輸入全站折扣代碼"
+                     (keyup.enter)="applyPlatformCoupon()" />
+              <button (click)="applyPlatformCoupon()">套用</button>
+            </div>
+            @if (appliedPlatformCoupon) {
+              <div class="applied-coupon-chip">
+                <i class="pi pi-check-circle"></i>
+                <span>{{ appliedPlatformCoupon.message }}</span>
+                <button (click)="removePlatformCoupon()">✕</button>
+              </div>
+            }
+          </div>
+
+          <!-- 金額明細 -->
+          <div class="price-breakdown">
+            <div class="price-row">
+              <span>商品小計（{{ checkedCount }} 件）</span>
+              <span>NT$ {{ checkedSubtotal | number }}</span>
+            </div>
+
+            @if (sellerCouponDiscount > 0) {
+              <div class="price-row discount">
+                <span>賣家專屬折價券</span>
+                <span>- NT$ {{ sellerCouponDiscount | number }}</span>
+              </div>
+            }
+
+            @if (platformCouponDiscount > 0 && appliedPlatformCoupon?.scopeType !== 'Shipping') {
+              <div class="price-row discount">
+                <span>全站優惠券折抵</span>
+                <span>- NT$ {{ platformCouponDiscount | number }}</span>
+              </div>
+            }
+
+            <div class="price-row">
+              <span>運費</span>
+              @if (finalShippingFee === 0) {
+                <span class="free-shipping">免運（NT$ 0）</span>
+              } @else {
+                <span>NT$ {{ finalShippingFee }}</span>
+              }
+            </div>
+          </div>
+
+          <!-- 應付總額 -->
+          <div class="grand-total-row">
+            <span>應付總額</span>
+            <div class="grand-total-amount">
+              <span class="grand-total-currency">NT$</span>
+              <span class="grand-total-number">{{ grandTotal | number }}</span>
+            </div>
+          </div>
+
+          <!-- 結帳按鈕 -->
+          <button class="checkout-btn" [disabled]="checkedCount === 0"
+                  routerLink="/market/checkout/shipping">
+            前往結帳
+            <i class="pi pi-arrow-right"></i>
+          </button>
+
+          @if (checkedCount === 0) {
+            <p class="no-item-hint">請先勾選要結帳的商品</p>
+          }
+
+        </div>
+      </div>
+
+    </div>
+    }
+
+  </div>
+</section>
+}

@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { MarketProduct } from '../../Service/market';
@@ -7,7 +8,7 @@ import { MarketProduct } from '../../Service/market';
 @Component({
   selector: 'app-product-card',
   standalone: true,
-  imports: [CommonModule, ButtonModule, TagModule],
+  imports: [CommonModule, RouterModule, ButtonModule, TagModule],
   templateUrl: './product-card.html',
   styleUrl: './product-card.css',
 })

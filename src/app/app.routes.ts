@@ -7,6 +7,9 @@ import {
   recipeListResolver
 } from './Recipe/recipe.resolvers';
 import { GetPublicProduct } from './Market/components/get-public-product/get-public-product';
+import { ProductDetailComponent } from './Market/components/product-detail/product-detail';
+import { ShoppingCartComponent } from './Market/components/shopping-cart/shopping-cart';
+import { CheckoutShippingComponent } from './Market/components/checkout-shipping/checkout-shipping';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'recipes' },
@@ -65,6 +68,9 @@ export const routes: Routes = [
   { path: 'market/create-product', component: CreateProduct },
   { path: 'nearby-place', component: NearbyPlace },
   { path: 'cooking/:id', redirectTo: 'cooking-mode/:id' },
+  { path: 'market/products/:id', component: ProductDetailComponent },
   { path: 'market/products', component: GetPublicProduct },
+  { path: 'market/cart', component: ShoppingCartComponent },
+  { path: 'market/checkout/shipping', component: CheckoutShippingComponent },
   { path: '**', redirectTo: 'recipes' }
 ];
