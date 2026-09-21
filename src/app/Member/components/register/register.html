@@ -1,55 +1,324 @@
-<div class="container">
-  <div class="row justify-content-center align-items-center min-vh-100">
-    <div class="col-12 col-sm-8 col-md-5 col-lg-4">
-      <div class="card shadow">
-        <div class="card-body p-4">
-          <h2 class="text-center mb-4">註冊會員</h2>
+<div class="register-page">
+  <div class="register-container">
+    <div class="register-header">
+      <h1>建立會員帳號</h1>
 
-          <form [formGroup]="registerData" (ngSubmit)="Register()">
-            <div class="mb-3">
-              <label for="username" class="form-label">用戶名</label>
-              <input class="form-control" id="username" formControlName="fUserName" />
-            </div>
-
-            <div class="mb-3">
-              <label for="password" class="form-label">密碼</label>
-              <input
-                type="password"
-                class="form-control"
-                id="password"
-                formControlName="fPassword"
-              />
-            </div>
-
-            <div class="mb-3">
-              <label for="email" class="form-label">Email</label>
-              <input type="email" class="form-control" id="email" formControlName="fEmail" />
-            </div>
-
-            <div class="mb-3">
-              <label for="phone" class="form-label">手機號碼</label>
-              <input class="form-control" id="phone" formControlName="fPhone" />
-            </div>
-            <div class="mb-3">
-              <label for="address" class="form-label">地址</label>
-              <input class="form-control" id="address" formControlName="fAddress" />
-            </div>
-
-            <div class="mb-3">
-              <label for="idnum" class="form-label">身分證字號</label>
-              <input class="form-control" id="idnum" formControlName="fIdNum" />
-            </div>
-            @if (errorMsg) {
-              <div class="alert alert-danger">
-                {{ errorMsg }}
-              </div>
-            }
-            <div class="mb-3">
-              <button type="submit" class="btn btn-primary w-100">註冊</button>
-            </div>
-          </form>
-        </div>
-      </div>
+      <p>加入 FriendlyFood，開始你的美食生活</p>
     </div>
+
+    <p-stepper [value]="1">
+      <!-- ========================= -->
+      <!-- Step 1：閱讀條款 -->
+      <!-- ========================= -->
+
+      <p-step-list>
+        <p-step [value]="1"> 閱讀條款 </p-step>
+
+        <p-step [value]="2"> 填寫資料 </p-step>
+
+        <p-step [value]="3"> 確認資料 </p-step>
+      </p-step-list>
+
+      <p-step-panels>
+        <!-- ===================== -->
+        <!-- Step 1 -->
+        <!-- ===================== -->
+
+        <p-step-panel [value]="1">
+          <ng-template #content let-activateCallback="activateCallback">
+            <p-card>
+              <div class="step-content">
+                <h2>會員服務條款</h2>
+
+                <p class="step-description">請閱讀以下會員服務條款， 同意後即可繼續註冊。</p>
+
+                <div class="terms-box">
+                  <h3>一、會員帳號</h3>
+
+                  <p>使用者應提供正確且完整的註冊資料， 並妥善保管自己的帳號與密碼。</p>
+
+                  <h3>二、平台使用</h3>
+
+                  <p>使用本平台時，不得發布違法、 侵害他人權益或不適當之內容。</p>
+
+                  <h3>三、個人資料</h3>
+
+                  <p>平台將依相關法規與隱私權政策， 處理會員於註冊及使用服務時提供的資料。</p>
+
+                  <h3>四、服務內容</h3>
+
+                  <p>
+                    FriendlyFood 提供食譜分享、 美食交流及相關功能。
+                    平台得依實際營運需求調整服務內容。
+                  </p>
+
+                  <h3>五、會員責任</h3>
+
+                  <p>使用者應對自己透過帳號進行的操作 及發布內容負責。</p>
+                </div>
+
+                <div class="terms-agree">
+                  <p-checkbox [(ngModel)]="termsAccepted" [binary]="true" inputId="terms" />
+
+                  <label for="terms"> 我已閱讀並同意會員服務條款及隱私權政策 </label>
+                </div>
+
+                <div class="step-actions end">
+                  <p-button
+                    label="下一步"
+                    icon="pi pi-arrow-right"
+                    iconPos="right"
+                    [disabled]="!termsAccepted"
+                    (onClick)="activateCallback(2)"
+                  />
+                </div>
+              </div>
+            </p-card>
+          </ng-template>
+        </p-step-panel>
+
+        <!-- ===================== -->
+        <!-- Step 2：會員資料 -->
+        <!-- ===================== -->
+
+        <p-step-panel [value]="2">
+          <ng-template #content let-activateCallback="activateCallback">
+            <p-card>
+              <form [formGroup]="registerData">
+                <div class="step-content">
+                  <h2>填寫會員資料</h2>
+
+                  <p class="step-description">請填寫你的基本會員資料。</p>
+
+                  <div class="form-grid">
+                    <!-- 帳號 -->
+
+                    <div class="form-field">
+                      <label for="username"> 帳號 </label>
+
+                      <input
+                        pInputText
+                        id="username"
+                        formControlName="fUserName"
+                        placeholder="請輸入帳號"
+                      />
+
+                      @if (
+                        registerData.controls.fUserName.invalid &&
+                        registerData.controls.fUserName.touched
+                      ) {
+                        <small class="field-error"> 請輸入帳號 </small>
+                      }
+                    </div>
+
+                    <!-- Email -->
+
+                    <div class="form-field">
+                      <label for="email"> Email </label>
+
+                      <input
+                        pInputText
+                        id="email"
+                        type="email"
+                        formControlName="fEmail"
+                        placeholder="example@email.com"
+                      />
+
+                      @if (
+                        registerData.controls.fEmail.invalid && registerData.controls.fEmail.touched
+                      ) {
+                        <small class="field-error"> 請輸入正確的 Email </small>
+                      }
+                    </div>
+
+                    <!-- 密碼 -->
+
+                    <div class="form-field">
+                      <label for="password"> 密碼 </label>
+
+                      <p-password
+                        inputId="password"
+                        formControlName="fPassword"
+                        placeholder="請輸入密碼"
+                        [toggleMask]="true"
+                        [feedback]="true"
+                        styleClass="full-width"
+                        inputStyleClass="full-width"
+                      />
+
+                      @if (
+                        registerData.controls.fPassword.invalid &&
+                        registerData.controls.fPassword.touched
+                      ) {
+                        <small class="field-error"> 密碼至少需要 8 個字元 </small>
+                      }
+                    </div>
+
+                    <!-- 手機 -->
+
+                    <div class="form-field">
+                      <label for="phone"> 手機號碼 </label>
+
+                      <input
+                        pInputText
+                        id="phone"
+                        formControlName="fPhone"
+                        placeholder="0912345678"
+                      />
+
+                      @if (
+                        registerData.controls.fPhone.invalid && registerData.controls.fPhone.touched
+                      ) {
+                        <small class="field-error"> 請輸入正確的手機號碼 </small>
+                      }
+                    </div>
+
+                    <!-- 身分證 -->
+
+                    <div class="form-field">
+                      <label for="idNum"> 身分證字號 </label>
+
+                      <input
+                        pInputText
+                        id="idNum"
+                        formControlName="fIdNum"
+                        placeholder="A123456789"
+                      />
+
+                      @if (
+                        registerData.controls.fIdNum.invalid && registerData.controls.fIdNum.touched
+                      ) {
+                        <small class="field-error"> 身分證字號格式錯誤 </small>
+                      }
+                    </div>
+
+                    <!-- 地址 -->
+
+                    <div class="form-field">
+                      <label for="address"> 地址 </label>
+
+                      <input
+                        pInputText
+                        id="address"
+                        formControlName="fAddress"
+                        placeholder="請輸入地址"
+                      />
+
+                      @if (
+                        registerData.controls.fAddress.invalid &&
+                        registerData.controls.fAddress.touched
+                      ) {
+                        <small class="field-error"> 請輸入地址 </small>
+                      }
+                    </div>
+                  </div>
+
+                  <div class="step-actions">
+                    <p-button
+                      label="上一步"
+                      severity="secondary"
+                      icon="pi pi-arrow-left"
+                      (onClick)="activateCallback(1)"
+                    />
+
+                    <p-button
+                      label="下一步"
+                      icon="pi pi-arrow-right"
+                      iconPos="right"
+                      [disabled]="registerData.invalid"
+                      (onClick)="activateCallback(3)"
+                    />
+                  </div>
+                </div>
+              </form>
+            </p-card>
+          </ng-template>
+        </p-step-panel>
+
+        <!-- ===================== -->
+        <!-- Step 3：確認 -->
+        <!-- ===================== -->
+
+        <p-step-panel [value]="3">
+          <ng-template #content let-activateCallback="activateCallback">
+            <p-card>
+              <div class="step-content">
+                <h2>確認會員資料</h2>
+
+                <p class="step-description">請確認以下資料是否正確。</p>
+
+                <div class="confirm-list">
+                  <div class="confirm-item">
+                    <span>帳號</span>
+
+                    <strong>
+                      {{ registerData.value.fUserName }}
+                    </strong>
+                  </div>
+
+                  <div class="confirm-item">
+                    <span>Email</span>
+
+                    <strong>
+                      {{ registerData.value.fEmail }}
+                    </strong>
+                  </div>
+
+                  <div class="confirm-item">
+                    <span>手機號碼</span>
+
+                    <strong>
+                      {{ registerData.value.fPhone }}
+                    </strong>
+                  </div>
+
+                  <div class="confirm-item">
+                    <span>身分證字號</span>
+
+                    <strong>
+                      {{ registerData.value.fIdNum }}
+                    </strong>
+                  </div>
+
+                  <div class="confirm-item">
+                    <span>地址</span>
+
+                    <strong>
+                      {{ registerData.value.fAddress }}
+                    </strong>
+                  </div>
+
+                  <div class="confirm-item">
+                    <span>密碼</span>
+
+                    <strong> •••••••• </strong>
+                  </div>
+                </div>
+
+                @if (errorMsg) {
+                  <p-message severity="error" [text]="errorMsg" styleClass="error-message" />
+                }
+
+                <div class="step-actions">
+                  <p-button
+                    label="返回修改"
+                    severity="secondary"
+                    icon="pi pi-arrow-left"
+                    (onClick)="activateCallback(2)"
+                  />
+
+                  <p-button
+                    label="確認註冊"
+                    icon="pi pi-check"
+                    [loading]="isSubmitting"
+                    (onClick)="register()"
+                  />
+                </div>
+              </div>
+            </p-card>
+          </ng-template>
+        </p-step-panel>
+      </p-step-panels>
+    </p-stepper>
   </div>
 </div>

@@ -1,48 +1,111 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { ActivatedRoute, Router } from '@angular/router';
+import { environment } from '../../../../environments/environment.development';
 import { UserProfileDTO } from '../../interfaces/UserProfileDTO';
-import { Router } from '@angular/router';
+import { PublicUserProfileDTO } from '../../interfaces/PublicUserProfileDTO';
+import { BaseUserProfileDTO } from '../../interfaces/BaseUserProfileDTO';
+// PrimeNG
+import { AvatarModule } from 'primeng/avatar';
+import { TabsModule } from 'primeng/tabs';
+import { CardModule } from 'primeng/card';
+import { ButtonModule } from 'primeng/button';
+
 @Component({
   selector: 'app-main',
-  imports: [],
+  standalone: true,
+  imports: [AvatarModule, TabsModule, CardModule, ButtonModule],
   templateUrl: './main.html',
   styleUrl: './main.css',
 })
-export class Main {
-  constructor(private http: HttpClient) { }
-  private router=Inject(Router)
-  baseURL: string = 'https://localhost:7164/api';
-  userProfile: any;
+export class Main implements OnInit {
+  baseURL: string = environment.apiUrl;
+  isOwnProfile = true;
+  /*userInfo: UserProfileDTO = {
+    username: '',
+    email: '',
+    phone: '',
+    image: '',
+    address: '',
+    createTime: '',
+    idNum: '',
+    lastLogin: '',
+  };
+  publicUserInfo: PublicUserProfileDTO | null = null;
+*/
+
+  profile: BaseUserProfileDTO | null = null;
+  userInfo: UserProfileDTO | null = null;
+
+  // 之後從 API 取得
+  posts: any[] = [];
+
+  // 之後從 API 取得
+  recipes: any[] = [];
+  dashboard: any[] = ['0'];
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private route: ActivatedRoute,
+  ) {}
+
   ngOnInit(): void {
-    //Called after the constructor, initializing input properties, and the first call to ngOnChanges.
-    //Add 'implements OnInit' to the class.
+    const id = this.route.snapshot.paramMap.get('id');
+    console.log('public profile id:', id);
+    if (id) {
+      this.isOwnProfile = false;
+      this.loadPublicProfile(Number(id));
+    } else {
+      this.isOwnProfile = true;
+      this.loadingProfile();
+    }
+  }
+  loadingProfile(): void {
     this.http
-            .get(`${this.baseURL}/Users/GetUserProfile`, {
-              withCredentials: true,
-            })
-            .subscribe({
-              next: (res) => {
-                this.userProfile = res;
-              },
-              error: (res) => {
-                console.log(res);
-              },
-            });
+      .get<UserProfileDTO>(`${this.baseURL}/Users/GetUserProfile`, {
+        withCredentials: true,
+      })
+      .subscribe({
+        next: (res) => {
+          this.profile = res;
+          this.userInfo = res;
+        },
+        error: (res) => {
+          console.log(res);
+        },
+      });
   }
-  test() {
-    console.log(this.userProfile);
+  loadPublicProfile(id: number): void {
+    this.http
+      .get<PublicUserProfileDTO>(`${this.baseURL}/Users/GetPublicUserProfile/${id}`, {
+        withCredentials: true,
+      })
+      .subscribe({
+        next: (res) => {
+          this.profile = res;
+        },
+      });
   }
-  logout() {
-    this.http.get(`${this.baseURL}/Users/Logout`, {
-      withCredentials:true,
-    }).subscribe({
-      next: (res) => {
-        console.log(res)
-        this.router.navigate(['/login']);
-      },
-      error: (res) => {
-        console.log(res);
-      }
-    })
+  logout(): void {
+    this.http
+      .post(
+        `${this.baseURL}/Users/Logout`,
+        {},
+        {
+          withCredentials: true,
+        },
+      )
+      .subscribe({
+        next: (res) => {
+          console.log(res);
+
+          this.router.navigate(['/login'], {
+            replaceUrl: true,
+          });
+        },
+        error: (err) => {
+          console.log(err);
+        },
+      });
   }
 }

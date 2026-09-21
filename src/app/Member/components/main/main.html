@@ -1,2 +1,185 @@
-<button (click)="test()" >Test</button>
-<button (click)="logout()">logout</button>
+<div class="profile-container">
+  @if (profile) {
+    <!-- ==================== -->
+    <!-- 上方會員資訊 -->
+    <!-- ==================== -->
+
+    <div class="profile-header">
+      <!-- 頭像 -->
+      <p-avatar [image]="profile.image" size="xlarge" shape="circle"> </p-avatar>
+
+      <!-- 基本資料 -->
+      <div class="profile-info">
+        <h2>
+          {{ profile.username }}
+        </h2>
+
+        <p class="create-time">加入時間：{{ profile.createTime }}</p>
+
+        <!-- 只有自己才顯示 Email -->
+        @if (isOwnProfile && userInfo) {
+          <p class="email">
+            {{ userInfo.email }}
+          </p>
+        }
+      </div>
+
+      <!-- ==================== -->
+      <!-- 右側按鈕 -->
+      <!-- ==================== -->
+
+      <div class="profile-actions">
+        <!-- 自己 -->
+        @if (isOwnProfile) {
+          <p-button label="編輯個人資料" icon="pi pi-pencil" severity="secondary"> </p-button>
+        }
+
+        <!-- 其他會員 -->
+        @else {
+          <p-button label="追蹤" icon="pi pi-user-plus"> </p-button>
+        }
+      </div>
+    </div>
+    @if (isOwnProfile && dashboard) {
+      <section class="profile-dashboard">
+        <div class="dashboard-title">
+          <div>
+            <h3>內容數據</h3>
+            <p>你的食譜與貼文累積表現</p>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <!-- 食譜總喜好 -->
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i class="pi pi-heart"></i>
+            </div>
+
+            <div class="stat-content">
+              <span class="stat-label">食譜總喜好</span>
+              <strong>{{ dashboard }}</strong>
+            </div>
+          </div>
+
+          <!-- 食譜總瀏覽 -->
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i class="pi pi-eye"></i>
+            </div>
+
+            <div class="stat-content">
+              <span class="stat-label">食譜總瀏覽</span>
+              <strong>{{ dashboard }}</strong>
+            </div>
+          </div>
+
+          <!-- 貼文總讚 -->
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i class="pi pi-thumbs-up"></i>
+            </div>
+
+            <div class="stat-content">
+              <span class="stat-label">貼文總讚數</span>
+              <strong>{{ dashboard }}</strong>
+            </div>
+          </div>
+
+          <!-- 貼文總瀏覽 -->
+          <div class="stat-card">
+            <div class="stat-icon">
+              <i class="pi pi-eye"></i>
+            </div>
+
+            <div class="stat-content">
+              <span class="stat-label">貼文總瀏覽</span>
+              <strong>{{ dashboard }}</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+    }
+    <!-- ==================== -->
+    <!-- 貼文 / 食譜 -->
+    <!-- ==================== -->
+
+    <p-tabs value="posts">
+      <p-tablist>
+        <p-tab value="posts">
+          <i class="pi pi-comments"></i>
+          貼文
+        </p-tab>
+
+        <p-tab value="recipes">
+          <i class="pi pi-book"></i>
+          食譜
+        </p-tab>
+      </p-tablist>
+
+      <p-tabpanels>
+        <!-- ==================== -->
+        <!-- 貼文 -->
+        <!-- ==================== -->
+
+        <p-tabpanel value="posts">
+          @if (posts.length === 0) {
+            <div class="empty-message">
+              <i class="pi pi-comments"></i>
+
+              @if (isOwnProfile) {
+                <p>你目前尚無貼文</p>
+              } @else {
+                <p>這位會員目前尚無貼文</p>
+              }
+            </div>
+          }
+
+          @for (post of posts; track post.id) {
+            <p-card [header]="post.title" styleClass="post-card">
+              <p>
+                {{ post.content }}
+              </p>
+            </p-card>
+          }
+        </p-tabpanel>
+
+        <!-- ==================== -->
+        <!-- 食譜 -->
+        <!-- ==================== -->
+
+        <p-tabpanel value="recipes">
+          @if (recipes.length === 0) {
+            <div class="empty-message">
+              <i class="pi pi-book"></i>
+
+              @if (isOwnProfile) {
+                <p>你目前尚無食譜</p>
+              } @else {
+                <p>這位會員目前尚無食譜</p>
+              }
+            </div>
+          }
+
+          <div class="recipe-grid">
+            @for (recipe of recipes; track recipe.id) {
+              <p-card [header]="recipe.title" styleClass="recipe-card">
+                <p>
+                  {{ recipe.description }}
+                </p>
+              </p-card>
+            }
+          </div>
+        </p-tabpanel>
+      </p-tabpanels>
+    </p-tabs>
+  }
+
+  <!-- API 資料還沒回來 -->
+  @else {
+    <div class="loading-profile">
+      <i class="pi pi-spin pi-spinner"></i>
+      <span>載入會員資料中...</span>
+    </div>
+  }
+</div>

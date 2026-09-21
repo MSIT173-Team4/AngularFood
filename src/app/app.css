@@ -168,4 +168,31 @@ nav a:hover {
     align-items: start;
     flex-direction: column;
   }
+
+  .current-user {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .user-profile-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .user-avatar {
+    width: 40px;
+    height: 40px;
+
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .user-name {
+    font-weight: 600;
+  }
 }

@@ -1,0 +1,119 @@
+.login-page {
+  min-height: 100vh;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  padding: 2rem;
+
+  background: var(--p-surface-50);
+}
+
+.login-container {
+  width: 100%;
+  max-width: 430px;
+}
+
+/* Card */
+
+:host ::ng-deep .login-card {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+:host ::ng-deep .login-card .p-card-body {
+  padding: 2rem;
+}
+
+/* Header */
+
+.login-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.login-header h1 {
+  margin: 0 0 0.5rem;
+
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+.login-header p {
+  margin: 0;
+  color: var(--p-text-muted-color);
+}
+
+/* Form */
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+
+  gap: 0.5rem;
+
+  margin-bottom: 1.5rem;
+}
+
+.form-field label {
+  font-weight: 500;
+}
+
+.full-width {
+  width: 100%;
+}
+
+/* Password */
+
+.password-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Error */
+
+.field-error {
+  color: var(--p-red-500);
+}
+
+:host ::ng-deep .error-message {
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+
+/* Login button */
+
+:host ::ng-deep .login-button {
+  width: 100%;
+}
+
+:host ::ng-deep .login-button .p-button {
+  width: 100%;
+  justify-content: center;
+}
+
+/* Register */
+
+.register-section {
+  display: flex;
+  justify-content: center;
+  gap: 0.4rem;
+
+  margin-top: 1.5rem;
+
+  font-size: 0.95rem;
+}
+
+/* Links */
+
+.link {
+  color: var(--p-primary-color);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
