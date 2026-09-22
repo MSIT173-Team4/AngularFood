@@ -63,11 +63,11 @@ export const routes: Routes = [
       )
   },
   {
-    path: 'forum',
+    path: 'social',
     title: '討論區｜友料美食生活平台',
     loadComponent: () =>
-      import('./Forum/forum-placeholder/forum-placeholder').then(
-        (module) => module.ForumPlaceholder
+      import('./Social/Component/post-list/post-list').then(
+        (module) => module.PostListComponent
       )
   },
   { path: 'market/create-product', component: CreateProduct },

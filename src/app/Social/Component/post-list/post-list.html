@@ -17,7 +17,6 @@
     </div>
   </div>
 
-  <!-- 貼文列表卡片 -->
   <div class="post-list">
     @for (post of posts; track post.postId) {
       <div class="post-card" (click)="viewPost(post.postId)">
