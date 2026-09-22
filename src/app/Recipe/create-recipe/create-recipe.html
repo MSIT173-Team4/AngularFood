@@ -10,7 +10,7 @@
     <div>
       <span class="eyebrow"><i class="pi pi-sparkles"></i> AI 協作食譜編輯器</span>
       <h1>建立分享食譜</h1>
-      <p>AI 協助整理，最後由您確認內容後才會寫入資料庫。</p>
+      <p>依區塊完成料理資訊；可先儲存草稿，確認內容後再公開發布。</p>
     </div>
     <div class="header-actions">
       @if (createdRecipeId()) {
@@ -22,6 +22,13 @@
           (onClick)="openCreatedRecipe()"
         />
       }
+      <p-button
+        label="儲存草稿"
+        icon="pi pi-save"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="saveDraft()"
+      />
       <p-button
         label="確認發布"
         icon="pi pi-send"
@@ -145,22 +152,72 @@
     </p-card>
 
     <p-card header="食材清單">
-      <p class="helper">每行格式：食材名稱、數量、單位，例如「牛番茄 2 顆」。</p>
-      <textarea
-        pTextarea
-        rows="10"
-        placeholder="牛番茄 2 顆&#10;板豆腐 1 盒&#10;鱸魚片 300 公克"
-        [ngModel]="ingredientDraft()"
-        (ngModelChange)="ingredientDraft.set($event)"
-      ></textarea>
-      <p-button
-        label="標準化食材名稱與單位"
-        icon="pi pi-sync"
-        severity="success"
-        [outlined]="true"
-        [loading]="isNormalizing()"
-        (onClick)="normalizeIngredients()"
-      />
+      <p class="helper">名稱、數量與單位分開輸入，不需要自行加入空格。半顆請直接輸入 0.5 顆。</p>
+      <div class="ingredient-editor">
+        <div class="ingredient-editor-heading" aria-hidden="true">
+          <span>食材名稱</span>
+          <span>數量</span>
+          <span>單位</span>
+          <span></span>
+        </div>
+        @for (ingredient of ingredientRows(); track $index; let index = $index) {
+          <div class="ingredient-row">
+            <input
+              pInputText
+              maxlength="50"
+              [attr.aria-label]="'食材 ' + (index + 1) + ' 名稱'"
+              placeholder="例如：菠蘿"
+              [ngModel]="ingredient.name"
+              (ngModelChange)="updateIngredientRow(index, 'name', $event)"
+            />
+            <p-inputNumber
+              [attr.aria-label]="'食材 ' + (index + 1) + ' 數量'"
+              [ngModel]="ingredient.amount"
+              (ngModelChange)="updateIngredientRow(index, 'amount', $event ?? 0)"
+              [min]="0.01"
+              [max]="100000"
+              [minFractionDigits]="0"
+              [maxFractionDigits]="2"
+              placeholder="例如：0.5"
+            />
+            <p-select
+              [options]="unitOptions"
+              [attr.aria-label]="'食材 ' + (index + 1) + ' 單位'"
+              [ngModel]="ingredient.unit"
+              (ngModelChange)="updateIngredientRow(index, 'unit', $event)"
+              appendTo="body"
+            />
+            <p-button
+              icon="pi pi-trash"
+              ariaLabel="移除這項食材"
+              severity="danger"
+              [text]="true"
+              (onClick)="removeIngredientRow(index)"
+            />
+          </div>
+        }
+      </div>
+      <div class="ingredient-actions">
+        <p-button
+          label="新增食材"
+          icon="pi pi-plus"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="addIngredientRow()"
+        />
+        <p-button
+          label="標準化名稱與單位"
+          icon="pi pi-sync"
+          severity="success"
+          [outlined]="true"
+          [loading]="isNormalizing()"
+          (onClick)="normalizeIngredients()"
+        />
+      </div>
+      <div class="normalization-note">
+        <i class="pi pi-info-circle" aria-hidden="true"></i>
+        <span>系統會將台灣常見別名與公制單位統一，例如「菠蘿」改為「鳳梨」、「0.5 公斤」改為「500 公克」。</span>
+      </div>
     </p-card>
 
     <p-card header="料理步驟">
@@ -172,6 +229,53 @@
         [ngModel]="instructionDraft()"
         (ngModelChange)="instructionDraft.set($event)"
       ></textarea>
+      @if (instructionLines().length) {
+        <div class="step-image-list">
+          <div class="step-image-heading">
+            <strong>步驟圖片</strong>
+            <span>選填。圖片網址會存入該步驟的 fImageUrl。</span>
+          </div>
+          @for (instruction of instructionLines(); track $index; let index = $index) {
+            <article class="step-image-item">
+              <span class="step-number">{{ index + 1 }}</span>
+              <div class="step-image-content">
+                <p>{{ instruction }}</p>
+                @if (stepPreviewUrls()[index]; as previewUrl) {
+                  <img [src]="previewUrl" [alt]="'步驟 ' + (index + 1) + ' 圖片預覽'" />
+                }
+              </div>
+              <input
+                #stepImageInput
+                class="visually-hidden"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                (change)="onStepImageSelected(index, $event)"
+              />
+              <div class="step-image-actions">
+                <p-button
+                  [label]="stepImageUrls()[index] ? '更換圖片' : '加入圖片'"
+                  icon="pi pi-image"
+                  severity="secondary"
+                  size="small"
+                  [outlined]="true"
+                  [loading]="uploadingStepIndex() === index"
+                  (onClick)="stepImageInput.click()"
+                />
+                @if (stepImageUrls()[index]) {
+                  <p-button
+                    label="移除"
+                    icon="pi pi-trash"
+                    severity="danger"
+                    size="small"
+                    [text]="true"
+                    (onClick)="removeStepImage(index)"
+                  />
+                }
+              </div>
+            </article>
+          }
+        </div>
+      }
       <p-button
         label="使用 AI 整理食譜內容"
         icon="pi pi-sparkles"

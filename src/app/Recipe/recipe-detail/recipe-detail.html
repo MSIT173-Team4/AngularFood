@@ -1,10 +1,6 @@
 <p-toast />
 
 <section class="detail-shell p-4 md:p-8">
-  @if (isUsingMockData()) {
-    <div class="data-notice" role="status"><i class="pi pi-info-circle"></i> {{ dataNotice() }}</div>
-  }
-
   @if (recipe(); as recipe) {
     <a routerLink="/recipes" class="back"><i class="pi pi-arrow-left"></i> 回到食譜探索</a>
     <div class="hero-image" [style.background-image]="'linear-gradient(0deg, rgba(38,24,20,.82), transparent), url(' + recipe.coverImageUrl + ')'">
@@ -19,6 +15,19 @@
         </span>
       </div>
     </div>
+
+    <section class="author-card" aria-label="食譜作者">
+      @if (recipe.authorImageUrl) {
+        <img [src]="recipe.authorImageUrl" [alt]="recipe.authorName + ' 的會員頭像'" />
+      } @else {
+        <span class="author-avatar">{{ recipe.authorName.slice(0, 1) }}</span>
+      }
+      <div>
+        <small>食譜作者</small>
+        <strong>{{ recipe.authorName }}</strong>
+        <span>已發布 {{ recipe.authorRecipeCount ?? 0 }} 道公開食譜</span>
+      </div>
+    </section>
 
     <div class="recipe-toolbar" aria-label="食譜份量與互動工具列">
       <div class="serving-control">
@@ -71,8 +80,38 @@
         <h2>準備食材</h2>
         @for (ingredient of scaledIngredients(); track ingredient.ingredientId) {
           <div class="ingredient">
-            <span>{{ ingredient.name }}</span>
+            <div>
+              <span>{{ ingredient.name }}</span>
+              @if (ingredient.availability; as stock) {
+                <small [class.missing]="!stock.isSufficient">
+                  <i [class]="stock.isSufficient ? 'pi pi-check-circle' : 'pi pi-exclamation-circle'"></i>
+                  {{ stock.isSufficient ? '冰箱庫存足夠' : '庫存短缺' }}：現有
+                  {{ stock.availableAmount }} {{ stock.unit || ingredient.unit }}
+                </small>
+              } @else if (isLoadingAvailability()) {
+                <small>正在比對智慧冰箱……</small>
+              }
+            </div>
             <b>{{ ingredient.scaledAmount }}</b>
+          </div>
+        }
+        @if (missingIngredients().length || pendingShoppingCount()) {
+          <div class="shopping-callout">
+            <span>
+              <i class="pi pi-shopping-bag" aria-hidden="true"></i>
+              @if (missingIngredients().length) {
+                缺少 {{ missingIngredients().length }} 種食材
+              } @else {
+                尚有 {{ pendingShoppingCount() }} 項待購食材
+              }
+            </span>
+            <p-button
+              label="一鍵整理採購清單"
+              icon="pi pi-list-check"
+              severity="warn"
+              [rounded]="true"
+              (onClick)="openShoppingList()"
+            />
           </div>
         }
       </aside>
@@ -100,6 +139,47 @@
         />
       </article>
     </div>
+
+    <section
+      #nutritionPanel
+      class="nutrition-panel"
+      [class.visible]="nutritionVisible()"
+      aria-labelledby="nutrition-title"
+    >
+      <div class="section-heading">
+        <div>
+          <span>營養概覽</span>
+          <h2 id="nutrition-title">每份營養比例</h2>
+        </div>
+      </div>
+      <div class="nutrition-content">
+        <div
+          class="nutrition-donut"
+          [style.background]="nutritionVisible() ? nutritionGradient() : 'conic-gradient(#eee7e3 0 100%)'"
+          aria-label="碳水化合物、蛋白質與脂肪營養比例圓餅圖"
+        >
+          <div>
+            <strong>{{ nutritionProfile().caloriesPerServing }}</strong>
+            <span>kcal／份</span>
+          </div>
+        </div>
+        <div class="nutrition-breakdown">
+          <div class="nutrition-row carbohydrates">
+            <span>碳水化合物</span><b>{{ nutritionProfile().carbohydrates }}%</b>
+            <div><i [style.width.%]="nutritionVisible() ? nutritionProfile().carbohydrates : 0"></i></div>
+          </div>
+          <div class="nutrition-row protein">
+            <span>蛋白質</span><b>{{ nutritionProfile().protein }}%</b>
+            <div><i [style.width.%]="nutritionVisible() ? nutritionProfile().protein : 0"></i></div>
+          </div>
+          <div class="nutrition-row fat">
+            <span>脂肪</span><b>{{ nutritionProfile().fat }}%</b>
+            <div><i [style.width.%]="nutritionVisible() ? nutritionProfile().fat : 0"></i></div>
+          </div>
+          <small>營養比例依食譜份量提供日常飲食參考；實際數值會因食材品牌、份量與烹調方式而異。</small>
+        </div>
+      </div>
+    </section>
 
     @if (youtubeEmbedUrl(); as embedUrl) {
       <section class="video-section" aria-labelledby="recipe-video-title">
@@ -158,5 +238,90 @@
         </div>
       </section>
     }
+
+    @if (pendingShoppingCount()) {
+      <button class="shopping-reminder" type="button" (click)="openShoppingList()">
+        <i class="pi pi-shopping-bag" aria-hidden="true"></i>
+        <span>{{ pendingShoppingCount() }} 項食材待購</span>
+      </button>
+    }
   }
 </section>
+
+<p-dialog
+  header="我的料理採購清單"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: 'min(94vw, 720px)' }"
+  [visible]="shoppingDialogVisible()"
+  (visibleChange)="shoppingDialogVisible.set($event)"
+>
+  <div class="shopping-dialog">
+    <div class="shopping-dialog-note">
+      <i class="pi pi-info-circle" aria-hidden="true"></i>
+      <span>
+        清單會保存在會員帳號中。標記「已買到」不會直接增加冰箱庫存，仍須拍照或手動入庫。
+      </span>
+    </div>
+
+    @for (item of shoppingDraft(); track item.ingredientId; let index = $index) {
+      <article class="shopping-item" [class.purchased]="item.isPurchased">
+        <p-checkbox
+          [inputId]="'purchased-' + item.ingredientId"
+          [binary]="true"
+          [ngModel]="item.isPurchased"
+          (ngModelChange)="updateShoppingItem(index, 'isPurchased', $event)"
+        />
+        <div class="shopping-item-main">
+          <label [for]="'purchased-' + item.ingredientId">{{ item.ingredientName }}</label>
+          @if (item.note) {
+            <small>{{ item.note }}</small>
+          }
+        </div>
+        <p-inputNumber
+          [ngModel]="item.quantity"
+          (ngModelChange)="updateShoppingItem(index, 'quantity', $event ?? 1)"
+          [min]="0.01"
+          [max]="99999"
+          [maxFractionDigits]="2"
+        />
+        <input
+          pInputText
+          maxlength="20"
+          aria-label="採購單位"
+          [ngModel]="item.unit"
+          (ngModelChange)="updateShoppingItem(index, 'unit', $event)"
+        />
+        <p-button
+          icon="pi pi-trash"
+          ariaLabel="移除採購項目"
+          severity="secondary"
+          [text]="true"
+          (onClick)="removeShoppingItem(index)"
+        />
+      </article>
+    } @empty {
+      <div class="empty-shopping-list">
+        <i class="pi pi-check-circle" aria-hidden="true"></i>
+        <strong>目前沒有待整理的採購食材</strong>
+      </div>
+    }
+  </div>
+
+  <ng-template #footer>
+    <p-button
+      label="繼續看食譜"
+      severity="secondary"
+      [text]="true"
+      (onClick)="shoppingDialogVisible.set(false)"
+    />
+    <p-button
+      label="確認並保留清單"
+      icon="pi pi-save"
+      severity="warn"
+      [loading]="isSavingShoppingList()"
+      (onClick)="saveShoppingList()"
+    />
+  </ng-template>
+</p-dialog>

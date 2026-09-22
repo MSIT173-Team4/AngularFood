@@ -1,5 +1,5 @@
+import { TripBuilder } from './FoodMap/trip-builder/trip-builder';
 import { Routes } from '@angular/router';
-import { NearbyPlace } from './FoodMap/nearby-place/nearby-place';
 import { CreateProduct } from './Market/components/create-product/create-product';
 import {
   pantryResolver,
@@ -59,6 +59,14 @@ export const routes: Routes = [
       )
   },
   {
+    path: 'shopping-list',
+    title: '料理採購清單｜友料美食生活平台',
+    loadComponent: () =>
+      import('./Recipe/shopping-list/shopping-list').then(
+        (module) => module.ShoppingList
+      )
+  },
+  {
     path: 'forum',
     title: '討論區｜友料美食生活平台',
     loadComponent: () =>
@@ -67,7 +75,7 @@ export const routes: Routes = [
       )
   },
   { path: 'market/create-product', component: CreateProduct },
-  { path: 'nearby-place', component: NearbyPlace },
+  { path: 'trip-builder', component: TripBuilder },
   { path: 'cooking/:id', redirectTo: 'cooking-mode/:id' },
   { path: 'market/products/:id', component: ProductDetailComponent },
   { path: 'market/products', component: GetPublicProduct },
