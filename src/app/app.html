@@ -2,9 +2,7 @@
   <a class="brand" routerLink="/recipes" aria-label="友料美食生活平台首頁">
     <span class="brand-mark" aria-hidden="true">
       <svg viewBox="0 0 32 32" role="img">
-        <path
-          d="M9 3v10M6 3v6c0 2 1.3 4 3 4s3-2 3-4V3M9 13v16M22 3c-3 4-4 8-4 12h4v14M22 3v12"
-        />
+        <path d="M9 3v10M6 3v6c0 2 1.3 4 3 4s3-2 3-4V3M9 13v16M22 3c-3 4-4 8-4 12h4v14M22 3v12" />
       </svg>
     </span>
     <span>
@@ -14,181 +12,133 @@
   </a>
 
   <nav aria-label="主要導覽" [class.open]="isMobileNavigationOpen()">
-    <div
-      class="navigation-group"
-      (mouseenter)="openPanel('recipe')"
-      (mouseleave)="closePanel('recipe')"
-    >
-      <button
-        type="button"
-        class="navigation-trigger"
-        [class.active]="activePanel() === 'recipe'"
-        [attr.aria-expanded]="activePanel() === 'recipe'"
-        (click)="togglePanel('recipe')"
-      >
+    <div class="navigation-group" (mouseenter)="openPanel('recipe')" (mouseleave)="closePanel('recipe')">
+      <button type="button" class="navigation-trigger" [class.active]="activePanel() === 'recipe'"
+        [attr.aria-expanded]="activePanel() === 'recipe'" (click)="togglePanel('recipe')">
         食譜發現
         <i class="pi pi-chevron-down" aria-hidden="true"></i>
       </button>
 
       @if (activePanel() === 'recipe') {
-        <section class="mega-menu" aria-label="食譜功能導覽">
-          <div class="mega-menu-intro">
-            <span>料理管家</span>
-            <strong>從找食譜到採買，一站完成料理準備</strong>
-            <p>探索食譜、管理冰箱庫存，並把短缺食材保留在會員採購清單。</p>
-          </div>
-          <div class="mega-menu-links">
-            <a routerLink="/recipes" routerLinkActive="active">
-              <i class="pi pi-compass"></i>
-              <span><b>探索食譜</b><small>依分類、食材與作者快速搜尋</small></span>
-            </a>
-            <a routerLink="/pantry" routerLinkActive="active">
-              <i class="pi pi-box"></i>
-              <span><b>智慧清冰箱</b><small>盤點即期庫存與料理配對</small></span>
-            </a>
-            <a routerLink="/create" routerLinkActive="active">
-              <i class="pi pi-pencil"></i>
-              <span><b>發布食譜</b><small>建立步驟、照片與料理影片</small></span>
-            </a>
-            <a routerLink="/shopping-list" routerLinkActive="active">
-              <i class="pi pi-list-check"></i>
-              <span><b>料理採購清單</b><small>持續保留食材並同步採買狀態</small></span>
-            </a>
-          </div>
-        </section>
+      <section class="mega-menu" aria-label="食譜功能導覽">
+        <div class="mega-menu-intro">
+          <span>料理管家</span>
+          <strong>從找食譜到採買，一站完成料理準備</strong>
+          <p>探索食譜、管理冰箱庫存，並把短缺食材保留在會員採購清單。</p>
+        </div>
+        <div class="mega-menu-links">
+          <a routerLink="/recipes" routerLinkActive="active">
+            <i class="pi pi-compass"></i>
+            <span><b>探索食譜</b><small>依分類、食材與作者快速搜尋</small></span>
+          </a>
+          <a routerLink="/pantry" routerLinkActive="active">
+            <i class="pi pi-box"></i>
+            <span><b>智慧清冰箱</b><small>盤點即期庫存與料理配對</small></span>
+          </a>
+          <a routerLink="/create" routerLinkActive="active">
+            <i class="pi pi-pencil"></i>
+            <span><b>發布食譜</b><small>建立步驟、照片與料理影片</small></span>
+          </a>
+          <a routerLink="/shopping-list" routerLinkActive="active">
+            <i class="pi pi-list-check"></i>
+            <span><b>料理採購清單</b><small>持續保留食材並同步採買狀態</small></span>
+          </a>
+        </div>
+      </section>
       }
     </div>
     <a routerLink="/market/create-product" routerLinkActive="active">友善商城</a>
     <a routerLink="/social" routerLinkActive="active">討論區</a>
-    <a routerLink="/nearby-place" routerLinkActive="active">美食地圖</a>
+    <a routerLink="/trip-builder" routerLinkActive="active">美食地圖</a>
   </nav>
 
   <div class="header-actions">
     <div class="header-action">
-      <button
-        type="button"
-        class="icon-button"
-        aria-label="快速搜尋食譜"
-        [attr.aria-expanded]="activePanel() === 'search'"
-        (click)="togglePanel('search')"
-      >
+      <button type="button" class="icon-button" aria-label="快速搜尋食譜" [attr.aria-expanded]="activePanel() === 'search'"
+        (click)="togglePanel('search')">
         <i class="pi pi-search"></i>
       </button>
       @if (activePanel() === 'search') {
-        <form class="quick-panel search-panel" (submit)="$event.preventDefault(); submitQuickSearch()">
-          <label for="layout-search">快速搜尋</label>
-          <div>
-            <i class="pi pi-search" aria-hidden="true"></i>
-            <input
-              id="layout-search"
-              type="search"
-              name="layoutSearch"
-              placeholder="輸入料理、食材或作者"
-              [ngModel]="quickSearchTerm()"
-              (ngModelChange)="quickSearchTerm.set($event)"
-            />
-            <button type="submit">搜尋</button>
-          </div>
-        </form>
+      <form class="quick-panel search-panel" (submit)="$event.preventDefault(); submitQuickSearch()">
+        <label for="layout-search">快速搜尋</label>
+        <div>
+          <i class="pi pi-search" aria-hidden="true"></i>
+          <input id="layout-search" type="search" name="layoutSearch" placeholder="輸入料理、食材或作者"
+            [ngModel]="quickSearchTerm()" (ngModelChange)="quickSearchTerm.set($event)" />
+          <button type="submit">搜尋</button>
+        </div>
+      </form>
       }
     </div>
 
     <div class="header-action">
-      <button
-        type="button"
-        class="icon-button"
-        aria-label="開啟購物車"
-        [attr.aria-expanded]="activePanel() === 'cart'"
-        (click)="togglePanel('cart')"
-      >
+      <button type="button" class="icon-button" aria-label="開啟購物車" [attr.aria-expanded]="activePanel() === 'cart'"
+        (click)="togglePanel('cart')">
         <i class="pi pi-shopping-bag"></i>
       </button>
       @if (activePanel() === 'cart') {
-        <section class="quick-panel cart-panel" aria-label="購物車">
-          <div class="panel-heading">
-            <strong>購物車</strong>
-          </div>
-          <div class="empty-panel">
-            <i class="pi pi-shopping-bag" aria-hidden="true"></i>
-            <span>購物車目前沒有商品。</span>
-          </div>
-        </section>
+      <section class="quick-panel cart-panel" aria-label="購物車">
+        <div class="panel-heading">
+          <strong>購物車</strong>
+        </div>
+        <div class="empty-panel">
+          <i class="pi pi-shopping-bag" aria-hidden="true"></i>
+          <span>購物車目前沒有商品。</span>
+        </div>
+      </section>
       }
     </div>
 
     <div class="header-action">
-      <button
-        type="button"
-        class="icon-button"
-        aria-label="開啟通知中心"
-        [attr.aria-expanded]="activePanel() === 'notifications'"
-        (click)="togglePanel('notifications')"
-      >
+      <button type="button" class="icon-button" aria-label="開啟通知中心"
+        [attr.aria-expanded]="activePanel() === 'notifications'" (click)="togglePanel('notifications')">
         <i class="pi pi-bell"></i>
         @if (notificationCount()) {
-          <span class="action-badge warning">{{ notificationCount() }}</span>
+        <span class="action-badge warning">{{ notificationCount() }}</span>
         }
       </button>
       @if (activePanel() === 'notifications') {
-        <section class="quick-panel notification-panel" aria-label="通知中心">
-          <div class="panel-heading">
-            <strong>通知中心</strong>
-            @if (notificationCount()) {
-              <button type="button" (click)="notificationCenter.markAllAsRead()">全部標為已讀</button>
-            }
-          </div>
-          @for (notification of notifications(); track notification.id) {
-            <button
-              type="button"
-              class="notification-item"
-              [class.read]="notification.isRead"
-              (click)="markNotificationAsRead(notification.id)"
-            >
-              <i [class]="notification.icon" aria-hidden="true"></i>
-              <span><b>{{ notification.title }}</b><small>{{ notification.message }}</small></span>
-            </button>
-          } @empty {
-            <div class="empty-panel">
-              <i class="pi pi-bell" aria-hidden="true"></i>
-              <span>目前沒有新通知。</span>
-            </div>
+      <section class="quick-panel notification-panel" aria-label="通知中心">
+        <div class="panel-heading">
+          <strong>通知中心</strong>
+          @if (notificationCount()) {
+          <button type="button" (click)="notificationCenter.markAllAsRead()">全部標為已讀</button>
           }
-        </section>
+        </div>
+        @for (notification of notifications(); track notification.id) {
+        <button type="button" class="notification-item" [class.read]="notification.isRead"
+          (click)="markNotificationAsRead(notification.id)">
+          <i [class]="notification.icon" aria-hidden="true"></i>
+          <span><b>{{ notification.title }}</b><small>{{ notification.message }}</small></span>
+        </button>
+        } @empty {
+        <div class="empty-panel">
+          <i class="pi pi-bell" aria-hidden="true"></i>
+          <span>目前沒有新通知。</span>
+        </div>
+        }
+      </section>
       }
     </div>
 
     <div class="header-action">
-      <button
-        type="button"
-        class="profile-button"
-        aria-label="開啟會員選單"
-        [attr.aria-expanded]="activePanel() === 'profile'"
-        (click)="togglePanel('profile')"
-      >
+      <button type="button" class="profile-button" aria-label="開啟會員選單"
+        [attr.aria-expanded]="activePanel() === 'profile'" (click)="togglePanel('profile')">
         <span>料</span>
         <i class="online-dot" aria-hidden="true"></i>
       </button>
       @if (activePanel() === 'profile') {
-        <section class="quick-panel profile-panel" aria-label="會員資訊">
-          <span class="profile-avatar">料</span>
-          <div><strong>料理生活家</strong><small>今日也來減少食材浪費</small></div>
-        </section>
+      <section class="quick-panel profile-panel" aria-label="會員資訊">
+        <span class="profile-avatar">料</span>
+        <div><strong>料理生活家</strong><small>今日也來減少食材浪費</small></div>
+      </section>
       }
     </div>
   </div>
 
-  <button
-    type="button"
-    class="mobile-navigation-button"
-    aria-label="切換主要導覽"
-    [attr.aria-expanded]="isMobileNavigationOpen()"
-    (click)="toggleMobileNavigation()"
-  >
-    <i
-      class="pi"
-      [class.pi-bars]="!isMobileNavigationOpen()"
-      [class.pi-times]="isMobileNavigationOpen()"
-    ></i>
+  <button type="button" class="mobile-navigation-button" aria-label="切換主要導覽"
+    [attr.aria-expanded]="isMobileNavigationOpen()" (click)="toggleMobileNavigation()">
+    <i class="pi" [class.pi-bars]="!isMobileNavigationOpen()" [class.pi-times]="isMobileNavigationOpen()"></i>
   </button>
 </header>
 

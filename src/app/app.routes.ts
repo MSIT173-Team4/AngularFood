@@ -1,6 +1,5 @@
+import { TripBuilder } from './FoodMap/trip-builder/trip-builder';
 import { Routes } from '@angular/router';
-
-import { NearbyPlace } from './FoodMap/nearby-place/nearby-place';
 import { CreateProduct } from './Market/components/create-product/create-product';
 import {
   pantryResolver,
@@ -71,7 +70,7 @@ export const routes: Routes = [
       )
   },
   { path: 'market/create-product', component: CreateProduct },
-  { path: 'nearby-place', component: NearbyPlace },
+  { path: 'trip-builder', component: TripBuilder },
   { path: 'cooking/:id', redirectTo: 'cooking-mode/:id' },
   { path: '**', redirectTo: 'recipes' }
 ];
