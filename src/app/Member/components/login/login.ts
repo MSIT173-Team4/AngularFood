@@ -47,7 +47,7 @@ export class Login implements AfterViewInit {
       client_id: environment.googleClientId,
 
       callback: (response: any) => {
-        console.log('Google response:', response);
+        this.googleLogin(response.credential);
       },
     });
 
@@ -88,5 +88,25 @@ export class Login implements AfterViewInit {
           this.errorMessage = err.error?.message ?? '登入失敗，請稍後再試';
         },
       });
+  }
+  googleLogin(credential: string): void {
+    this.authService.googleLogin(credential).subscribe({
+      next: (res) => {
+        console.log('後端 Google Login 回傳：', res);
+        this.authService.getCurrentUser().subscribe({
+          next: () => {
+            this.router.navigate(['/recipe'], {
+              replaceUrl: true,
+            });
+          },
+        });
+      },
+
+      error: (err) => {
+        console.error('Google 登入失敗：', err);
+
+        this.errorMessage = err.error?.message ?? 'Google 登入失敗，請稍後再試';
+      },
+    });
   }
 }

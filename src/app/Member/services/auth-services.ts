@@ -48,4 +48,11 @@ export class AuthService {
   clearUser() {
     this.currentUser.set(null);
   }
+  googleLogin(credential: string) {
+    return this.http.post(
+      `${this.baseURL}/Users/GoogleLogin`,
+      { credential },
+      { withCredentials: true },
+    );
+  }
 }
