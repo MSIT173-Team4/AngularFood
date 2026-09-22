@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { OrderCompleteDto } from '../components/order-complete/order-complete';
 
 
 // ── 對應後端 MarketPublicProductListDto ──────────────────────────
@@ -279,6 +280,13 @@ export class MarketService {
   createOrder(dto: { cartItemIds: number[] }): Observable<{ batchId: number; bathNo: string; totalAmount: number }> {
     return this.http.post<{ batchId: number; bathNo: string; totalAmount: number }>(
       'https://localhost:7164/api/Checkout/CreateOrder', dto
+    );
+  }
+
+  // ── 訂單完成頁資料 ──────────────────────────────────────────────
+  getOrderComplete(batchId: number): Observable<OrderCompleteDto> {
+    return this.http.get<OrderCompleteDto>(
+      `${this.apiBase}/Checkout/OrderComplete/${batchId}`
     );
   }
 }

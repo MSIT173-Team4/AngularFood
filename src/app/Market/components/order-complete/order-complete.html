@@ -1,0 +1,37 @@
+@if (isLoading) {
+載入訂單資料中...
+
+} @if (!isLoading && isError) {
+無法載入訂單資料，請確認網路連線後重試
+
+} @if (!isLoading && !isError && order) {
+付款成功・已建立訂單
+感謝您的訂購！訂單已成立
+@for (group of order.orderGroups; track group.orderId) {
+{{ group.sellerName }}
+訂單 {{ group.orderNo }}
+@for (item of group.items; track item.productId) {
+@if (item.imageUrl) { } @else { }
+{{ item.productName }}
+數量：{{ item.quantity }} 件
+
+NT$ {{ item.unitPrice | number }} / 件 NT$ {{ item.lineTotal | number }}
+}
+}
+收件配送資訊
+收件人姓名 {{ order.recipientName }}
+聯絡手機 {{ order.recipientPhone }}
+配送方式 {{ shippingMethodLabel(order.shippingMethod) }}
+收件地址 {{ order.shippingAddress }}
+付款資訊
+付款方式 信用卡一次付清
+扣款狀態 {{ order.paymentStatus === 1 ? '付款成功' : '付款處理中' }}
+結帳金額總覽
+商品小計（{{ totalItemCount }} 件） NT$ {{ order.subTotal | number }}
+@if (order.discountAmount > 0) {
+優惠折抵 － NT$ {{ order.discountAmount | number }}
+}
+運費 {{ order.shippingFee === 0 ? '免運 (NT$ 0)' : 'NT$ ' + order.shippingFee }}
+實付結帳總額
+TWD {{ order.totalAmount | number }}
+}
