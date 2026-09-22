@@ -1,0 +1,109 @@
+<p-toast />
+
+<main class="shopping-page p-4 md:p-8">
+  <header class="shopping-hero">
+    <div>
+      <span>料理準備</span>
+      <h1>料理採購清單</h1>
+      <p>查看食譜時加入的短缺食材會持續保留，買到後可直接更新完成狀態。</p>
+    </div>
+    <div class="progress-card" aria-label="採購完成進度">
+      <strong>{{ completionRate() }}%</strong>
+      <span>{{ purchasedItems().length }}／{{ items().length }} 項已買到</span>
+      <div><i [style.width.%]="completionRate()"></i></div>
+    </div>
+  </header>
+
+  @if (isLoading()) {
+    <section class="shopping-state">
+      <i class="pi pi-spin pi-spinner"></i>
+      <strong>正在整理您的採購清單</strong>
+    </section>
+  } @else if (loadFailed()) {
+    <section class="shopping-state">
+      <i class="pi pi-exclamation-circle"></i>
+      <strong>暫時無法取得採購清單</strong>
+      <span>確認 Web API 已啟動後再重新載入。</span>
+      <p-button label="重新載入" icon="pi pi-refresh" (onClick)="loadShoppingList()" />
+    </section>
+  } @else {
+    <section class="shopping-workspace">
+      <div class="workspace-heading">
+        <label>
+          <span>清單名稱</span>
+          <input
+            pInputText
+            maxlength="100"
+            [ngModel]="listName()"
+            (ngModelChange)="listName.set($event)"
+          />
+        </label>
+        <span class="pending-summary">尚有 {{ pendingItems().length }} 項待採買</span>
+      </div>
+
+      <div class="shopping-items">
+        @for (item of items(); track item.shoppingItemId || item.ingredientId; let index = $index) {
+          <article class="shopping-item" [class.purchased]="item.isPurchased">
+            <p-checkbox
+              [inputId]="'shopping-page-item-' + index"
+              [binary]="true"
+              [ngModel]="item.isPurchased"
+              (ngModelChange)="updateItem(index, 'isPurchased', $event)"
+            />
+            <div class="item-name">
+              <label [for]="'shopping-page-item-' + index">{{ item.ingredientName }}</label>
+              @if (item.note) {
+                <small>{{ item.note }}</small>
+              }
+            </div>
+            <label class="field">
+              <span>數量</span>
+              <p-inputNumber
+                [ngModel]="item.quantity"
+                (ngModelChange)="updateItem(index, 'quantity', $event ?? 1)"
+                [min]="0.01"
+                [max]="99999"
+                [maxFractionDigits]="2"
+              />
+            </label>
+            <label class="field">
+              <span>單位</span>
+              <p-select
+                [options]="unitOptions"
+                [editable]="true"
+                [ngModel]="item.unit"
+                (ngModelChange)="updateItem(index, 'unit', $event)"
+              />
+            </label>
+            <p-button
+              icon="pi pi-trash"
+              ariaLabel="移除採購項目"
+              severity="secondary"
+              [text]="true"
+              (onClick)="removeItem(index)"
+            />
+          </article>
+        } @empty {
+          <div class="empty-list">
+            <i class="pi pi-check-circle"></i>
+            <strong>採購清單目前是空的</strong>
+            <span>瀏覽食譜並整理短缺食材後，項目會出現在這裡。</span>
+            <a routerLink="/recipes">前往探索食譜</a>
+          </div>
+        }
+      </div>
+
+      <footer class="shopping-actions">
+        <a routerLink="/nearby-place"><i class="pi pi-map-marker"></i> 尋找附近採買地點</a>
+        <p-button
+          label="儲存採購清單"
+          icon="pi pi-save"
+          severity="warn"
+          [loading]="isSaving()"
+          [disabled]="!items().length"
+          (onClick)="saveShoppingList()"
+        />
+      </footer>
+    </section>
+  }
+</main>

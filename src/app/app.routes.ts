@@ -53,6 +53,22 @@ export const routes: Routes = [
         (module) => module.CreateRecipe
       )
   },
+  {
+    path: 'shopping-list',
+    title: '料理採購清單｜友料美食生活平台',
+    loadComponent: () =>
+      import('./Recipe/shopping-list/shopping-list').then(
+        (module) => module.ShoppingList
+      )
+  },
+  {
+    path: 'forum',
+    title: '討論區｜友料美食生活平台',
+    loadComponent: () =>
+      import('./Forum/forum-placeholder/forum-placeholder').then(
+        (module) => module.ForumPlaceholder
+      )
+  },
   { path: 'market/create-product', component: CreateProduct },
   { path: 'trip-builder', component: TripBuilder },
   { path: 'cooking/:id', redirectTo: 'cooking-mode/:id' },
