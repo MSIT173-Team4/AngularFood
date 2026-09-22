@@ -162,6 +162,7 @@ export class MarketService {
   private readonly baseUrl = 'https://localhost:7164/api/MarketProduct';
   private readonly cartUrl = 'https://localhost:7164/api/ShoppingCart';
   private readonly couponUrl = 'https://localhost:7164/api/MarketCoupon';
+  private readonly apiBase = 'https://localhost:7164/api/Checkout'
 
   constructor(private http: HttpClient) { }
 
@@ -279,14 +280,14 @@ export class MarketService {
   // 建立訂單（結帳用）
   createOrder(dto: { cartItemIds: number[] }): Observable<{ batchId: number; bathNo: string; totalAmount: number }> {
     return this.http.post<{ batchId: number; bathNo: string; totalAmount: number }>(
-      'https://localhost:7164/api/Checkout/CreateOrder', dto
+      `${this.apiBase}/CreateOrder`, dto
     );
   }
 
   // ── 訂單完成頁資料 ──────────────────────────────────────────────
   getOrderComplete(batchId: number): Observable<OrderCompleteDto> {
     return this.http.get<OrderCompleteDto>(
-      `${this.apiBase}/Checkout/OrderComplete/${batchId}`
+      `${this.apiBase}/OrderComplete/${batchId}`
     );
   }
 }

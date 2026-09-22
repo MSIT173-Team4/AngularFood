@@ -9,7 +9,7 @@ import {
 import { GetPublicProduct } from './Market/components/get-public-product/get-public-product';
 import { ProductDetailComponent } from './Market/components/product-detail/product-detail';
 import { ShoppingCartComponent } from './Market/components/shopping-cart/shopping-cart';
-import { CheckoutShippingComponent } from './Market/components/checkout-shipping/checkout-shipping'; \
+import { CheckoutShippingComponent } from './Market/components/checkout-shipping/checkout-shipping';
 import { OrderCompleteComponent } from './Market/components/order-complete/order-complete';
 
 export const routes: Routes = [

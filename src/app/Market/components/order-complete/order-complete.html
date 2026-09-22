@@ -1,37 +1,208 @@
+<!-- src/app/Market/components/order-complete/order-complete.html -->
+<p-toast position="bottom-right" />
+
+<!-- ══ 步驟列（沿用既有 component，Step 4 全亮）══════════ -->
+<app-checkout-steps [currentStep]="4" />
+
+<!-- ══ 載入中 ══════════════════════════════════════════════ -->
 @if (isLoading) {
-載入訂單資料中...
-
-} @if (!isLoading && isError) {
-無法載入訂單資料，請確認網路連線後重試
-
-} @if (!isLoading && !isError && order) {
-付款成功・已建立訂單
-感謝您的訂購！訂單已成立
-@for (group of order.orderGroups; track group.orderId) {
-{{ group.sellerName }}
-訂單 {{ group.orderNo }}
-@for (item of group.items; track item.productId) {
-@if (item.imageUrl) { } @else { }
-{{ item.productName }}
-數量：{{ item.quantity }} 件
-
-NT$ {{ item.unitPrice | number }} / 件 NT$ {{ item.lineTotal | number }}
+<div class="oc-loading">
+  <i class="pi pi-spin pi-spinner"></i>
+  <p>載入訂單資料中...</p>
+</div>
 }
+
+<!-- ══ 錯誤狀態 ════════════════════════════════════════════ -->
+@if (!isLoading && isError) {
+<div class="oc-error">
+  <i class="pi pi-exclamation-triangle"></i>
+  <p>無法載入訂單資料，請確認網路連線後重試</p>
+  <p-button label="回到商城" icon="pi pi-arrow-left" (onClick)="goToMarket()" />
+</div>
 }
-收件配送資訊
-收件人姓名 {{ order.recipientName }}
-聯絡手機 {{ order.recipientPhone }}
-配送方式 {{ shippingMethodLabel(order.shippingMethod) }}
-收件地址 {{ order.shippingAddress }}
-付款資訊
-付款方式 信用卡一次付清
-扣款狀態 {{ order.paymentStatus === 1 ? '付款成功' : '付款處理中' }}
-結帳金額總覽
-商品小計（{{ totalItemCount }} 件） NT$ {{ order.subTotal | number }}
-@if (order.discountAmount > 0) {
-優惠折抵 － NT$ {{ order.discountAmount | number }}
-}
-運費 {{ order.shippingFee === 0 ? '免運 (NT$ 0)' : 'NT$ ' + order.shippingFee }}
-實付結帳總額
-TWD {{ order.totalAmount | number }}
+
+<!-- ══ 主內容 ══════════════════════════════════════════════ -->
+@if (!isLoading && !isError && order) {
+
+<!-- Hero Banner：付款成功 -->
+<section class="oc-hero-section">
+  <div class="oc-container">
+    <div class="oc-hero-card">
+      <!-- 裝飾光暈 -->
+      <div class="oc-glow oc-glow--top-right"></div>
+      <div class="oc-glow oc-glow--bottom-left"></div>
+
+      <div class="oc-hero-inner">
+        <!-- 左側：圖示 + 文字 -->
+        <div class="oc-hero-left">
+          <div class="oc-success-icon">
+            <i class="pi pi-verified"></i>
+          </div>
+          <div class="oc-hero-text">
+            <span class="oc-status-badge">
+              <span class="oc-badge-dot"></span>
+              付款成功・已建立訂單
+            </span>
+            <h1 class="oc-hero-title">感謝您的訂購！訂單已成立</h1>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 主要內容區：左 8 欄 + 右 4 欄 -->
+<section class="oc-main-section">
+  <div class="oc-container">
+    <div class="oc-layout">
+
+      <!-- ══ 左側：品項 + 物流 + 付款 ═══════════════════ -->
+      <div class="oc-left">
+
+        <!-- 品項明細（依賣家分組） -->
+        @for (group of order.orderGroups; track group.orderId) {
+        <div class="oc-card">
+
+          <!-- 賣家標頭 -->
+          <div class="oc-card-header">
+            <div class="oc-card-title-row">
+              <i class="pi pi-shop oc-card-icon"></i>
+              <h2 class="oc-card-title">{{ group.sellerName }}</h2>
+            </div>
+            <span class="oc-order-no">訂單 {{ group.orderNo }}</span>
+          </div>
+
+          <!-- 品項列表 -->
+          <div class="oc-items">
+            @for (item of group.items; track item.productId) {
+            <div class="oc-item-row">
+              <!-- 商品圖片 -->
+              <div class="oc-item-img">
+                @if (item.imageUrl) {
+                <img [src]="item.imageUrl" [alt]="item.productName" />
+                } @else {
+                <i class="pi pi-image"></i>
+                }
+              </div>
+
+              <!-- 商品資訊 -->
+              <div class="oc-item-info">
+                <h3 class="oc-item-name">{{ item.productName }}</h3>
+                <p class="oc-item-qty">數量：{{ item.quantity }} 件</p>
+              </div>
+
+              <!-- 價格 -->
+              <div class="oc-item-price">
+                <span class="oc-unit-price">NT$ {{ item.unitPrice | number }} / 件</span>
+                <span class="oc-line-total">NT$ {{ item.lineTotal | number }}</span>
+              </div>
+            </div>
+            }
+          </div>
+
+        </div>
+        }
+
+        <!-- 收件配送資訊 + 付款資訊（二欄） -->
+        <div class="oc-info-grid">
+
+          <!-- 收件配送 -->
+          <div class="oc-card oc-card--info">
+            <div class="oc-card-header">
+              <i class="pi pi-map-marker oc-card-icon"></i>
+              <h3 class="oc-card-title">收件配送資訊</h3>
+            </div>
+            <ul class="oc-info-list">
+              <li>
+                <span class="oc-info-label">收件人姓名</span>
+                <span class="oc-info-value">{{ order.recipientName }}</span>
+              </li>
+              <li>
+                <span class="oc-info-label">聯絡手機</span>
+                <span class="oc-info-value">{{ order.recipientPhone }}</span>
+              </li>
+              <li>
+                <span class="oc-info-label">配送方式</span>
+                <span class="oc-info-value">{{ shippingMethodLabel(order.shippingMethod) }}</span>
+              </li>
+              <li class="oc-info-addr">
+                <span class="oc-info-label">收件地址</span>
+                <span class="oc-info-value oc-info-value--addr">{{ order.shippingAddress }}</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- 付款資訊 -->
+          <div class="oc-card oc-card--info">
+            <div class="oc-card-header">
+              <i class="pi pi-credit-card oc-card-icon"></i>
+              <h3 class="oc-card-title">付款資訊</h3>
+            </div>
+            <ul class="oc-info-list">
+              <li>
+                <span class="oc-info-label">付款方式</span>
+                <span class="oc-info-value">信用卡一次付清</span>
+              </li>
+              <li>
+                <span class="oc-info-label">扣款狀態</span>
+                <span class="oc-payment-badge">
+                  <span class="oc-badge-dot"></span>
+                  {{ order.paymentStatus === 1 ? '付款成功' : '付款處理中' }}
+                </span>
+              </li>
+            </ul>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ══ 右側：金額總覽 + 操作按鈕 ═══════════════════ -->
+      <div class="oc-right">
+        <div class="oc-receipt-card">
+
+          <h3 class="oc-receipt-title">結帳金額總覽</h3>
+
+          <!-- 金額明細 -->
+          <div class="oc-receipt-rows">
+            <div class="oc-receipt-row">
+              <span>商品小計（{{ totalItemCount }} 件）</span>
+              <span>NT$ {{ order.subTotal | number }}</span>
+            </div>
+            @if (order.discountAmount > 0) {
+            <div class="oc-receipt-row oc-receipt-row--discount">
+              <span>優惠折抵</span>
+              <span>－ NT$ {{ order.discountAmount | number }}</span>
+            </div>
+            }
+            <div class="oc-receipt-row">
+              <span>運費</span>
+              <span>{{ order.shippingFee === 0 ? '免運 (NT$ 0)' : 'NT$ ' + order.shippingFee }}</span>
+            </div>
+          </div>
+
+          <!-- 實付總額 -->
+          <div class="oc-receipt-total">
+            <div class="oc-receipt-total-inner">
+              <span class="oc-total-label">實付結帳總額</span>
+              <div class="oc-total-amount">
+                <span class="oc-total-currency">TWD</span>
+                <span class="oc-total-number">{{ order.totalAmount | number }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 操作按鈕 -->
+          <div class="oc-actions">
+            <p-button label="查看訂單狀態" icon="pi pi-list" styleClass="oc-btn-primary" (onClick)="goToOrderTracking()" />
+            <p-button label="回到商城繼續逛逛" icon="pi pi-arrow-left" severity="secondary" [text]="true"
+              styleClass="oc-btn-secondary" (onClick)="goToMarket()" />
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
 }
