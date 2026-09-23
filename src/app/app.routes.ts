@@ -82,5 +82,6 @@ export const routes: Routes = [
   { path: 'market/cart', component: ShoppingCartComponent },
   { path: 'market/checkout/shipping', component: CheckoutShippingComponent },
   { path: 'checkout/complete/:batchId', component: OrderCompleteComponent },
+  { path: 'sellcenter', loadChildren: () => import('./sellcenter/sellcenter.routes').then(r => r.SELLCENTER_ROUTES), },
   { path: '**', redirectTo: 'recipes' }
 ];

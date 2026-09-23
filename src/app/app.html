@@ -1,3 +1,4 @@
+@if (!isSellerCenter()) {
 <header class="topbar">
   <a class="brand" routerLink="/recipes" aria-label="友料美食生活平台首頁">
     <span class="brand-mark" aria-hidden="true">
@@ -141,11 +142,14 @@
     <i class="pi" [class.pi-bars]="!isMobileNavigationOpen()" [class.pi-times]="isMobileNavigationOpen()"></i>
   </button>
 </header>
+}
 
-<main class="app-content">
+
+<main [class]="isSellerCenter() ? '' : 'app-content'">
   <router-outlet />
 </main>
 
+@if (!isSellerCenter()) {
 <footer class="footer p-4 md:p-8">
   <div>
     <strong>友料美食生活平台．SMART COOKING &amp; RECIPE HUB</strong>
@@ -153,3 +157,4 @@
   </div>
   <small>© 2026 友料美食生活平台 All Rights Reserved.</small>
 </footer>
+}

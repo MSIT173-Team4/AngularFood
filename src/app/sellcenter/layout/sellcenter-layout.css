@@ -1,0 +1,17 @@
+.sellcenter-shell {
+  display: flex;
+  min-height: 100vh;
+  background: #F4F6F5;
+}
+
+.sellcenter-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.sellcenter-content {
+  padding: 1.5rem;
+  flex: 1;
+}
