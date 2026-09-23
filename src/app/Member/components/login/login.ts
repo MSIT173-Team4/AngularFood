@@ -55,6 +55,8 @@ export class Login implements AfterViewInit {
       theme: 'outline',
       size: 'large',
       text: 'signin_with',
+      shape: 'rectangular',
+      width: 220,
     });
   }
   login(): void {
