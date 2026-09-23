@@ -263,10 +263,11 @@ export class ProductFormComponent implements OnInit, OnDestroy {
   }
 
   dropImage(event: CdkDragDrop<DisplayImage[]>): void {
-    moveItemInArray(this.activeImages, event.previousIndex, event.currentIndex);
-    // 同步回 displayImages（保留 toDelete 的位置不動）
-    const active = this.activeImages;
+    const active = this.displayImages.filter(img => !img.toDelete);
     const deleted = this.displayImages.filter(img => img.toDelete);
+
+    moveItemInArray(active, event.previousIndex, event.currentIndex);
+
     this.displayImages = [...active, ...deleted];
   }
 
@@ -280,12 +281,20 @@ export class ProductFormComponent implements OnInit, OnDestroy {
   // ── 送出 ──────────────────────────────────────────────
   submit(): void {
     if (!this.validateForm()) return;
-    this.isEditMode ? this.doUpdate() : this.doCreate(1);
+    if (this.isEditMode) {
+      this.doUpdate(1);  // 傳 status=1
+    } else {
+      this.doCreate(1);
+    }
   }
 
   saveDraft(): void {
     if (!this.validateForm(true)) return;
-    this.isEditMode ? this.doUpdate() : this.doCreate(3);
+    if (this.isEditMode) {
+      this.doUpdate(3);  // 傳 status=3
+    } else {
+      this.doCreate(3);
+    }
   }
 
   private validateForm(isDraft = false): boolean {
@@ -353,9 +362,9 @@ export class ProductFormComponent implements OnInit, OnDestroy {
       });
   }
 
-  private doUpdate(): void {
+  private doUpdate(status?: number): void {
     this.submitting = true;
-    const formData = this.buildFormData();
+    const formData = this.buildFormData(status);
 
     // 要刪除的舊圖 id
     const deleteIds = this.displayImages

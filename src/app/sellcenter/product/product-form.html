@@ -72,7 +72,7 @@
       <div class="image-upload-area" cdkDropList cdkDropListOrientation="horizontal"
         (cdkDropListDropped)="dropImage($event)">
 
-        @for (img of activeImages; track img.previewUrl) {
+        @for (img of activeImages; track $index) {
         <div class="image-slot filled" cdkDrag>
           <div class="drag-placeholder" *cdkDragPlaceholder></div>
           <img [src]="img.previewUrl" alt="商品圖片" />
@@ -90,6 +90,7 @@
           <input type="file" accept="image/*" multiple hidden (change)="onImageSelect($event)" />
           </label>
           }
+
       </div>
     </div>
 
