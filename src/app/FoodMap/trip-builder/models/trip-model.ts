@@ -1,25 +1,41 @@
-// ⚠️ 假設：POST /api/trips 吃這個形狀，對照你實際的
-// CreateTripDto／TripDto 調整欄位名稱與巢狀結構。
-
-export interface CreateTripPlaceRequest {
-  placeId: number;
-  sortOrder: number;
+export enum GoogleTravelMode {
+  Drive = 0,
+  Walk = 1,
+  Bicycle = 2,
+  TwoWheeler = 3,
+  Transit = 4
 }
 
-export interface CreateTripRequest {
-  name: string;
-  places: CreateTripPlaceRequest[];
+// 對應後端 PlanTripApiRequest（Controllers/FoodMap/TripsController.cs）
+export interface PlanTripRequest {
+  shoppingListId: number;
+  originLatitude: number;
+  originLongitude: number;
+  travelMode: GoogleTravelMode;
+  searchRadiusMeters?: number;
 }
 
+// 對應後端 TripPlaceDTO —— 已用 Postman 實測驗證過，欄位名稱、大小寫都以實測結果為準
 export interface TripPlaceDto {
-  tripPlaceId: number;
-  placeId: number;
-  placeName: string;
-  sortOrder: number;
+  fTripPlaceId: number;
+  fPlaceId: number;
+  fPlaceName: string;
+  fAddress: string;
+  fLatitude: number;
+  fLongitude: number;
+  fSortOrder: number;
 }
 
+// 對應後端 TripDTO
 export interface TripDto {
-  tripId: number;
-  name: string;
+  fTripId: number;
+  fTripName: string;
   places: TripPlaceDto[];
+}
+
+// 對應後端 PlanTripResultDTO —— 已用 Postman 實測驗證過
+export interface PlanTripResult {
+  trip: TripDto;
+  finalCoveragePercentage: number;
+  uncoveredItemNames: string[];
 }

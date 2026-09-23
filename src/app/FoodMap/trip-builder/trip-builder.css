@@ -1,58 +1,40 @@
-.trip-builder {
-  max-width: 720px;
+.planner-layout {
+  display: grid;
+  grid-template-columns: 320px 1fr 360px;
+  gap: 16px;
+  padding: 20px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 2rem 1.25rem 4rem;
+}
+
+@media (max-width: 1024px) {
+  .planner-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.field {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 6px;
+  margin-bottom: 14px;
 }
 
-.coords-manual {
-  display: flex;
-  gap: 1rem;
-  margin-top: 0.75rem;
-}
-
-.error {
-  color: var(--p-red-500, #b3261e);
-  font-size: 0.9rem;
-}
-
-.search-meta {
-  display: flex;
-  gap: 0.75rem;
-  align-items: center;
-  margin: 0.75rem 0;
+.field label {
   font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--p-text-muted-color, #666);
 }
 
-.place-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+.plan-button {
+  width: 100%;
+  margin-top: 8px;
 }
 
-.place-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
-}
-
-.place-info p {
-  margin: 0.2rem 0;
+.error-text {
+  color: #d33;
   font-size: 0.85rem;
-}
-
-.selected-list {
-  padding-left: 1.25rem;
-}
-
-.selected-list li {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.4rem;
+  margin-top: 10px;
 }
 
 .empty-hint {
@@ -60,10 +42,123 @@
   font-size: 0.9rem;
 }
 
-.success {
-  margin-top: 1rem;
-  padding: 1rem;
-  background: var(--p-green-50, #eaf6ec);
-  border: 1px solid var(--p-green-200, #b7dfc0);
-  border-radius: 6px;
+.coverage-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.coverage-row span {
+  white-space: nowrap;
+  font-size: 0.85rem;
+}
+
+.coverage-row p-progressbar {
+  flex: 1;
+}
+
+.uncovered-box {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.route-preview {
+  display: flex;
+  flex-direction: column;
+}
+
+.route-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.step-marker {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--p-primary-color, #c0392b);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.step-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.85rem;
+}
+
+.step-info span {
+  color: var(--p-text-muted-color, #888);
+}
+
+.route-connector {
+  width: 2px;
+  height: 20px;
+  background: var(--p-primary-200, #e8b4ac);
+  margin-left: 13px;
+}
+
+.itinerary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.itinerary-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--p-surface-border, #e5e5e5);
+  border-radius: 8px;
+  cursor: move;
+  background: var(--p-surface-card, #fff);
+}
+
+.itinerary-item.cdk-drag-preview {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.itinerary-item.cdk-drag-placeholder {
+  opacity: 0.3;
+}
+
+.itinerary-badge {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--p-primary-color, #c0392b);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.itinerary-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.85rem;
+  min-width: 0;
+}
+
+.itinerary-body span {
+  color: var(--p-text-muted-color, #888);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

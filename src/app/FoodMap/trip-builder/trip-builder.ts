@@ -1,22 +1,23 @@
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { DragDropModule, moveItemInArray, CdkDragDrop } from '@angular/cdk/drag-drop';
 
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { InputNumberModule } from 'primeng/inputnumber';
-import { InputTextModule } from 'primeng/inputtext';
+import { SelectModule } from 'primeng/select';
+import { ProgressBarModule } from 'primeng/progressbar';
 import { TagModule } from 'primeng/tag';
+import { DividerModule } from 'primeng/divider';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
+import { GoogleTravelMode, TripPlaceDto } from './models/trip-model';
+import { TripPlanningService } from './services/tripservice';
 
-import { PlaceService } from './services/placeservice';
-import { TripService } from './services/tripservice';
-import { NearbyResponse, PlaceDto } from './models/place-model';
-import { TripDto } from './models/trip-model';
-
-interface SelectedPlace {
-  placeId: number;
-  name: string;
-  sortOrder: number;
+interface TravelModeOption {
+  label: string;
+  value: GoogleTravelMode;
 }
 
 @Component({
@@ -25,187 +26,142 @@ interface SelectedPlace {
   imports: [
     CommonModule,
     FormsModule,
+    DragDropModule,
     ButtonModule,
     CardModule,
     InputNumberModule,
-    InputTextModule,
-    TagModule
+    SelectModule,
+    ProgressBarModule,
+    TagModule,
+    DividerModule,
+    ToastModule
   ],
+  providers: [MessageService],
   templateUrl: './trip-builder.html',
   styleUrl: './trip-builder.css'
 })
 export class TripBuilder {
-  // ── Step 1：座標 ──
-  latitude: number | null = null;
-  longitude: number | null = null;
-  readonly locationError = signal<string | null>(null);
+  private tripPlanningService = inject(TripPlanningService);
+  private messageService = inject(MessageService);
 
-  // ── Step 2：搜尋附近店家 ──
-  readonly isSearching = signal(false);
-  readonly searchError = signal<string | null>(null);
-  readonly searchResult = signal<NearbyResponse | null>(null);
+  // 搜尋條件（左欄）
+  shoppingListId = 6; // 測試用清單 ID，實際串接時應從使用者選擇的採買清單帶入
+  originLatitude = 25.07;
+  originLongitude = 121.57;
+  searchRadiusMeters = 3000;
 
-  // 已經 resolve 過的店家，用 googlePlaceId 當 Key 避免重複呼叫 API。
-  private readonly resolvedPlaceIds = new Map<string, number>();
-  readonly resolvingGooglePlaceId = signal<string | null>(null);
+  travelModeOptions: TravelModeOption[] = [
+    { label: '開車', value: GoogleTravelMode.Drive },
+    { label: '走路', value: GoogleTravelMode.Walk },
+    { label: '騎自行車', value: GoogleTravelMode.Bicycle },
+    { label: '機車/二輪車', value: GoogleTravelMode.TwoWheeler },
+    { label: '大眾運輸', value: GoogleTravelMode.Transit }
+  ];
+  selectedTravelMode: GoogleTravelMode = GoogleTravelMode.Drive;
 
-  // ── Step 3：組行程 ──
-  tripName = '';
-  readonly selectedPlaces = signal<SelectedPlace[]>([]);
-  readonly isCreatingTrip = signal(false);
-  readonly createTripError = signal<string | null>(null);
-  readonly createdTrip = signal<TripDto | null>(null);
+  loading = signal(false);
+  errorMessage = signal<string | null>(null);
 
-  constructor(
-    private readonly placeService: PlaceService,
-    private readonly tripService: TripService
-  ) {}
+  // 結果（中欄路線預覽 + 右欄行程列表共用同一份資料）
+  tripId = signal<number | null>(null);
+  tripPlaces = signal<TripPlaceDto[]>([]);
+  tripName = signal<string | null>(null);
+  finalCoveragePercentage = signal(0);
+  uncoveredItemNames = signal<string[]>([]);
 
-  // 用瀏覽器內建 Geolocation 拿目前座標，不需要額外的 Google API。
   useCurrentLocation(): void {
-    this.locationError.set(null);
-
     if (!navigator.geolocation) {
-      this.locationError.set('這個瀏覽器不支援定位功能。');
+      this.messageService.add({
+        severity: 'warn',
+        summary: '不支援定位',
+        detail: '這個瀏覽器不支援定位功能，請手動輸入經緯度。'
+      });
       return;
     }
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        this.latitude = position.coords.latitude;
-        this.longitude = position.coords.longitude;
+        this.originLatitude = position.coords.latitude;
+        this.originLongitude = position.coords.longitude;
       },
       () => {
-        this.locationError.set('無法取得目前位置，請手動輸入經緯度測試。');
+        this.messageService.add({
+          severity: 'warn',
+          summary: '無法取得目前位置',
+          detail: '請手動輸入經緯度測試。'
+        });
       }
     );
   }
 
-  // 後端內部本身就會先查 1km，不夠再自動擴大到 3km，
-  // 這裡只負責把結果跟 expandedSearch 旗標顯示出來。
-  search(): void {
-    if (this.latitude == null || this.longitude == null) {
-      this.searchError.set('請先取得或輸入經緯度。');
-      return;
-    }
+  planTrip(): void {
+    this.loading.set(true);
+    this.errorMessage.set(null);
 
-    this.isSearching.set(true);
-    this.searchError.set(null);
-    this.searchResult.set(null);
-
-    this.placeService
-      .getNearbyPlaces({
-        fLatitude: this.latitude,
-        fLongitude: this.longitude
+    this.tripPlanningService
+      .planTrip({
+        shoppingListId: this.shoppingListId,
+        originLatitude: this.originLatitude,
+        originLongitude: this.originLongitude,
+        travelMode: this.selectedTravelMode,
+        searchRadiusMeters: this.searchRadiusMeters
       })
       .subscribe({
-        next: (response) => {
-          console.log('nearby 原始回應：', response); // 先確認欄位名稱對不對，測試穩定後可拿掉
-          this.isSearching.set(false);
-          this.searchResult.set(response);
+        next: (result: { trip: { fTripId: number | null; fTripName: string | null; places: TripPlaceDto[]; }; finalCoveragePercentage: number; uncoveredItemNames: string[]; }) => {
+          this.tripId.set(result.trip.fTripId);
+          this.tripName.set(result.trip.fTripName);
+          this.tripPlaces.set(result.trip.places);
+          this.finalCoveragePercentage.set(result.finalCoveragePercentage);
+          this.uncoveredItemNames.set(result.uncoveredItemNames);
+          this.loading.set(false);
         },
-        error: (err) => {
-          this.isSearching.set(false);
-          this.searchError.set(
-            err?.error?.message ?? '搜尋失敗，請稍後再試。'
+        error: (error) => {
+          console.error(error);
+          this.errorMessage.set(
+            error?.error?.message ?? '規劃行程失敗，請確認 API 是否正常啟動、Token 是否有效。'
           );
+          this.loading.set(false);
         }
       });
   }
 
-  addPlaceToTrip(place: PlaceDto): void {
-    if (place.fPlaceId > 0) {
-      this.pushSelectedPlace(place.fPlaceId, place.fName);
-      return;
+  // 對應截圖右欄「行程列表」的拖曳排序。
+  // 目前只做本地排序（樂觀更新），因為後端 /reorder 端點還沒做（規格 E 節），
+  // 呼叫失敗只印警告，不擋住使用者操作。
+  onDrop(event: CdkDragDrop<TripPlaceDto[]>): void {
+    const reordered = [...this.tripPlaces()];
+    moveItemInArray(reordered, event.previousIndex, event.currentIndex);
+
+    const withUpdatedSortOrder = reordered.map((place, index) => ({
+      ...place,
+      fSortOrder: index + 1
+    }));
+
+    this.tripPlaces.set(withUpdatedSortOrder);
+
+    const tripId = this.tripId();
+    if (!tripId) {
+      return; // 還沒建立行程（tripId 是 null），沒有東西可以同步
     }
 
-    if (!place.fGooglePlaceId) {
-      this.createTripError.set('這筆店家資料缺少 GooglePlaceID，無法加入行程。');
-      return;
-    }
-
-    const cached = this.resolvedPlaceIds.get(place.fGooglePlaceId);
-    if (cached != null) {
-      this.pushSelectedPlace(cached, place.fName);
-      return;
-    }
-
-    this.resolvingGooglePlaceId.set(place.fGooglePlaceId);
-
-    this.placeService
-      .resolvePlace({
-        googlePlaceId: place.fGooglePlaceId,
-        categoryId: 1 // ⚠️ 先寫死，之後對照實際的分類來源調整
-      })
-      .subscribe({
-        next: (placeId) => {
-          this.resolvingGooglePlaceId.set(null);
-          this.resolvedPlaceIds.set(place.fGooglePlaceId!, placeId);
-          this.pushSelectedPlace(placeId, place.fName);
-        },
-        error: (err) => {
-          this.resolvingGooglePlaceId.set(null);
-          this.createTripError.set(
-            err?.error?.message ?? '無法收錄這間店，請稍後再試。'
-          );
-        }
-      });
-  }
-
-  private pushSelectedPlace(placeId: number, name: string): void {
-    const current = this.selectedPlaces();
-
-    if (current.some((p) => p.placeId === placeId)) {
-      return;
-    }
-
-    this.selectedPlaces.set([
-      ...current,
-      { placeId, name, sortOrder: current.length + 1 }
-    ]);
-  }
-
-  removePlace(placeId: number): void {
-    const remaining = this.selectedPlaces()
-      .filter((p) => p.placeId !== placeId)
-      .map((p, index) => ({ ...p, sortOrder: index + 1 }));
-
-    this.selectedPlaces.set(remaining);
-  }
-
-  createTrip(): void {
-    if (!this.tripName.trim()) {
-      this.createTripError.set('請輸入行程名稱。');
-      return;
-    }
-
-    if (this.selectedPlaces().length === 0) {
-      this.createTripError.set('請至少選一間店加入行程。');
-      return;
-    }
-
-    this.isCreatingTrip.set(true);
-    this.createTripError.set(null);
-
-    this.tripService
-      .createTrip({
-        name: this.tripName,
-        places: this.selectedPlaces().map((p) => ({
-          placeId: p.placeId,
-          sortOrder: p.sortOrder
+    this.tripPlanningService
+      .reorderTripPlaces(
+        tripId,
+        withUpdatedSortOrder.map((p) => ({
+          placeId: p.fPlaceId,
+          sortOrder: p.fSortOrder
         }))
-      })
+      )
       .subscribe({
-        next: (trip) => {
-          this.isCreatingTrip.set(false);
-          this.createdTrip.set(trip);
-        },
-        error: (err) => {
-          this.isCreatingTrip.set(false);
-          this.createTripError.set(
-            err?.error?.message ?? '建立行程失敗，請稍後再試。'
-          );
+        next: () => { },
+        error: (error) => {
+          // 預期後端這支還沒做，404 是正常現象，不跳錯誤訊息擋住使用者
+          console.warn('reorder 同步失敗（後端 E 節尚未完成，屬預期行為）：', error);
         }
       });
+  }
+
+  formatCoveragePercentage(): number {
+    return Math.round(this.finalCoveragePercentage() * 100);
   }
 }
