@@ -12,7 +12,8 @@ import { filter } from 'rxjs';
 
 import { NotificationCenterService } from './layout/notification-center.service';
 
-type HeaderPanel = 'recipe' | 'search' | 'cart' | 'notifications' | 'profile';
+type HeaderPanel = 'recipe' | 'market' | 'search' | 'cart' | 'notifications' | 'profile';
+
 
 @Component({
   selector: 'app-root',
