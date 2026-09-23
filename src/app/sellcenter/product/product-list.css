@@ -1,0 +1,380 @@
+/* ── 歡迎橫幅 ── */
+.welcome-banner {
+  background: linear-gradient(to right, #173024, #254A39);
+  border-radius: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid #2D5A44;
+}
+
+.banner-chip {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  background: #3A6B53;
+  color: #A7F3D0;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.375rem;
+}
+
+.banner-title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.banner-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  flex-shrink: 0;
+}
+
+.btn-back {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.875rem;
+  border-radius: 0.5rem;
+  background: #234333;
+  border: 1px solid #355B47;
+  color: #E2EBE5;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+
+.btn-back:hover {
+  background: #2C5340;
+  color: #fff;
+}
+
+/* ── 列表卡片 ── */
+.list-card {
+  background: #fff;
+  border-radius: 0.75rem;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  overflow: hidden;
+}
+
+/* ── Tab 篩選列 ── */
+.tab-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #E2E8F0;
+  background: #FCFDFD;
+  overflow-x: auto;
+}
+
+.tab-btn {
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.5rem;
+  border: none;
+  background: transparent;
+  color: #64748B;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+}
+
+.tab-btn:hover {
+  background: #F1F5F9;
+  color: #1E293B;
+}
+
+.tab-btn.active {
+  background: #1E3A2B;
+  color: #fff;
+  font-weight: 600;
+}
+
+.tab-btn.tab-danger {
+  color: #DC2626;
+}
+
+.tab-btn.tab-danger:hover {
+  background: #FEF2F2;
+}
+
+.tab-btn.tab-danger.active {
+  background: #DC2626;
+  color: #fff;
+}
+
+/* ── Table ── */
+:host ::ng-deep .seller-table .p-datatable-thead > tr > th {
+  background: #F8FAFC;
+  color: #64748B;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid #E2E8F0;
+  padding: 0.875rem;
+}
+
+:host ::ng-deep .seller-table .p-datatable-tbody > tr > td {
+  padding: 0.875rem;
+  border-bottom: 1px solid #F1F5F9;
+  font-size: 0.8125rem;
+  vertical-align: middle;
+}
+
+:host ::ng-deep .seller-table .p-datatable-tbody > tr:hover > td {
+  background: #F8FAFC;
+}
+
+:host ::ng-deep .seller-table .p-paginator {
+  border-top: 1px solid #E2E8F0;
+  background: #FCFDFD;
+  padding: 0.75rem 1rem;
+}
+
+/* ── 列狀態 ── */
+:host ::ng-deep .seller-table .row-low-stock > td {
+  background: rgba(254,242,242,0.4);
+}
+
+:host ::ng-deep .seller-table .row-low-stock:hover > td {
+  background: #FEF2F2;
+}
+
+:host ::ng-deep .seller-table .row-inactive > td {
+  opacity: 0.7;
+  background: #F8FAFC;
+}
+
+/* ── 商品資訊欄 ── */
+.product-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.product-thumb {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 0.5rem;
+  object-fit: cover;
+  border: 1px solid #E2E8F0;
+  flex-shrink: 0;
+}
+
+.product-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.product-name {
+  font-weight: 600;
+  color: #1E293B;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.product-name:hover {
+  color: #2D6A4F;
+}
+
+.product-tags {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+}
+
+.sku-text {
+  font-size: 0.6875rem;
+  color: #94A3B8;
+}
+
+/* ── Tag 小尺寸 ── */
+:host ::ng-deep .tag-sm.p-tag {
+  font-size: 0.625rem;
+  padding: 0.125rem 0.375rem;
+}
+
+/* ── 售價 ── */
+.price-cell {
+  font-weight: 600;
+  color: #1E293B;
+}
+
+/* ── 庫存 badge ── */
+.stock-badge {
+  display: inline-block;
+  padding: 0.25rem 0.625rem;
+  border-radius: 0.375rem;
+  background: #F1F5F9;
+  color: #1E293B;
+  font-weight: 500;
+}
+
+.stock-badge.danger {
+  background: #FEE2E2;
+  color: #DC2626;
+  font-weight: 700;
+  border: 1px solid #FCA5A5;
+}
+
+/* ── 銷量 ── */
+.sales-num {
+  font-weight: 500;
+  color: #059669;
+}
+
+.text-muted {
+  color: #94A3B8;
+}
+
+/* ── 操作欄 ── */
+.action-btns {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.restock-btn {
+  font-size: 0.6875rem !important;
+  padding: 0.25rem 0.5rem !important;
+}
+
+/* ── 空資料 ── */
+.empty-msg {
+  padding: 2rem;
+  color: #94A3B8;
+}
+
+/* ── 文字對齊 ── */
+.text-right  { text-align: right; }
+.text-center { text-align: center; }
+
+
+/* ── 庫存微調 Dialog ── */
+.stock-dialog-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 0.5rem 0;
+}
+
+.stock-product-name {
+  font-weight: 600;
+  color: #1E293B;
+  margin: 0;
+  font-size: 0.9375rem;
+}
+
+.stock-input-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.stock-input-row label {
+  font-size: 0.875rem;
+  color: #64748B;
+  flex-shrink: 0;
+}
+
+.stock-current {
+  font-weight: 600;
+  color: #1E293B;
+}
+
+:host ::ng-deep .stock-input {
+  width: 100%;
+}
+
+.stock-row-label {
+  font-size: 0.875rem;
+  color: #64748B;
+  flex-shrink: 0;
+}
+
+:host ::ng-deep .stock-input .p-inputnumber {
+  width: 100%;
+}
+
+/* ── 搜尋列 ── */
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #E2E8F0;
+  background: #FCFDFD;
+}
+
+.search-input-wrap {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 0.75rem;
+  color: #94A3B8;
+  font-size: 0.875rem;
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.5rem 2.5rem 0.5rem 2.25rem;
+  border: 1px solid #CBD5E1;
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  color: #1E293B;
+  background: #F8FAFC;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.search-input:focus {
+  border-color: #2D6A4F;
+  box-shadow: 0 0 0 2px rgba(45,106,79,0.15);
+  background: #fff;
+}
+
+.search-input::placeholder {
+  color: #94A3B8;
+}
+
+.search-clear {
+  position: absolute;
+  right: 0.75rem;
+  border: none;
+  background: transparent;
+  color: #94A3B8;
+  cursor: pointer;
+  padding: 0;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+}
+
+.search-clear:hover {
+  color: #475569;
+}

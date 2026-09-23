@@ -1,3 +1,4 @@
+@if (!isSellerCenter()) {
 <header class="topbar">
   <a class="brand" routerLink="/recipes" aria-label="友料美食生活平台首頁">
     <span class="brand-mark" aria-hidden="true">
@@ -47,7 +48,39 @@
       </section>
       }
     </div>
-    <a routerLink="/market/create-product" routerLinkActive="active">友善商城</a>
+    <div class="navigation-group" (mouseenter)="openPanel('market')" (mouseleave)="closePanel('market')">
+      <button type="button" class="navigation-trigger" [class.active]="activePanel() === 'market'"
+        [attr.aria-expanded]="activePanel() === 'market'" (click)="togglePanel('market')">
+        友善商城
+        <i class="pi pi-chevron-down" aria-hidden="true"></i>
+      </button>
+
+      @if (activePanel() === 'market') {
+      <section class="mega-menu" aria-label="逛逛商品">
+        <div class="mega-menu-intro mega-menu-intro--image">
+          <img src="/images/market/cutepic.png" alt="友善商城主圖">
+        </div>
+        <div class="mega-menu-links">
+          <a routerLink="/market/products" routerLinkActive="active">
+            <i class="pi pi-shopping-bag"></i>
+            <span><b>逛逛商品</b><small>來把錢錢變成喜歡的食材與餐廚用品吧</small></span>
+          </a>
+          <a routerLink="/market/cart" routerLinkActive="active">
+            <i class="pi pi-shopping-cart"></i>
+            <span><b>購物車</b><small>快來清空你的購物車吧</small></span>
+          </a>
+          <a routerLink="/market/products" routerLinkActive="active">
+            <i class="pi pi-file"></i>
+            <span><b>我的訂單</b><small>看看你買過哪些好東西吧</small></span>
+          </a>
+          <a routerLink="/sellcenter" routerLinkActive="active">
+            <i class="pi pi-shop"></i>
+            <span><b>賣家中心</b><small>管理商品，開啟你的賣場吧</small></span>
+          </a>
+        </div>
+      </section>
+      }
+    </div>
     <a routerLink="/forum" routerLinkActive="active">討論區</a>
     <a routerLink="/trip-builder" routerLinkActive="active">美食地圖</a>
   </nav>
@@ -141,11 +174,14 @@
     <i class="pi" [class.pi-bars]="!isMobileNavigationOpen()" [class.pi-times]="isMobileNavigationOpen()"></i>
   </button>
 </header>
+}
 
-<main class="app-content">
+
+<main [class]="isSellerCenter() ? '' : 'app-content'">
   <router-outlet />
 </main>
 
+@if (!isSellerCenter()) {
 <footer class="footer p-4 md:p-8">
   <div>
     <strong>友料美食生活平台．SMART COOKING &amp; RECIPE HUB</strong>
@@ -153,3 +189,4 @@
   </div>
   <small>© 2026 友料美食生活平台 All Rights Reserved.</small>
 </footer>
+}

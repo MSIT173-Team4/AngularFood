@@ -1,0 +1,43 @@
+<aside class="sellcenter-sidebar">
+
+  <div class="sidebar-brand">
+    <div class="brand-icon"><i class="pi pi-shop"></i></div>
+    <div>
+      <div class="brand-title">友料賣家中心</div>
+      <div class="brand-sub">SELLER HUB PRO</div>
+    </div>
+  </div>
+
+  <div class="seller-info">
+    <img src="assets/seller-avatar.png" alt="賣家" class="seller-avatar" />
+    <div>
+      <div class="seller-name">禾日自然農園 &amp; 手作醬坊</div>
+      <div class="seller-status">
+        <span class="status-dot"></span>正常接單中
+      </div>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    @for (item of navItems; track item.route) {
+    <a [routerLink]="item.route" routerLinkActive="active" class="nav-item">
+      <span class="nav-left">
+        <i [class]="item.icon"></i>
+        {{ item.label }}
+      </span>
+      @if (item.badge) {
+      <span [class]="'nav-badge ' + (item.badgeClass || '')">
+        {{ item.badge }}
+      </span>
+      }
+    </a>
+    }
+  </nav>
+
+  <div class="sidebar-footer">
+    <a href="#" class="footer-link">
+      <i class="pi pi-external-link"></i>瀏覽我的賣場公開頁
+    </a>
+  </div>
+
+</aside>

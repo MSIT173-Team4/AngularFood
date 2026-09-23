@@ -55,6 +55,9 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
+          "options": {
+                      "allowedHosts": ["stubbed-buckwheat-staff.ngrok-free.dev"]
+                    },
           "configurations": {
             "production": {
               "buildTarget": "MSI173Team4Angular:build:production"

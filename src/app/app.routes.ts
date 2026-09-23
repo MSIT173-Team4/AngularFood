@@ -6,6 +6,11 @@ import {
   recipeDetailResolver,
   recipeListResolver
 } from './Recipe/recipe.resolvers';
+import { GetPublicProduct } from './Market/components/get-public-product/get-public-product';
+import { ProductDetailComponent } from './Market/components/product-detail/product-detail';
+import { ShoppingCartComponent } from './Market/components/shopping-cart/shopping-cart';
+import { CheckoutShippingComponent } from './Market/components/checkout-shipping/checkout-shipping';
+import { OrderCompleteComponent } from './Market/components/order-complete/order-complete';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'recipes' },
@@ -72,5 +77,11 @@ export const routes: Routes = [
   { path: 'market/create-product', component: CreateProduct },
   { path: 'trip-builder', component: TripBuilder },
   { path: 'cooking/:id', redirectTo: 'cooking-mode/:id' },
+  { path: 'market/products/:id', component: ProductDetailComponent },
+  { path: 'market/products', component: GetPublicProduct },
+  { path: 'market/cart', component: ShoppingCartComponent },
+  { path: 'market/checkout/shipping', component: CheckoutShippingComponent },
+  { path: 'checkout/complete/:batchId', component: OrderCompleteComponent },
+  { path: 'sellcenter', loadChildren: () => import('./sellcenter/sellcenter.routes').then(r => r.SELLCENTER_ROUTES), },
   { path: '**', redirectTo: 'recipes' }
 ];

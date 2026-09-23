@@ -12,7 +12,8 @@ import { filter } from 'rxjs';
 
 import { NotificationCenterService } from './layout/notification-center.service';
 
-type HeaderPanel = 'recipe' | 'search' | 'cart' | 'notifications' | 'profile';
+type HeaderPanel = 'recipe' | 'market' | 'search' | 'cart' | 'notifications' | 'profile';
+
 
 @Component({
   selector: 'app-root',
@@ -20,6 +21,7 @@ type HeaderPanel = 'recipe' | 'search' | 'cart' | 'notifications' | 'profile';
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
+
 export class App {
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
@@ -30,16 +32,18 @@ export class App {
   readonly quickSearchTerm = signal('');
   readonly notifications = this.notificationCenter.notifications;
   readonly notificationCount = this.notificationCenter.unreadCount;
+  readonly isSellerCenter = signal(false);
 
   constructor() {
     this.router.events
       .pipe(
-        filter((event) => event instanceof NavigationEnd),
+        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
         takeUntilDestroyed(this.destroyRef)
       )
-      .subscribe(() => {
+      .subscribe((event) => {
         this.isMobileNavigationOpen.set(false);
         this.activePanel.set(null);
+        this.isSellerCenter.set(event.urlAfterRedirects.startsWith('/sellcenter'));
       });
   }
 

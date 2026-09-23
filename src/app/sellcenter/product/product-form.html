@@ -1,0 +1,182 @@
+<p-toast />
+
+<div class="form-page">
+  <div class="form-header">
+    <h1>{{ pageTitle }}</h1>
+    <div class="form-divider"></div>
+  </div>
+
+  @if (pageLoading) {
+  <div class="loading-mask">
+    <i class="pi pi-spin pi-spinner" style="font-size: 2rem; color: #2D6A4F;"></i>
+  </div>
+  } @else {
+  <div class="form-card">
+
+    <div class="form-row full">
+      <label class="form-label required">商品名稱</label>
+      <input pInputText [(ngModel)]="form.productName" placeholder="請輸入商品名稱" class="w-full" />
+    </div>
+
+    <div class="form-row half">
+      <div class="form-field">
+        <label class="form-label required">大分類</label>
+        <p-select [(ngModel)]="form.parentCategoryId" [options]="topCategories" optionLabel="categoryName"
+          optionValue="categoryId" placeholder="請選擇大分類" (onChange)="onTopCategoryChange()" styleClass="w-full" />
+      </div>
+      <div class="form-field">
+        <label class="form-label required">子分類</label>
+        <p-select [(ngModel)]="form.productsCategoryNo" [options]="subCategories" optionLabel="categoryName"
+          optionValue="categoryNo" placeholder="請先選擇大分類" [disabled]="subCategories.length === 0" styleClass="w-full" />
+      </div>
+    </div>
+
+    <div class="form-row half">
+      <div class="form-field">
+        <label class="form-label required">售價</label>
+        <p-inputnumber [(ngModel)]="form.price" prefix="NT$ " [min]="1" placeholder="0" styleClass="w-full" />
+      </div>
+      <div class="form-field">
+        <label class="form-label required">庫存</label>
+        <p-inputnumber [(ngModel)]="form.stock" [min]="0" placeholder="0" styleClass="w-full" />
+      </div>
+    </div>
+
+    <div class="form-row half">
+      <div class="form-field">
+        <label class="form-label">品牌</label>
+        <input pInputText [(ngModel)]="form.brandOrOrigin" placeholder="品牌或產地" class="w-full" />
+      </div>
+      <div class="form-field">
+        <label class="form-label">生產日期</label>
+        <input pInputText type="date" [(ngModel)]="form.manufacturingDate" class="w-full" />
+      </div>
+    </div>
+
+    <div class="form-row half">
+      <div class="form-field">
+        <label class="form-label">有效期限</label>
+        <input pInputText type="date" [(ngModel)]="form.expirationDate" class="w-full" />
+      </div>
+    </div>
+
+    <div class="form-row full">
+      <label class="form-label">商品描述</label>
+      <textarea pTextarea [(ngModel)]="form.description" rows="5" placeholder="請輸入商品描述" class="w-full resize-none">
+      </textarea>
+    </div>
+
+    <div class="form-row full">
+      <label class="form-label">商品圖片</label>
+      <p class="form-hint">最多 5 張，第一張為主圖，可拖曳調整順序</p>
+      <div class="image-upload-area" cdkDropList cdkDropListOrientation="horizontal"
+        (cdkDropListDropped)="dropImage($event)">
+
+        @for (img of activeImages; track $index) {
+        <div class="image-slot filled" cdkDrag>
+          <div class="drag-placeholder" *cdkDragPlaceholder></div>
+          <img [src]="img.previewUrl" alt="商品圖片" />
+          @if ($index === 0) {
+          <span class="main-badge">主圖</span>
+          }
+          <button class="remove-btn" (click)="removeImage($index)">
+            <i class="pi pi-times"></i>
+          </button>
+        </div>
+        }
+
+        @if (activeImages.length < 5) { <label class="image-slot add-slot">
+          <i class="pi pi-plus"></i>
+          <input type="file" accept="image/*" multiple hidden (change)="onImageSelect($event)" />
+          </label>
+          }
+
+      </div>
+    </div>
+
+    @if (mainImagePreview) {
+    <div class="form-row full">
+      <label class="form-label">主圖預覽</label>
+      <div class="main-preview">
+        <img [src]="mainImagePreview" alt="主圖預覽" class="main-preview-img" (click)="openZoom(mainImagePreview)" />
+        <p class="form-hint">列表與購物車都以主圖顯示。拖曳圖片可調整順序。</p>
+      </div>
+    </div>
+    }
+
+    <div class="form-actions">
+      <button pButton label="立即上架" class="p-button-success" [loading]="submitting" (click)="submit()">
+      </button>
+      <button pButton label="儲存草稿" class="p-button-outlined" [loading]="submitting" (click)="saveDraft()">
+      </button>
+      <button pButton label="預覽商品" class="p-button-outlined p-button-secondary" (click)="openPreview()">
+      </button>
+      <button pButton label="取消" class="p-button-text p-button-secondary" (click)="cancel()">
+      </button>
+    </div>
+
+  </div>
+  }
+</div>
+
+<!-- 預覽 Dialog -->
+<p-dialog [(visible)]="showPreview" [modal]="true" [style]="{ width: '860px' }" header="商品預覽" [draggable]="false">
+  <div class="preview-content">
+    <div class="preview-images">
+      @if (activeImages.length > 0) {
+      <div class="preview-main-img">
+        <img [src]="activeImages[0].previewUrl" alt="主圖" />
+      </div>
+      @if (activeImages.length > 1) {
+      <div class="preview-thumbs">
+        @for (img of activeImages; track img.previewUrl) {
+        <img [src]="img.previewUrl" alt="縮圖" class="preview-thumb" />
+        }
+      </div>
+      }
+      } @else {
+      <div class="preview-no-image">
+        <i class="pi pi-image"></i>
+        <span>尚未上傳圖片</span>
+      </div>
+      }
+    </div>
+    <div class="preview-info">
+      <h2 class="preview-name">{{ form.productName || '商品名稱' }}</h2>
+      <div class="preview-price">NT$ {{ form.price | number }}</div>
+      @if (form.brandOrOrigin) {
+      <div class="preview-meta">
+        <span class="meta-label">品牌／產地</span>
+        <span>{{ form.brandOrOrigin }}</span>
+      </div>
+      }
+      @if (form.manufacturingDate) {
+      <div class="preview-meta">
+        <span class="meta-label">生產日期</span>
+        <span>{{ form.manufacturingDate }}</span>
+      </div>
+      }
+      @if (form.expirationDate) {
+      <div class="preview-meta">
+        <span class="meta-label">有效期限</span>
+        <span>{{ form.expirationDate }}</span>
+      </div>
+      }
+      <div class="preview-stock">
+        <p-tag [value]="'庫存 ' + (form.stock ?? 0) + ' 件'" severity="success" />
+      </div>
+      @if (form.description) {
+      <div class="preview-desc">
+        <p class="desc-label">商品描述</p>
+        <p>{{ form.description }}</p>
+      </div>
+      }
+    </div>
+  </div>
+</p-dialog>
+
+<!-- 放大圖片 Dialog -->
+<p-dialog [(visible)]="showImageZoom" [modal]="true" [style]="{ width: 'auto', maxWidth: '90vw' }" [draggable]="false"
+  [showHeader]="false" styleClass="zoom-dialog">
+  <img [src]="zoomedImage" alt="放大圖片" class="zoom-img" (click)="showImageZoom = false" />
+</p-dialog>
