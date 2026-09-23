@@ -1,46 +1,105 @@
-<div class="page-container">
-  <h1 class="page-title">貼文</h1>
+<div class="forum-container">
+  <div class="forum-header">
+    <div class="header-text">
+      <h1 class="forum-title">討論區 <span class="sub-title">・ 社群交流・小農料理心得分享</span></h1>
+      <p class="forum-desc">分享料理心得、小農好物開箱與食材交流</p>
+    </div>
+    <button class="btn-create-post" (click)="goToCreate()">
+      <i class="fas fa-edit"></i> 發佈文章
+    </button>
+  </div>
 
-  <div class="control-bar">
-    <div class="sort-group">
-      <label>排序方式：</label>
-      <select [(ngModel)]="sortBy" (change)="onSortChange()">
-        <option value="latest">最新</option>
-        <option value="popular">最熱門</option>
-      </select>
+  <div class="filter-bar">
+    <div class="tab-group">
+      <button class="tab-btn" [class.active]="activeTab === 'latest'" (click)="switchTab('latest')">
+        <i class="far fa-clock"></i> 最新貼文
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'popular'" (click)="switchTab('popular')">
+        <i class="fas fa-fire"></i> 熱門貼文
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'my'" (click)="switchTab('my')">
+        <i class="far fa-file-alt"></i> 我的文章
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'bookmark'" (click)="switchTab('bookmark')">
+        <i class="far fa-heart"></i> 喜歡的文章
+      </button>
     </div>
 
-    <div class="search-group">
-      <input type="text" [(ngModel)]="keyword" (keyup.enter)="onSearch()" placeholder="輸入關鍵字..." />
-      <button class="btn-search" (click)="onSearch()">查詢貼文</button>
-      <button class="btn-create" (click)="goToCreate()">發佈貼文</button>
+    <div class="search-box">
+      <i class="fas fa-search search-icon"></i>
+      <input 
+        type="text" 
+        [(ngModel)]="keyword" 
+        (keyup.enter)="onSearch()" 
+        placeholder="搜尋關鍵字或用戶名..." />
     </div>
   </div>
 
   <div class="post-list">
     @for (post of posts; track post.postId) {
       <div class="post-card" (click)="viewPost(post.postId)">
-        <div class="card-top">
-          <h2 class="post-title">{{ post.title }}</h2>
-          <span class="post-date">{{ post.postDate | date:'yyyy/MM/dd HH:mm' }}</span>
+        <button class="bookmark-btn" (click)="toggleBookmark($event, post)" title="收藏文章">
+          <i [class]="post.isBookmarkedByCurrentUser ? 'fas fa-bookmark bookmarked' : 'far fa-bookmark'"></i>
+        </button>
+
+        <h2 class="post-title">{{ post.title }}</h2>
+        <p class="post-summary">{{ post.summaryText }}</p>
+
+        <div class="author-info">
+          <img 
+            [src]="post.userImage || 'assets/images/default-avatar.png'" 
+            alt="用戶頭像" 
+            class="author-avatar" />
+          <div class="author-details">
+            <span class="author-name">{{ post.userName }}</span>
+          </div>
         </div>
 
-        <div class="author-name">{{ post.userName }}</div>
-
-        <div class="card-bottom">
-          <div class="metrics">
-            <span class="like-icon" (click)="toggleLike($event, post)">
-              <i [class]="post.isLikedByCurrentUser ? 'fas fa-heart liked' : 'far fa-heart'"></i>
-              {{ post.likes }}
+        <div class="card-footer">
+          <div class="metrics-group">
+            <span class="metric-item interactable" (click)="toggleLike($event, post)">
+              <i [class]="post.isLikedByCurrentUser ? 'fas fa-thumbs-up liked' : 'far fa-thumbs-up'"></i>
+              <span class="count">{{ post.likes }}</span>
             </span>
-            <span class="views-count">瀏覽量 : {{ post.views }}</span>
+            <span class="metric-item">
+              <i class="far fa-eye"></i> 瀏覽量 {{ post.views }}
+            </span>
+            <span class="metric-item">
+              <i class="far fa-comment-alt"></i> {{ post.commentCount }} 則回覆
+            </span>
           </div>
 
-          <button class="btn-view" (click)="viewPost(post.postId)">查看</button>
+          <div class="post-date">
+            <i class="far fa-calendar-alt"></i> {{ post.postDate | date:'yyyy/MM/dd HH:mm' }}
+          </div>
         </div>
       </div>
     } @empty {
-      <div class="no-posts">尚無任何貼文</div>
+      <div class="empty-state">
+        <i class="far fa-folder-open empty-icon"></i>
+        <p>目前尚無貼文</p>
+      </div>
     }
   </div>
+
+  @if (totalPages > 1) {
+    <div class="pagination-container">
+      <button class="page-btn prev" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+
+      @for (page of pagesArray; track page) {
+        <button 
+          class="page-btn number" 
+          [class.active]="page === currentPage" 
+          (click)="changePage(page)">
+          {{ page }}
+        </button>
+      }
+
+      <button class="page-btn next" [disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
+  }
 </div>

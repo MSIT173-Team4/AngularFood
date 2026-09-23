@@ -69,6 +69,22 @@ export const routes: Routes = [
         (module) => module.PostListComponent
       )
   },
+  {
+    path: 'social/create',
+    title: '發佈文章｜友料美食生活平台',
+    loadComponent: () =>
+      import('./Social/Component/create-post/create-post').then(
+        (module) => module.CreatePostComponent
+      )
+  },
+  {
+    path: 'social/post/:id',
+    title: '討論區｜友料美食生活平台',
+    loadComponent: () =>
+      import('./Social/Component/post-detail/post-detail').then(
+        (module) => module.PostDetailComponent
+      )
+  },
   { path: 'market/create-product', component: CreateProduct },
   { path: 'trip-builder', component: TripBuilder },
   { path: 'cooking/:id', redirectTo: 'cooking-mode/:id' },
