@@ -15,100 +15,89 @@
     </div>
 
     @if (locationError()) {
+    <<<<<<< Updated upstream <p class="error">{{ locationError() }}</p>
+      =======
       <p class="error">{{ locationError() }}</p>
-    }
+      >>>>>>> Stashed changes
+      }
   </p-card>
 
   <!-- Step 2：搜尋附近店家 -->
   <p-card header="2. 搜尋附近店家">
-    <button
-      pButton
-      type="button"
-      label="{{ isSearching() ? '搜尋中…' : '搜尋附近店家' }}"
-      [disabled]="isSearching() || latitude == null || longitude == null"
-      (click)="search()"
-    ></button>
+    <button pButton type="button" label="{{ isSearching() ? '搜尋中…' : '搜尋附近店家' }}"
+      [disabled]="isSearching() || latitude == null || longitude == null" (click)="search()"></button>
 
     @if (searchError()) {
-      <p class="error">{{ searchError() }}</p>
+    <p class="error">{{ searchError() }}</p>
     }
 
     @if (searchResult()) {
-      <div class="search-meta">
-        <span>找到 {{ searchResult()!.resultCount }} 筆</span>
-        <span>搜尋半徑 {{ searchResult()!.searchRadiusKm }} km</span>
-        @if (searchResult()!.expandedSearch) {
-          <p-tag severity="info" value="已自動擴大搜尋至 3 公里" />
-        }
-      </div>
+    <div class="search-meta">
+      <span>找到 {{ searchResult()!.resultCount }} 筆</span>
+      <span>搜尋半徑 {{ searchResult()!.searchRadiusKm }} km</span>
+      @if (searchResult()!.expandedSearch) {
+      <p-tag severity="info" value="已自動擴大搜尋至 3 公里" />
+      }
+    </div>
 
-      <div class="place-list">
-        @for (place of searchResult()!.places; track place.fGooglePlaceId) {
-          <p-card>
-            <div class="place-card">
-              <div class="place-info">
-                <strong>{{ place.fName }}</strong>
-                @if (place.fIsRecommend) {
-                  <p-tag severity="warn" value="推薦" />
-                }
-                <p>{{ place.fAddress }}</p>
-                @if (place.fGoogleRating != null) {
-                  <p>評分 {{ place.fGoogleRating }}（{{ place.fGoogleReviewCount }} 則評論）</p>
-                }
-              </div>
+    <div class="place-list">
+      @for (place of searchResult()!.places; track place.fGooglePlaceId) {
+      <p-card>
+        <div class="place-card">
+          <div class="place-info">
+            <strong>{{ place.fName }}</strong>
+            @if (place.fIsRecommend) {
+            <p-tag severity="warn" value="推薦" />
+            }
+            <p>{{ place.fAddress }}</p>
+            @if (place.fGoogleRating != null) {
+            <p>評分 {{ place.fGoogleRating }}（{{ place.fGoogleReviewCount }} 則評論）</p>
+            }
+          </div>
 
-              <button
-                pButton
-                type="button"
-                label="{{ resolvingGooglePlaceId() === place.fGooglePlaceId ? '處理中…' : '加入行程' }}"
-                [disabled]="resolvingGooglePlaceId() === place.fGooglePlaceId"
-                (click)="addPlaceToTrip(place)"
-              ></button>
-            </div>
-          </p-card>
-        }
-      </div>
+          <button pButton type="button"
+            label="{{ resolvingGooglePlaceId() === place.fGooglePlaceId ? '處理中…' : '加入行程' }}"
+            [disabled]="resolvingGooglePlaceId() === place.fGooglePlaceId" (click)="addPlaceToTrip(place)"></button>
+        </div>
+      </p-card>
+      }
+    </div>
     }
   </p-card>
 
   <!-- Step 3：組行程 -->
   <p-card header="3. 建立行程">
     @if (selectedPlaces().length > 0) {
-      <ol class="selected-list">
-        @for (place of selectedPlaces(); track place.placeId) {
-          <li>
-            {{ place.name }}
-            <button pButton type="button" label="移除" severity="secondary" (click)="removePlace(place.placeId)"></button>
-          </li>
-        }
-      </ol>
+    <ol class="selected-list">
+      @for (place of selectedPlaces(); track place.placeId) {
+      <li>
+        {{ place.name }}
+        <button pButton type="button" label="移除" severity="secondary" (click)="removePlace(place.placeId)"></button>
+      </li>
+      }
+    </ol>
     } @else {
-      <p class="empty-hint">還沒有選任何店家，先從上面的搜尋結果加入。</p>
+    <p class="empty-hint">還沒有選任何店家，先從上面的搜尋結果加入。</p>
     }
 
     <input pInputText type="text" [(ngModel)]="tripName" placeholder="行程名稱" />
 
     @if (createTripError()) {
-      <p class="error">{{ createTripError() }}</p>
+    <p class="error">{{ createTripError() }}</p>
     }
 
-    <button
-      pButton
-      type="button"
-      label="{{ isCreatingTrip() ? '建立中…' : '建立行程' }}"
-      [disabled]="isCreatingTrip()"
-      (click)="createTrip()"
-    ></button>
+    <button pButton type="button" label="{{ isCreatingTrip() ? '建立中…' : '建立行程' }}" [disabled]="isCreatingTrip()"
+      (click)="createTrip()"></button>
 
     @if (createdTrip()) {
-      <div class="success">
-        <p>行程建立成功：{{ createdTrip()!.name }}（ID：{{ createdTrip()!.tripId }}）</p>
-        <ul>
-          @for (place of createdTrip()!.places; track place.tripPlaceId) {
-            <li>{{ place.sortOrder }}. {{ place.placeName }}</li>
-          }
-        </ul>
-      </div>
+    <div class="success">
+      <p>行程建立成功：{{ createdTrip()!.name }}（ID：{{ createdTrip()!.tripId }}）</p>
+      <ul>
+        @for (place of createdTrip()!.places; track place.tripPlaceId) {
+        <li>{{ place.sortOrder }}. {{ place.placeName }}</li>
+        }
+      </ul>
+    </div>
     }
   </p-card>
 </div>
