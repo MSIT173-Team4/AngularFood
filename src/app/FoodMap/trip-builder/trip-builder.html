@@ -1,103 +1,111 @@
-<div class="trip-builder">
-  <h1>行程建置整合測試</h1>
+<p-toast></p-toast>
 
-  <!-- Step 1：座標 -->
-  <p-card header="1. 取得座標">
-    <button pButton type="button" label="使用目前位置" (click)="useCurrentLocation()"></button>
+<div class="planner-layout">
 
-    <div class="coords-manual">
-      <span class="p-float-label">
-        <p-inputNumber [(ngModel)]="latitude" [minFractionDigits]="4" placeholder="緯度" />
-      </span>
-      <span class="p-float-label">
-        <p-inputNumber [(ngModel)]="longitude" [minFractionDigits]="4" placeholder="經度" />
-      </span>
+  <!-- 左欄：搜尋條件 -->
+  <p-card header="規劃條件" class="left-column">
+
+    <div class="field">
+      <label>採買清單 ID</label>
+      <p-inputnumber [(ngModel)]="shoppingListId" [useGrouping]="false" />
     </div>
 
-    @if (locationError()) {
-    <<<<<<< Updated upstream <p class="error">{{ locationError() }}</p>
-      =======
-      <p class="error">{{ locationError() }}</p>
-      >>>>>>> Stashed changes
-      }
-  </p-card>
+    <div class="field">
+      <label>起點緯度</label>
+      <p-inputnumber [(ngModel)]="originLatitude" [minFractionDigits]="4" [maxFractionDigits]="7" />
+    </div>
 
-  <!-- Step 2：搜尋附近店家 -->
-  <p-card header="2. 搜尋附近店家">
-    <button pButton type="button" label="{{ isSearching() ? '搜尋中…' : '搜尋附近店家' }}"
-      [disabled]="isSearching() || latitude == null || longitude == null" (click)="search()"></button>
+    <div class="field">
+      <label>起點經度</label>
+      <p-inputnumber [(ngModel)]="originLongitude" [minFractionDigits]="4" [maxFractionDigits]="7" />
+    </div>
 
-    @if (searchError()) {
-    <p class="error">{{ searchError() }}</p>
+    <button pButton type="button" label="使用目前位置" severity="secondary" size="small" (click)="useCurrentLocation()">
+    </button>
+
+    <p-divider />
+
+    <div class="field">
+      <label>交通方式</label>
+      <p-select [(ngModel)]="selectedTravelMode" [options]="travelModeOptions" optionLabel="label"
+        optionValue="value" />
+    </div>
+
+    <div class="field">
+      <label>搜尋半徑（公尺）</label>
+      <p-inputnumber [(ngModel)]="searchRadiusMeters" [useGrouping]="false" suffix=" m" />
+    </div>
+
+    <button pButton type="button" label="規劃行程" [loading]="loading()" (click)="planTrip()" class="plan-button">
+    </button>
+
+    @if (errorMessage()) {
+    <p class="error-text">{{ errorMessage() }}</p>
     }
 
-    @if (searchResult()) {
-    <div class="search-meta">
-      <span>找到 {{ searchResult()!.resultCount }} 筆</span>
-      <span>搜尋半徑 {{ searchResult()!.searchRadiusKm }} km</span>
-      @if (searchResult()!.expandedSearch) {
-      <p-tag severity="info" value="已自動擴大搜尋至 3 公里" />
-      }
+  </p-card>
+
+  <!-- 中欄：路線預覽（清單形式，尚未接真正地圖，見 README 說明） -->
+  <p-card header="路線預覽" class="middle-column">
+
+    @if (tripName()) {
+    <h3>{{ tripName() }}</h3>
+
+    <div class="coverage-row">
+      <span>採買覆蓋率</span>
+      <p-progressbar [value]="formatCoveragePercentage()" />
     </div>
 
-    <div class="place-list">
-      @for (place of searchResult()!.places; track place.fGooglePlaceId) {
-      <p-card>
-        <div class="place-card">
-          <div class="place-info">
-            <strong>{{ place.fName }}</strong>
-            @if (place.fIsRecommend) {
-            <p-tag severity="warn" value="推薦" />
-            }
-            <p>{{ place.fAddress }}</p>
-            @if (place.fGoogleRating != null) {
-            <p>評分 {{ place.fGoogleRating }}（{{ place.fGoogleReviewCount }} 則評論）</p>
-            }
-          </div>
+    @if (uncoveredItemNames().length > 0) {
+    <div class="uncovered-box">
+      <strong>附近買不到：</strong>
+      @for (item of uncoveredItemNames(); track item) {
+      <p-tag [value]="item" severity="warn" />
+      }
+    </div>
+    }
 
-          <button pButton type="button"
-            label="{{ resolvingGooglePlaceId() === place.fGooglePlaceId ? '處理中…' : '加入行程' }}"
-            [disabled]="resolvingGooglePlaceId() === place.fGooglePlaceId" (click)="addPlaceToTrip(place)"></button>
+    <p-divider />
+
+    <div class="route-preview">
+      @for (place of tripPlaces(); track place.fTripPlaceId; let i = $index) {
+      <div class="route-step">
+        <div class="step-marker">{{ i + 1 }}</div>
+        <div class="step-info">
+          <strong>{{ place.fPlaceName }}</strong>
+          <span>{{ place.fAddress }}</span>
         </div>
-      </p-card>
+      </div>
+      @if (!$last) {
+      <div class="route-connector"></div>
+      }
       }
     </div>
-    }
-  </p-card>
-
-  <!-- Step 3：組行程 -->
-  <p-card header="3. 建立行程">
-    @if (selectedPlaces().length > 0) {
-    <ol class="selected-list">
-      @for (place of selectedPlaces(); track place.placeId) {
-      <li>
-        {{ place.name }}
-        <button pButton type="button" label="移除" severity="secondary" (click)="removePlace(place.placeId)"></button>
-      </li>
-      }
-    </ol>
     } @else {
-    <p class="empty-hint">還沒有選任何店家，先從上面的搜尋結果加入。</p>
+    <p class="empty-hint">左欄按下「規劃行程」後，路線會顯示在這裡。</p>
     }
 
-    <input pInputText type="text" [(ngModel)]="tripName" placeholder="行程名稱" />
+  </p-card>
 
-    @if (createTripError()) {
-    <p class="error">{{ createTripError() }}</p>
-    }
+  <!-- 右欄：行程列表（可拖曳排序） -->
+  <p-card header="行程列表" class="right-column">
 
-    <button pButton type="button" label="{{ isCreatingTrip() ? '建立中…' : '建立行程' }}" [disabled]="isCreatingTrip()"
-      (click)="createTrip()"></button>
-
-    @if (createdTrip()) {
-    <div class="success">
-      <p>行程建立成功：{{ createdTrip()!.name }}（ID：{{ createdTrip()!.tripId }}）</p>
-      <ul>
-        @for (place of createdTrip()!.places; track place.tripPlaceId) {
-        <li>{{ place.sortOrder }}. {{ place.placeName }}</li>
-        }
-      </ul>
+    @if (tripPlaces().length === 0) {
+    <p class="empty-hint">尚未規劃行程。</p>
+    } @else {
+    <div cdkDropList class="itinerary-list" (cdkDropListDropped)="onDrop($event)">
+      @for (place of tripPlaces(); track place.fTripPlaceId; let i = $index) {
+      <div cdkDrag class="itinerary-item">
+        <div class="itinerary-badge">{{ i + 1 }}</div>
+        <div class="itinerary-body">
+          <strong>{{ place.fPlaceName }}</strong>
+          <span>{{ place.fAddress }}</span>
+        </div>
+      </div>
+      }
     </div>
     }
+
   </p-card>
+
 </div>
