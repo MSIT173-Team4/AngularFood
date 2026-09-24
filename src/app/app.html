@@ -1,4 +1,4 @@
-@if (!isSellerCenter()) {
+@if (!isSellerCenter()&&!hideLayOut()) {
 <header class="topbar">
   <a class="brand" routerLink="/recipes" aria-label="友料美食生活平台首頁">
     <span class="brand-mark" aria-hidden="true">
@@ -173,6 +173,29 @@
     [attr.aria-expanded]="isMobileNavigationOpen()" (click)="toggleMobileNavigation()">
     <i class="pi" [class.pi-bars]="!isMobileNavigationOpen()" [class.pi-times]="isMobileNavigationOpen()"></i>
   </button>
+      @if (authService.currentUser(); as user) {
+      <div class="current-user">
+        <!-- 頭像 + Username -->
+        <a class="user-profile-link" [routerLink]="['/main']">
+          <img [src]="user.userImage" [alt]="user.userName + ' 的頭像'" class="user-avatar" />
+
+          <span class="user-name">
+            {{ user.userName }}
+          </span>
+        </a>
+
+        <!-- 下拉按鈕 -->
+        <p-button
+          icon="pi pi-chevron-down"
+          [text]="true"
+          [rounded]="true"
+          (onClick)="userMenu.toggle($event)"
+        />
+
+        <!-- PrimeNG Menu -->
+        <p-menu #userMenu [model]="userMenuItems" [popup]="true" />
+      </div>
+    }
 </header>
 }
 
@@ -181,7 +204,7 @@
   <router-outlet />
 </main>
 
-@if (!isSellerCenter()) {
+@if (!isSellerCenter()&&!hideLayout()) {
 <footer class="footer p-4 md:p-8">
   <div>
     <strong>友料美食生活平台．SMART COOKING &amp; RECIPE HUB</strong>
@@ -190,3 +213,4 @@
   <small>© 2026 友料美食生活平台 All Rights Reserved.</small>
 </footer>
 }
+
