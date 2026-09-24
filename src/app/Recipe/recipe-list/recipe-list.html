@@ -1,25 +1,47 @@
 <section class="page-shell p-4 md:p-8">
-  @if (isUsingMockData()) {
-    <div class="data-notice" role="status">
-      <i class="pi pi-info-circle"></i>
-      <span>{{ dataNotice() }}</span>
-      <p-tag value="Mock 模式" severity="warn" [rounded]="true" />
+  <section class="ad-wall" aria-roledescription="carousel" aria-label="首頁推薦與廣告">
+    @for (ad of adSlides; track $index) {
+      @if ($index === currentAdIndex()) {
+        <div class="ad-stage">
+          <img [src]="ad.imageUrl" [alt]="ad.title" />
+          <div class="ad-overlay"></div>
+          <div class="ad-content">
+            <span>{{ ad.eyebrow }}</span>
+            <h1>{{ ad.title }}</h1>
+            <p>{{ ad.description }}</p>
+            <p-button
+              [label]="ad.actionLabel"
+              icon="pi pi-arrow-right"
+              iconPos="right"
+              severity="warn"
+              [rounded]="true"
+              (onClick)="handleAdAction()"
+            />
+          </div>
+        </div>
+      }
+    }
+    <button class="ad-arrow previous" type="button" aria-label="上一則廣告" (click)="showPreviousAd()">
+      <i class="pi pi-chevron-left"></i>
+    </button>
+    <button class="ad-arrow next" type="button" aria-label="下一則廣告" (click)="showNextAd()">
+      <i class="pi pi-chevron-right"></i>
+    </button>
+    <div class="ad-dots" aria-label="選擇廣告">
+      @for (ad of adSlides; track $index; let index = $index) {
+        <button
+          type="button"
+          [class.active]="currentAdIndex() === index"
+          [attr.aria-label]="'顯示第 ' + (index + 1) + ' 則廣告'"
+          [attr.aria-current]="currentAdIndex() === index ? 'true' : null"
+          (click)="selectAd(index)"
+        ></button>
+      }
     </div>
-  }
-
-  <div class="hero">
-    <div>
-      <p-tag value="本週熱門　減碳料理認證" severity="success" [rounded]="true" />
-      <h1>今天，想為冰箱煮一頓什麼？</h1>
-      <p>以現有食材發現剛好的美味，減少浪費也保留生活的餘裕。</p>
-      <div class="hero-meta">
-        <span><i class="pi pi-clock"></i> 快速料理提案</span>
-        <span><i class="pi pi-sparkles"></i> AI 協作食譜</span>
-        <span><i class="pi pi-heart"></i> 永續飲食</span>
-      </div>
-    </div>
-    <p-button label="智慧清冰箱" icon="pi pi-box" severity="success" routerLink="/pantry" [rounded]="true" />
-  </div>
+    <button class="ad-apply-link" type="button" (click)="adApplicationVisible.set(true)">
+      <i class="pi pi-megaphone"></i> 廣告版位申請
+    </button>
+  </section>
 
   <div class="pantry-callout">
     <i class="pi pi-sparkles"></i>
@@ -30,18 +52,55 @@
     <a routerLink="/pantry">立即配對 <i class="pi pi-arrow-right"></i></a>
   </div>
 
-  <div class="category-row" aria-label="食譜分類篩選">
-    <span><i class="pi pi-filter"></i> 探索分類</span>
-    <button type="button">全部</button>
-    <button type="button">家常菜</button>
-    <button type="button">異國料理</button>
-    <button type="button">烘焙</button>
-    <button type="button">15 分鐘內</button>
-    <button type="button">高蛋白低卡</button>
+  <section class="discovery-tools" aria-label="食譜搜尋與分類">
+    <label class="recipe-search">
+      <span class="visually-hidden">搜尋食譜</span>
+      <i class="pi pi-search" aria-hidden="true"></i>
+      <input
+        pInputText
+        type="search"
+        placeholder="搜尋料理名稱、食材特色、分類或作者"
+        [ngModel]="searchTerm()"
+        (ngModelChange)="updateSearchTerm($event)"
+      />
+      @if (searchTerm()) {
+        <button type="button" aria-label="清除搜尋文字" (click)="updateSearchTerm('')">
+          <i class="pi pi-times" aria-hidden="true"></i>
+        </button>
+      }
+    </label>
+    <span class="result-count">找到 {{ recipes().length }} 道食譜</span>
+  </section>
+
+  <div
+    class="category-row"
+    [class.expanded]="areFiltersExpanded()"
+    aria-label="食譜分類篩選"
+  >
+    <button
+      class="filter-toggle"
+      type="button"
+      [attr.aria-expanded]="areFiltersExpanded()"
+      (click)="toggleAllFilters()"
+    >
+      <i class="pi pi-filter"></i>
+      探索分類
+      <i [class]="areFiltersExpanded() ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"></i>
+    </button>
+    @for (filter of filterOptions(); track filter) {
+      <button
+        type="button"
+        [class.active]="selectedFilter() === filter"
+        [attr.aria-pressed]="selectedFilter() === filter"
+        (click)="selectFilter(filter)"
+      >
+        {{ filter }}
+      </button>
+    }
   </div>
 
   <div class="recipe-grid">
-    @for (recipe of recipes(); track recipe.recipeId) {
+    @for (recipe of pagedRecipes(); track recipe.recipeId) {
       <p-card styleClass="recipe-card">
         <ng-template #header>
           <div class="cover-frame">
@@ -49,10 +108,29 @@
             @if (recipe.isAiGenerated) {
               <p-tag class="cover-tag" value="AI 協作" severity="info" [rounded]="true" />
             }
+            @if (isTrending(recipe.recipeId)) {
+              <p-tag class="trending-tag" value="本週熱門" severity="danger" [rounded]="true" />
+            }
           </div>
         </ng-template>
         <ng-template #title>{{ recipe.title }}</ng-template>
         <p class="description">{{ recipe.description }}</p>
+        <div class="recipe-author">
+          @if (recipe.authorImageUrl) {
+            <img [src]="recipe.authorImageUrl" [alt]="recipe.authorName + ' 的會員頭像'" />
+          } @else {
+            <span>{{ recipe.authorName.slice(0, 1) }}</span>
+          }
+          <div>
+            <b>{{ recipe.authorName }}</b>
+            <small>{{ recipe.authorRecipeCount ?? 0 }} 道公開食譜</small>
+          </div>
+        </div>
+        <div class="recipe-tags">
+          @for (tag of recipe.tags.slice(0, 3); track tag) {
+            <span>{{ tag }}</span>
+          }
+        </div>
         <div class="metadata">
           <span><i class="pi pi-clock"></i> {{ recipe.cookingMinutes }} 分鐘</span>
           <span><i class="pi pi-heart"></i> {{ recipe.likes }}</span>
@@ -70,7 +148,78 @@
         </ng-template>
       </p-card>
     } @empty {
-      <p class="state">目前尚無可顯示的公開食譜。</p>
+      <div class="state">
+        <i class="pi pi-search" aria-hidden="true"></i>
+        <strong>目前沒有符合條件的公開食譜</strong>
+        <span>可更換關鍵字或選擇其他分類。</span>
+        <p-button
+          label="清除篩選"
+          icon="pi pi-refresh"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="clearFilters()"
+        />
+      </div>
     }
   </div>
+
+  @if (recipes().length > pageSize) {
+    <p-paginator
+      [first]="currentPage() * pageSize"
+      [rows]="pageSize"
+      [totalRecords]="recipes().length"
+      [pageLinkSize]="5"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="第 {currentPage} / {totalPages} 頁，共 {totalRecords} 道食譜"
+      (onPageChange)="changePage($event)"
+    />
+  }
 </section>
+
+<p-dialog
+  header="申請首頁廣告版位"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: 'min(94vw, 620px)' }"
+  [visible]="adApplicationVisible()"
+  (visibleChange)="adApplicationVisible.set($event)"
+>
+  <div class="ad-application-form">
+    <div class="ad-specification">
+      <i class="pi pi-image" aria-hidden="true"></i>
+      <div>
+        <strong>建議素材規格</strong>
+        <span>1600 × 600 像素，JPG、PNG 或 WebP，文字安全區保留在中央 70%。</span>
+      </div>
+    </div>
+    <label><span>申請人或品牌名稱</span><input pInputText maxlength="80" placeholder="例如：阿嬤的祖傳辣椒醬" [ngModel]="advertiserName()" (ngModelChange)="advertiserName.set($event)" /></label>
+    <label><span>推廣商品</span><input pInputText maxlength="80" placeholder="例如：手工朝天椒辣椒醬" [ngModel]="productName()" (ngModelChange)="productName.set($event)" /></label>
+    <label><span>聯絡信箱</span><input pInputText type="email" placeholder="name@example.com" [ngModel]="contactEmail()" (ngModelChange)="contactEmail.set($event)" /></label>
+    <div class="ad-form-grid">
+      <label><span>廣告版位</span><p-select [options]="placementOptions" [ngModel]="adPlacement()" (ngModelChange)="adPlacement.set($event)" /></label>
+      <label><span>刊登天數</span><p-inputNumber [ngModel]="rentalDays()" (ngModelChange)="rentalDays.set($event ?? 7)" [min]="7" [max]="30" suffix=" 天" /></label>
+    </div>
+    <div class="ad-price">
+      <span>刊登費用</span>
+      <strong>NT$ {{ estimatedAdPrice() }}</strong>
+      <small>費用包含版位刊登與素材審核，通過審核並完成付款後開始計算刊登天數。</small>
+    </div>
+  </div>
+  <ng-template #footer>
+    <p-button label="取消" severity="secondary" [text]="true" (onClick)="adApplicationVisible.set(false)" />
+    <p-button label="下一步：選擇付款方式" icon="pi pi-arrow-right" iconPos="right" severity="warn" (onClick)="openPaymentCheckout()" />
+  </ng-template>
+</p-dialog>
+
+<app-ad-checkout
+  [visible]="paymentDialogVisible()"
+  [advertiserName]="advertiserName()"
+  [productName]="productName()"
+  [placement]="adPlacement()"
+  [rentalDays]="rentalDays()"
+  [totalPrice]="estimatedAdPrice()"
+  [contactEmail]="contactEmail()"
+  (visibleChange)="paymentDialogVisible.set($event)"
+  (returnToApplication)="returnToAdApplication()"
+/>

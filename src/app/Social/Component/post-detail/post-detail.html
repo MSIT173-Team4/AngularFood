@@ -1,0 +1,90 @@
+@if (post) {
+  <div class="detail-container">
+    <div class="post-header">
+      <h1 class="post-title">{{ post.title }}</h1>
+      <div class="author-row">
+        <i class="far fa-user-circle avatar-icon"></i>
+        <span class="author-name">{{ post.userName }}</span>
+        <span class="post-date">{{ post.postDate | date:'yyyy/MM/dd HH:mm' }}</span>
+      </div>
+    </div>
+
+    <div class="post-blocks">
+      @for (block of post.blocks; track $index) {
+        <div class="block-item">
+          @if (block.blockType === 'text') {
+            <p class="text-content">{{ block.content }}</p>
+          } @else if (block.blockType === 'image') {
+            <img [src]="block.mediaUrl" alt="貼文圖片" class="media-content">
+          } @else if (block.blockType === 'video') {
+            <video [src]="block.mediaUrl" controls class="media-content"></video>
+          }
+        </div>
+      }
+    </div>
+
+    <div class="post-actions">
+      <div class="metrics">
+        <span class="like-btn" (click)="togglePostLike()">
+          <i [class]="post.isLikedByCurrentUser ? 'fas fa-thumbs-up liked' : 'far fa-thumbs-up'"></i>
+          {{ post.likes }}
+        </span>
+        <span>瀏覽量 : {{ post.views }}</span>
+      </div>
+
+      @if (post.userId === currentUserId) {
+        <button class="btn-delete-post" (click)="deletePost()">刪除文章</button>
+      }
+    </div>
+
+    <div class="comments-section">
+      <h3>留言區</h3>
+
+      <div class="comments-list">
+        @for (c of comments; track c.messageId) {
+          <div class="comment-item">
+            <div class="comment-header">
+              <i class="far fa-user-circle comment-avatar"></i>
+              <span class="comment-user">{{ c?.userName }}</span>
+              <span class="comment-date">{{ c?.messageDate | date:'yyyy/MM/dd HH:mm' }}</span>
+            </div>
+
+            <div class="comment-body">
+              @if (c.replyToUserName) {
+                <span class="reply-tag">@{{ c?.replyToUserName }} </span>
+              }
+              {{ c?.messageContent }}
+            </div>
+
+            <div class="comment-footer">
+              <span class="like-btn" (click)="toggleCommentLike(c)">
+                <i [class]="c.isLikedByCurrentUser ? 'fas fa-thumbs-up liked' : 'far fa-thumbs-up'"></i> {{ c.likes }}
+              </span>
+              <button class="btn-reply" (click)="setReply(c)">回覆</button>
+              @if (c.userId === currentUserId) {
+                <button class="btn-delete" (click)="deleteComment(c.messageId)">刪除</button>
+              }
+            </div>
+          </div>
+        } @empty {
+          <div class="no-comments">尚無留言</div>
+        }
+      </div>
+
+      <!-- 留言輸入框 -->
+      <div class="comment-input-area">
+        @if (replyingTo) {
+          <div class="reply-banner">
+            正在回覆 @{{ replyingTo.userName }}
+            <span class="cancel-reply" (click)="cancelReply()">×</span>
+          </div>
+        }
+        <div class="input-wrapper">
+          <i class="far fa-user-circle current-user-avatar"></i>
+          <input type="text" [(ngModel)]="newCommentText" (keyup.enter)="submitComment()" placeholder="留言..." />
+          <button class="btn-send" (click)="submitComment()">傳送</button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

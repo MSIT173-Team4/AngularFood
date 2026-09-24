@@ -1,0 +1,221 @@
+<p-toast position="bottom-right" />
+
+@if (isLoading) {
+  <div class="loading-state">
+    <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+    <p>載入商品中...</p>
+  </div>
+}
+
+@if (!isLoading && product) {
+<section class="detail-section">
+  <div class="detail-container">
+
+    <!-- 麵包屑 -->
+    <nav class="breadcrumb">
+      <a routerLink="/market/products">友善商城</a>
+      <i class="pi pi-chevron-right"></i>
+      <span>{{ product.productName }}</span>
+    </nav>
+
+    <!-- 主區塊：圖片 + 購買資訊 -->
+    <div class="main-grid">
+
+      <!-- 左：圖片區 -->
+      <div class="media-col">
+
+        <!-- 主圖 -->
+        <div class="main-image-wrapper" (click)="openImageDialog()">
+          <img [src]="selectedImageUrl" [alt]="product.productName" class="main-image" />
+          <div class="zoom-hint">
+            <i class="pi pi-search-plus"></i>
+          </div>
+        </div>
+
+        <!-- 縮圖列 -->
+        <div class="thumb-strip">
+          @for (url of product.imageUrls; track url) {
+            <div class="thumb-item"
+                 [class.active]="selectedImageUrl === url"
+                 (click)="selectImage(url)">
+              <img [src]="url" [alt]="product.productName" />
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- 右：購買資訊 -->
+      <div class="purchase-col">
+
+        <!-- 賣家名稱 -->
+        <p class="seller-name">{{ product.sellerName }}</p>
+
+        <!-- 商品名稱 -->
+        <h1 class="product-title">{{ product.productName }}</h1>
+
+        <!-- 價格 + 評分 -->
+        <div class="price-rating-row">
+          <span class="price">NT$ {{ product.price | number }}</span>
+          <div class="rating">
+            @for (star of getStarArray(product.averageRating); track $index) {
+              <i class="pi" [class.pi-star-fill]="star === 'star'"
+                 [class.pi-star]="star === 'star_border'"
+                 style="color: #ab3500;"></i>
+            }
+            <span class="rating-score">{{ product.averageRating }}</span>
+            <span class="review-count">({{ product.reviewCount }} 則評價)</span>
+          </div>
+        </div>
+
+        <!-- 數量選擇 -->
+        <div class="qty-row">
+          <div class="qty-control">
+            <button (click)="decreaseQty()" [disabled]="quantity <= 1">
+              <i class="pi pi-minus"></i>
+            </button>
+            <span>{{ quantity }}</span>
+            <button (click)="increaseQty()" [disabled]="quantity >= product.stock">
+              <i class="pi pi-plus"></i>
+            </button>
+          </div>
+          <div class="stock-info">
+            <span class="stock-label">庫存尚有</span>
+            <span class="stock-value">{{ product.stock }} 件</span>
+          </div>
+        </div>
+
+        <!-- 操作按鈕 -->
+        <div class="action-buttons">
+          <p-button label="加入購物車" icon="pi pi-shopping-bag"
+                    styleClass="btn-cart" (onClick)="addToCart()" />
+          <p-button
+            [label]="isFavorite ? '已收藏' : '加入喜愛清單'"
+            [icon]="isFavorite ? 'pi pi-heart-fill' : 'pi pi-heart'"
+            severity="secondary"
+            styleClass="btn-favorite"
+            (onClick)="toggleFavorite()" />
+        </div>
+
+        <!-- 商品描述 -->
+        <div class="description-box">
+          <h3><i class="pi pi-info-circle"></i> 商品描述</h3>
+          <p [class.clamped]="!isDescExpanded">{{ product.description }}</p>
+          @if (product.description && product.description.length > 80) {
+            <button class="expand-btn" (click)="isDescExpanded = !isDescExpanded">
+              {{ isDescExpanded ? '收合說明' : '展開全部說明' }}
+              <i class="pi" [class.pi-chevron-down]="!isDescExpanded"
+                 [class.pi-chevron-up]="isDescExpanded"></i>
+            </button>
+          }
+        </div>
+
+        <!-- 賣家資訊 -->
+        <div class="seller-info-box">
+          <h3><i class="pi pi-shop"></i> 賣家資訊</h3>
+          <p class="seller-info-name">{{ product.sellerName }}</p>
+          <p class="seller-info-desc">{{ product.sellerDescription }}</p>
+          <p class="seller-info-count">共 {{ product.sellerProductCount }} 件商品</p>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 下方：評論 + 相關食譜 -->
+    <div class="bottom-grid">
+
+      <!-- 左：評論 -->
+      <div class="reviews-col">
+        <div class="section-header">
+          <div class="section-title">
+            <i class="pi pi-comment" style="color: #832600;"></i>
+            <h2>買家真實評價</h2>
+            <span class="count-chip">{{ reviewTotalCount }}</span>
+          </div>
+        </div>
+
+        @if (reviews.length === 0) {
+          <div class="empty-reviews">
+            <i class="pi pi-comment"></i>
+            <p>目前還沒有評價</p>
+          </div>
+        }
+
+        @for (review of reviews; track review.reviewId) {
+          <div class="review-card">
+            <div class="review-header">
+              <div class="reviewer-avatar">{{ review.reviewerName.charAt(0) }}</div>
+              <div>
+                <span class="reviewer-name">{{ review.reviewerName }}</span>
+                <span class="verified-badge">已認證購買</span>
+              </div>
+              <span class="review-date">{{ formatDate(review.createdDate.substring(0, 10)) }}</span>
+            </div>
+
+            <div class="star-row">
+              @for (star of getStarArray(review.rating); track $index) {
+                <i class="pi" [class.pi-star-fill]="star === 'star'"
+                   [class.pi-star]="star === 'star_border'"
+                   style="color: #ab3500; font-size: 14px;"></i>
+              }
+            </div>
+
+            <p class="review-comment">{{ review.comment }}</p>
+          </div>
+        }
+
+        @if (hasMoreReviews) {
+          <button class="load-more-btn" (click)="loadMoreReviews()"
+                  [disabled]="isLoadingMoreReviews">
+            @if (isLoadingMoreReviews) {
+              <i class="pi pi-spin pi-spinner"></i>
+            } @else {
+              查看更多 {{ reviewTotalCount - reviews.length }} 則評價
+              <i class="pi pi-chevron-down"></i>
+            }
+          </button>
+        }
+      </div>
+
+      <!-- 右：相關食譜 -->
+      <div class="recipes-col">
+        <div class="section-header">
+          <div class="section-title">
+            <i class="pi pi-book" style="color: #406840;"></i>
+            <h2>用得到的食譜</h2>
+          </div>
+        </div>
+
+        @if (relatedRecipes.length === 0) {
+          <div class="empty-reviews">
+            <i class="pi pi-book"></i>
+            <p>暫無相關食譜</p>
+          </div>
+        }
+
+        @for (recipe of relatedRecipes; track recipe.recipeId) {
+          <a class="recipe-card" [routerLink]="['/recipes', recipe.recipeId]">
+            <div class="recipe-image">
+              <img [src]="recipe.imageUrl || 'assets/images/recipe-placeholder.png'"
+                   [alt]="recipe.recipeName" />
+            </div>
+            <div class="recipe-info">
+              <span class="recipe-badge">推薦料理</span>
+              <h4>{{ recipe.recipeName }}</h4>
+              <span class="recipe-time">
+                <i class="pi pi-clock"></i> {{ recipe.cookingTime }} 分鐘
+              </span>
+            </div>
+          </a>
+        }
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- 圖片放大 Dialog -->
+<p-dialog [(visible)]="showImageDialog" [modal]="true" [style]="{ width: '90vw', maxWidth: '1000px', maxHeight: '90vh' }"
+          [showHeader]="true" [dismissableMask]="true">
+  <img [src]="selectedImageUrl" style="width: 100%; border-radius: 0.5rem;" />
+</p-dialog>
+}

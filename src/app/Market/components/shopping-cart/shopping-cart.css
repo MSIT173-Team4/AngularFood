@@ -1,0 +1,211 @@
+:root {
+  --primary: #832600;
+  --primary-container: #ab3500;
+  --surface: #fff8f6;
+  --surface-container-low: #fff1ed;
+  --surface-container-lowest: #ffffff;
+  --surface-container-high: #fee2db;
+  --on-surface: #261814;
+  --on-surface-variant: #59413a;
+  --outline-variant: #e1bfb5;
+  --secondary: #406840;
+}
+
+.cart-loading {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 4rem; gap: 1rem; color: var(--on-surface-variant);
+}
+
+.cart-section { padding: 2rem 0; background: var(--surface); min-height: 100vh; }
+.cart-container { max-width: 1360px; margin: 0 auto; padding: 0 2.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
+.cart-title { font-size: 24px; font-weight: 600; color: var(--on-surface); display: flex; align-items: center; gap: 0.5rem; margin: 0; }
+
+.empty-cart { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4rem; gap: 1rem; text-align: center; background: var(--surface-container-lowest); border-radius: 1rem; }
+.empty-cart h3 { font-size: 20px; font-weight: 600; color: var(--on-surface); margin: 0; }
+.empty-cart p { color: var(--on-surface-variant); margin: 0; }
+.empty-cart .p-button { background: #832600 !important; border-color: #832600 !important; margin-top: 0.5rem; }
+
+/* 主佈局 */
+.cart-layout { display: grid; grid-template-columns: 1fr 380px; gap: 1.5rem; align-items: start; }
+@media (max-width: 1024px) { .cart-layout { grid-template-columns: 1fr; } }
+
+/* 全選列 */
+.select-all-bar { background: var(--surface-container-lowest); border-radius: 0.75rem; padding: 0.75rem 1rem; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 3px rgba(38,24,20,.06); }
+.check-label { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--on-surface); }
+.check-label input[type="checkbox"] { width: 16px; height: 16px; accent-color: #832600; cursor: pointer; }
+.select-all-actions { display: flex; align-items: center; gap: 1rem; font-size: 12px; color: var(--on-surface-variant); }
+.select-all-actions strong { color: var(--primary); font-weight: 700; }
+.delete-checked-btn { display: flex; align-items: center; gap: 0.25rem; background: none; border: none; color: var(--on-surface-variant); font-size: 12px; cursor: pointer; padding: 0.25rem 0.5rem; border-radius: 0.25rem; transition: color .15s; }
+.delete-checked-btn:hover:not(:disabled) { color: #ba1a1a; }
+.delete-checked-btn:disabled { opacity: 0.4; cursor: default; }
+
+/* 賣家群組 */
+.cart-left { display: flex; flex-direction: column; gap: 1rem; }
+.seller-group { background: var(--surface-container-lowest); border-radius: 1rem; overflow: hidden; box-shadow: 0 1px 4px rgba(38,24,20,.06); }
+.seller-header { padding: 0.75rem 1rem; background: rgba(255,241,237,.6); border-bottom: 1px solid var(--outline-variant); display: flex; align-items: center; justify-content: space-between; }
+.seller-name { font-size: 15px; font-weight: 600; color: var(--on-surface); }
+
+/* 購物車商品列 */
+.cart-item { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-bottom: 1px solid rgba(225,191,181,.3); transition: background .15s; }
+.cart-item:hover { background: rgba(255,248,246,.7); }
+.cart-item:last-of-type { border-bottom: none; }
+.item-check { width: 16px; height: 16px; accent-color: #832600; cursor: pointer; flex-shrink: 0; }
+.item-image { width: 80px; height: 80px; border-radius: 0.5rem; object-fit: cover; flex-shrink: 0; }
+.item-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.25rem; }
+.item-name { font-size: 14px; font-weight: 600; color: var(--on-surface); margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.item-name:hover { color: var(--primary); }
+.item-price { font-size: 13px; color: var(--on-surface-variant); margin: 0; }
+.item-qty-control { display: flex; align-items: center; gap: 0.5rem; background: var(--surface-container-low); border-radius: 0.5rem; padding: 0.2rem; }
+.item-qty-control button { width: 28px; height: 28px; border: none; background: transparent; cursor: pointer; border-radius: 0.25rem; display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--on-surface-variant); transition: background .15s; }
+.item-qty-control button:hover:not(:disabled) { background: var(--surface-container-high); color: var(--on-surface); }
+.item-qty-control button:disabled { opacity: 0.3; cursor: default; }
+.item-qty-control span { width: 32px; text-align: center; font-size: 14px; font-weight: 600; color: var(--on-surface); }
+.item-subtotal { font-size: 16px; font-weight: 700; color: var(--on-surface); min-width: 90px; text-align: right; }
+.item-delete-btn { width: 32px; height: 32px; border: none; background: transparent; cursor: pointer; color: var(--on-surface-variant); border-radius: 0.25rem; display: flex; align-items: center; justify-content: center; transition: color .15s; flex-shrink: 0; }
+.item-delete-btn:hover { color: #ba1a1a; }
+
+/* 賣家優惠券 */
+.seller-coupon-area { padding: 0.75rem 1rem; background: rgba(255,248,246,.5); border-top: 1px dashed var(--outline-variant); display: flex; flex-direction: column; gap: 0.5rem; }
+.seller-coupon-input { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.seller-coupon-label { font-size: 12px; font-weight: 600; color: var(--on-surface); }
+.seller-coupon-input input { flex: 1; min-width: 140px; background: var(--surface-container-lowest); border: 1px solid var(--outline-variant); border-radius: 0.375rem; padding: 0.3rem 0.6rem; font-size: 12px; color: var(--on-surface); outline: none; text-transform: uppercase; }
+.seller-coupon-input input:focus { border-color: var(--primary); }
+.seller-coupon-input button { padding: 0.3rem 0.75rem; background: var(--surface-container-high); border: none; border-radius: 0.375rem; font-size: 12px; font-weight: 600; color: var(--on-surface); cursor: pointer; transition: background .15s; white-space: nowrap; }
+.seller-coupon-input button:hover { background: var(--surface-container-high); }
+
+.applied-coupon-chip { display: flex; align-items: center; gap: 0.5rem; background: var(--surface-container-lowest); border: 1px solid rgba(64,104,64,.3); border-radius: 0.375rem; padding: 0.3rem 0.6rem; font-size: 12px; color: var(--secondary); }
+.applied-coupon-chip button { background: none; border: none; cursor: pointer; color: var(--on-surface-variant); line-height: 1; padding: 0 0.25rem; transition: color .15s; }
+.applied-coupon-chip button:hover { color: #ba1a1a; }
+
+/* 右側訂單明細 */
+.cart-right { position: sticky; top: 6rem; }
+.order-summary { background: var(--surface-container-lowest); border-radius: 1rem; padding: 1.5rem; box-shadow: 0 1px 4px rgba(38,24,20,.06); display: flex; flex-direction: column; gap: 1rem; }
+.summary-title { font-size: 20px; font-weight: 600; color: var(--on-surface); margin: 0; }
+
+.platform-coupon-group { display: flex; flex-direction: column; gap: 0.4rem; }
+.platform-coupon-group label { font-size: 12px; font-weight: 600; color: var(--on-surface-variant); display: flex; justify-content: space-between; align-items: center; }
+.coupon-hint { font-size: 11px; color: var(--secondary); }
+.coupon-input-row { display: flex; gap: 0.5rem; }
+.coupon-input-row input { flex: 1; background: var(--surface-container-low); border: none; border-radius: 0.5rem; padding: 0.5rem 0.75rem; font-size: 13px; color: var(--on-surface); outline: none; text-transform: uppercase; }
+.coupon-input-row input:focus { background: var(--surface-container-lowest); box-shadow: 0 0 0 2px var(--primary); }
+.coupon-input-row button { padding: 0.5rem 0.75rem; background: var(--surface-container-high); border: none; border-radius: 0.5rem; font-size: 13px; font-weight: 600; color: var(--on-surface); cursor: pointer; transition: background .15s; white-space: nowrap; }
+.coupon-input-row button:hover { background: var(--outline-variant); }
+
+.price-breakdown { display: flex; flex-direction: column; gap: 0.4rem; border-top: 1px solid var(--outline-variant); padding-top: 0.75rem; }
+.price-row { display: flex; justify-content: space-between; font-size: 14px; color: var(--on-surface-variant); }
+.price-row.discount { color: var(--secondary); }
+.free-shipping { color: var(--secondary); font-weight: 600; }
+
+.grand-total-row { display: flex; justify-content: space-between; align-items: center; background: rgba(255,241,237,.5); border-radius: 0.5rem; padding: 0.75rem; }
+.grand-total-row > span { font-size: 16px; font-weight: 600; color: var(--on-surface); }
+.grand-total-amount { display: flex; align-items: baseline; gap: 0.25rem; }
+.grand-total-currency { font-size: 14px; font-weight: 700; color: var(--primary); }
+.grand-total-number { font-size: 28px; font-weight: 700; color: var(--primary); }
+
+.checkout-btn {
+  width: 100%;
+  padding: 1rem 1.5rem;
+  background: #832600;
+  border: none;
+  border-radius: 0.75rem;
+  font-size: 16px;
+  font-weight: 700;
+  color: #ffffff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all .2s;
+  box-shadow: 0 4px 12px rgba(131,38,0,.3);
+  letter-spacing: 0.02em;
+}
+
+.checkout-btn:hover:not(:disabled) {
+  background: #ab3500;
+  box-shadow: 0 6px 16px rgba(131,38,0,.4);
+  transform: translateY(-1px);
+}
+
+.checkout-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(131,38,0,.3);
+}
+
+.checkout-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+  box-shadow: none;
+}
+
+.checkout-amount {
+  font-size: 14px;
+  opacity: 0.9;
+  font-weight: 600;
+}
+/* 逛逛賣場連結 */
+.visit-store-link {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.1rem;
+  transition: color .15s;
+}
+.visit-store-link:hover { color: var(--primary-container); }
+
+/* 收藏按鈕 */
+.item-favorite-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--on-surface-variant);
+  border-radius: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color .15s;
+  flex-shrink: 0;
+}
+.item-favorite-btn:hover { color: #832600; }
+
+/* 賣家底部（優惠券 + 本店小計） */
+.seller-footer {
+  padding: 0.75rem 1rem;
+  background: rgba(255,248,246,.5);
+  border-top: 1px dashed var(--outline-variant);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* 本店小計 */
+.seller-subtotal {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.seller-subtotal-label {
+  font-size: 13px;
+  color: var(--on-surface-variant);
+}
+.seller-subtotal-original {
+  font-size: 12px;
+  color: var(--on-surface-variant);
+  text-decoration: line-through;
+}
+.seller-subtotal-discount {
+  font-size: 12px;
+  color: var(--secondary);
+}
+.seller-subtotal-amount {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--primary);
+}

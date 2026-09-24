@@ -1,0 +1,50 @@
+<div class="create-container">
+  <div class="form-field">
+    <label class="field-label">文章標題</label>
+    <input type="text" [(ngModel)]="title" placeholder="請輸入文章標題" class="input-title" />
+  </div>
+
+  <div class="form-field">
+    <label class="field-label">文章內容</label>
+
+    <div class="blocks-container">
+      @for (block of blocks; track $index) {
+        <div class="block-wrapper">
+          <div class="block-header">
+            <span class="block-tag">
+              @if (block.blockType === 'text') {
+                文字
+              } @else if (block.blockType === 'image') {
+                圖片
+              } @else {
+                影片
+              }
+            </span>
+
+            @if (blocks.length > 1) {
+              <button class="btn-remove" (click)="removeBlock($index)">移除</button>
+            }
+          </div>
+
+          @if (block.blockType === 'text') {
+            <textarea [(ngModel)]="block.content" placeholder="請輸入內容..." class="input-content"></textarea>
+          } @else if (block.blockType === 'image') {
+            <input type="text" [(ngModel)]="block.mediaUrl" placeholder="請貼上圖片" class="input-media" />
+          } @else if (block.blockType === 'video') {
+            <input type="text" [(ngModel)]="block.mediaUrl" placeholder="請貼上影片" class="input-media" />
+          }
+        </div>
+      }
+    </div>
+
+    <div class="add-block-actions">
+      <button (click)="addBlock('text')">+ 插入文字</button>
+      <button (click)="addBlock('image')">+ 插入圖片</button>
+      <button (click)="addBlock('video')">+ 插入影片</button>
+    </div>
+  </div>
+
+  <div class="submit-row">
+    <button class="btn-publish" (click)="onSubmit()">發佈貼文</button>
+  </div>
+</div>

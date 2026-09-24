@@ -1,0 +1,40 @@
+<div class="product-card" [class.sold-out]="isSoldOut">
+
+  <!-- 商品圖片區 -->
+  <div class="card-image-wrapper" [routerLink]="['/market/products', product.productId]"
+       style="cursor: pointer;">
+    <img [src]="firstImageUrl" [alt]="product.productName" class="card-image" [class.grayscale]="isSoldOut" />
+
+    <!-- 售完遮罩 -->
+    @if (isSoldOut) {
+    <div class="sold-out-overlay">
+      <span class="sold-out-badge">已售完 · 補貨中</span>
+    </div>
+    }
+
+    <!-- 收藏按鈕 -->
+    <button class="favorite-btn" (click)="onToggleFavorite(); $event.stopPropagation()">
+      <i class="pi pi-heart"></i>
+    </button>
+  </div>
+
+  <!-- 商品資訊區 -->
+  <div class="card-body">
+    <div [routerLink]="['/market/products', product.productId]" style="cursor: pointer;">
+      <h3 class="product-name">{{ product.productName }}</h3>
+      <p class="product-brand">{{ product.brandOrOrigin }}</p>
+    </div>
+
+    <div class="card-footer">
+      <span class="product-price">NT$ {{ product.price | number }}</span>
+
+      <!-- 1. 正常商品：加入購物車 -->
+      @if (!isSoldOut) {
+      <p-button label="加入購物車" icon="pi pi-shopping-cart" size="small" (onClick)="onAddToCart()" />
+      } @else {
+      <!-- 2. 售完商品：到貨通知 -->
+      <p-button label="到貨通知我" icon="pi pi-bell" size="small" severity="secondary" [outlined]="true" />
+      }
+    </div>
+  </div>
+</div>
