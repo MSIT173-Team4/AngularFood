@@ -1,0 +1,93 @@
+<p-toast />
+
+<section class="cooking-shell p-4 md:p-8">
+  <header class="cooking-header">
+    <a routerLink="/recipes" class="back-link">
+      <i class="pi pi-arrow-left" aria-hidden="true"></i>
+      離開料理模式
+    </a>
+    <div>
+      <span>專注料理模式</span>
+      <h1>{{ recipeTitle() }}</h1>
+    </div>
+    <strong>{{ targetServings() }} 人份</strong>
+  </header>
+
+  <p-progressbar [value]="progress()" [showValue]="false" aria-label="料理進度" />
+
+  <div class="cooking-workspace">
+    <aside class="step-navigation" aria-label="料理步驟導覽">
+      <span class="panel-kicker">料理流程</span>
+      <h2>{{ currentStepIndex() + 1 }} / {{ steps().length }}</h2>
+      <div class="step-list">
+        @for (step of steps(); track step.stepNumber; let index = $index) {
+          <button
+            type="button"
+            [class.active]="currentStepIndex() === index"
+            [class.completed]="currentStepIndex() > index"
+            (click)="goToStep(index)"
+          >
+            <span>{{ step.stepNumber }}</span>
+            <p>{{ step.instruction }}</p>
+          </button>
+        }
+      </div>
+    </aside>
+
+    <main>
+      @if (currentStep(); as step) {
+        <article class="step-card">
+          <span class="step-indicator">步驟 {{ step.stepNumber }}，共 {{ steps().length }} 步</span>
+          <h2>{{ step.instruction }}</h2>
+
+          @if (step.imageUrl) {
+            <img [src]="step.imageUrl" [alt]="'料理步驟 ' + step.stepNumber + ' 示意圖'" />
+          } @else {
+            <div class="step-visual-placeholder">
+              <i class="pi pi-list-check" aria-hidden="true"></i>
+              <span>依照文字完成這個步驟</span>
+            </div>
+          }
+
+          <div class="timer-panel">
+            <span>本步驟計時</span>
+            <div class="timer" aria-live="polite">{{ formatTime(remainingSeconds()) }}</div>
+          </div>
+
+          <div class="actions">
+            <p-button label="上一步" icon="pi pi-chevron-left" severity="secondary" [outlined]="true" [disabled]="currentStepIndex() === 0" (onClick)="previousStep()" />
+            <p-button [label]="isTimerRunning() ? '暫停計時' : '開始計時'" [icon]="isTimerRunning() ? 'pi pi-pause' : 'pi pi-play'" severity="success" [rounded]="true" [disabled]="remainingSeconds() === 0" (onClick)="toggleTimer()" />
+            <p-button label="下一步" icon="pi pi-chevron-right" iconPos="right" severity="secondary" [outlined]="true" [disabled]="currentStepIndex() === steps().length - 1" (onClick)="nextStep()" />
+          </div>
+        </article>
+      } @else {
+        <p class="empty-state">料理步驟載入中……</p>
+      }
+    </main>
+
+    <aside class="cooking-assistant">
+      <section class="voice-controls" aria-labelledby="voice-control-title">
+        <div>
+          <span class="panel-kicker">免手操作</span>
+          <h2 id="voice-control-title">語音料理助理</h2>
+          <p class="voice-hint">點擊後說：「下一步」、「上一步」、「開始計時」、「暫停」或「煮好了」。</p>
+          <p class="voice-status" aria-live="polite">{{ speechStatus() }}</p>
+          @if (lastRecognizedCommand()) {
+            <p class="recognized-command">最近辨識：{{ lastRecognizedCommand() }}</p>
+          }
+        </div>
+        <p-button [label]="isListening() ? '停止語音' : '啟用語音'" [icon]="isListening() ? 'pi pi-microphone-slash' : 'pi pi-microphone'" [severity]="isListening() ? 'secondary' : 'success'" [disabled]="!isSpeechSupported()" [outlined]="!isListening()" (onClick)="toggleSpeechRecognition()" />
+      </section>
+
+      <section class="ingredient-checklist">
+        <span class="panel-kicker">本次準備</span>
+        <h2>食材清單</h2>
+        @for (ingredient of scaledIngredients(); track ingredient.ingredientId) {
+          <div><span>{{ ingredient.name }}</span><b>{{ ingredient.display }}</b></div>
+        }
+      </section>
+
+      <p-button label="完成料理並同步冰箱" icon="pi pi-check-circle" severity="danger" size="large" [rounded]="true" [loading]="isDeducting()" [disabled]="steps().length === 0" (onClick)="completeCooking()" />
+    </aside>
+  </div>
+</section>

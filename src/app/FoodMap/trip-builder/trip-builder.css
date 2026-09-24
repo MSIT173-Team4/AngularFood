@@ -1,0 +1,164 @@
+.planner-layout {
+  display: grid;
+  grid-template-columns: 320px 1fr 360px;
+  gap: 16px;
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+@media (max-width: 1024px) {
+  .planner-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.field label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--p-text-muted-color, #666);
+}
+
+.plan-button {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.error-text {
+  color: #d33;
+  font-size: 0.85rem;
+  margin-top: 10px;
+}
+
+.empty-hint {
+  color: var(--p-text-muted-color, #888);
+  font-size: 0.9rem;
+}
+
+.coverage-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.coverage-row span {
+  white-space: nowrap;
+  font-size: 0.85rem;
+}
+
+.coverage-row p-progressbar {
+  flex: 1;
+}
+
+.uncovered-box {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.route-preview {
+  display: flex;
+  flex-direction: column;
+}
+
+.route-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.step-marker {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--p-primary-color, #c0392b);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.step-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.85rem;
+}
+
+.step-info span {
+  color: var(--p-text-muted-color, #888);
+}
+
+.route-connector {
+  width: 2px;
+  height: 20px;
+  background: var(--p-primary-200, #e8b4ac);
+  margin-left: 13px;
+}
+
+.itinerary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.itinerary-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--p-surface-border, #e5e5e5);
+  border-radius: 8px;
+  cursor: move;
+  background: var(--p-surface-card, #fff);
+}
+
+.itinerary-item.cdk-drag-preview {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.itinerary-item.cdk-drag-placeholder {
+  opacity: 0.3;
+}
+
+.itinerary-badge {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--p-primary-color, #c0392b);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.itinerary-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.85rem;
+  min-width: 0;
+}
+
+.itinerary-body span {
+  color: var(--p-text-muted-color, #888);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

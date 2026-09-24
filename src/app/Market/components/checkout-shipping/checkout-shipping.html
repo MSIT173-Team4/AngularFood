@@ -1,0 +1,236 @@
+<p-toast position="bottom-right" />
+
+<section class="shipping-section">
+  <div class="shipping-container">
+
+    <!-- 進度條 -->
+    <app-checkout-steps [currentStep]="2" />
+
+    <!-- 主佈局 -->
+    <div class="shipping-layout">
+
+      <!-- ══ 左側：表單 ══════════════════════════════ -->
+      <div class="shipping-left">
+
+        <!-- 全域預設收件人 -->
+        <div class="form-card">
+          <div class="form-card-header">
+            <div class="form-card-icon">
+              <i class="pi pi-user"></i>
+            </div>
+            <h2>全域預設收件人資料</h2>
+            <div class="header-actions">
+              <button class="action-chip" (click)="applyUserProfile()">
+                <i class="pi pi-user-edit"></i> 套用會員帳號預設
+              </button>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <!-- 收件人姓名 -->
+            <div class="form-group">
+              <label>收件人真實姓名 <span class="required">*</span></label>
+              <input type="text" [(ngModel)]="globalRecipient.name"
+                     placeholder="請輸入收件人姓名" />
+            </div>
+
+            <!-- 行動電話 -->
+            <div class="form-group">
+              <label>行動電話（接收出貨 SMS）<span class="required">*</span></label>
+              <input type="tel" [(ngModel)]="globalRecipient.phone"
+                     placeholder="09XX-XXX-XXX" />
+            </div>
+
+            <!-- 配送地址 -->
+            <div class="form-group full-width">
+              <label>全域預設配送地址 <span class="required">*</span></label>
+              <div class="address-row">
+                <!-- 縣市 -->
+                <select [(ngModel)]="globalRecipient.city" (ngModelChange)="onGlobalCityChange()">
+                  <option value="">選擇縣市</option>
+                  @for (city of cities; track city.name) {
+                    <option [value]="city.name">{{ city.name }}</option>
+                  }
+                </select>
+
+                <!-- 區（縣市選了才出現） -->
+                <select [(ngModel)]="globalRecipient.district"
+                        [disabled]="globalDistricts.length === 0">
+                  <option value="">選擇區/鄉鎮</option>
+                  @for (d of globalDistricts; track d) {
+                    <option [value]="d">{{ d }}</option>
+                  }
+                </select>
+              </div>
+
+              <!-- 街道地址 -->
+              <input type="text" [(ngModel)]="globalRecipient.streetAddress"
+                     placeholder="請輸入街道地址（路名、門號、樓層）"
+                     class="street-input" />
+            </div>
+          </div>
+
+          <div class="info-tip">
+            <i class="pi pi-info-circle"></i>
+            <p>此地址將自動套用至下方各賣家出貨單。若部分商品欲寄送至不同地址，可在下方個別賣家區塊點選「個別指定地址」。</p>
+          </div>
+        </div>
+
+        <!-- 每個賣家的配送設定 -->
+        @for (group of sellerGroups; let i = $index; track group.sellerId) {
+          <div class="form-card seller-card">
+
+            <!-- 賣家 Header -->
+            <div class="seller-card-header">
+              <div class="seller-number" [style.background]="i === 0 ? '#fee2db' : '#beecb9'"
+                   [style.color]="i === 0 ? '#832600' : '#406840'">
+                {{ i + 1 }}
+              </div>
+              <span class="seller-card-name">{{ group.sellerName }}</span>
+            </div>
+
+            <!-- 商品縮圖列 -->
+            <div class="item-strip">
+              @for (item of group.items; track item.cartItemId) {
+                <div class="item-strip-row">
+                  <img [src]="item.imageUrl || 'assets/images/product-placeholder.png'"
+                       [alt]="item.productName" />
+                  <span>{{ item.productName }}</span>
+                  <span class="item-price">NT$ {{ item.subtotal | number }}</span>
+                </div>
+              }
+            </div>
+
+            <!-- 配送地址選擇 -->
+            <div class="address-mode-selector">
+              <label class="radio-card"
+                     [class.active]="sellerShippingMap[group.sellerId]?.useDefault">
+                <input type="radio" name="addr_{{ group.sellerId }}"
+                       [checked]="sellerShippingMap[group.sellerId]?.useDefault"
+                       (change)="setSellerAddressMode(group.sellerId, true)" />
+                <span>直接套用全域預設地址</span>
+              </label>
+              <label class="radio-card"
+                     [class.active]="!sellerShippingMap[group.sellerId]?.useDefault">
+                <input type="radio" name="addr_{{ group.sellerId }}"
+                       [checked]="!sellerShippingMap[group.sellerId]?.useDefault"
+                       (change)="setSellerAddressMode(group.sellerId, false)" />
+                <span>為此賣家指定其他地址</span>
+              </label>
+            </div>
+
+            <!-- 套用預設地址時：顯示預覽 -->
+            @if (sellerShippingMap[group.sellerId]?.useDefault) {
+              <div class="address-preview">
+                <i class="pi pi-map-marker" style="color: #832600;"></i>
+                <div>
+                  <p class="preview-recipient">{{ getEffectiveRecipient(group.sellerId) }}</p>
+                  <p class="preview-address">{{ getEffectiveAddress(group.sellerId) }}</p>
+                </div>
+              </div>
+            }
+
+            <!-- 個別指定地址時：出現另一組表單 -->
+            @if (!sellerShippingMap[group.sellerId]?.useDefault) {
+              <div class="seller-address-form">
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label>收件人姓名 <span class="required">*</span></label>
+                    <input type="text"
+                           [(ngModel)]="sellerShippingMap[group.sellerId].recipientName"
+                           placeholder="請輸入收件人姓名" />
+                  </div>
+                  <div class="form-group">
+                    <label>行動電話 <span class="required">*</span></label>
+                    <input type="tel"
+                           [(ngModel)]="sellerShippingMap[group.sellerId].phone"
+                           placeholder="09XX-XXX-XXX" />
+                  </div>
+                  <div class="form-group full-width">
+                    <label>配送地址 <span class="required">*</span></label>
+                    <div class="address-row">
+                      <select [(ngModel)]="sellerShippingMap[group.sellerId].city"
+                              (ngModelChange)="onSellerCityChange(group.sellerId)">
+                        <option value="">選擇縣市</option>
+                        @for (city of cities; track city.name) {
+                          <option [value]="city.name">{{ city.name }}</option>
+                        }
+                      </select>
+                      <select [(ngModel)]="sellerShippingMap[group.sellerId].district"
+                              [disabled]="(sellerDistrictsMap[group.sellerId] || []).length === 0">
+                        <option value="">選擇區/鄉鎮</option>
+                        @for (d of sellerDistrictsMap[group.sellerId] || []; track d) {
+                          <option [value]="d">{{ d }}</option>
+                        }
+                      </select>
+                    </div>
+                    <input type="text"
+                           [(ngModel)]="sellerShippingMap[group.sellerId].streetAddress"
+                           placeholder="請輸入街道地址"
+                           class="street-input" />
+                  </div>
+                </div>
+              </div>
+            }
+
+          </div>
+        }
+
+        <!-- 付款方式 -->
+        <div class="form-card">
+          <div class="payment-section-title">
+            <span class="payment-bar"></span>
+            <h2>付款方式</h2>
+          </div>
+
+          <label class="payment-option" [class.active]="selectedPayment === 'ecpay'">
+            <input type="radio" name="payment" value="ecpay"
+                  [(ngModel)]="selectedPayment" />
+            <span class="payment-label">綠界科技 ECPay</span>
+            <span class="payment-tag">免手續費</span>
+          </label>
+        </div>
+
+        <!-- 底部按鈕列 -->
+        <div class="bottom-actions">
+          <button class="back-btn" routerLink="/market/cart">
+            <i class="pi pi-arrow-left"></i> 返回購物清單確認
+          </button>
+          <button class="next-btn" (click)="onSubmit()" [disabled]="!isFormValid()">
+            @if (isSubmitting) {
+              <i class="pi pi-spin pi-spinner"></i> 建立訂單中...
+            } @else {
+              下一步：前往確認付款 <i class="pi pi-arrow-right"></i>
+            }
+          </button>
+        </div>
+
+      </div>
+
+      <!-- ══ 右側：訂單金額摘要 ════════════════════ -->
+      <div class="shipping-right">
+        <div class="summary-card">
+          <h3 class="summary-title">訂單金額試算</h3>
+
+          @for (group of sellerGroups; let i = $index; track group.sellerId) {
+            <div class="summary-seller">
+              <div class="summary-seller-header">
+                <span class="summary-dot"
+                      [style.background]="i === 0 ? '#832600' : '#406840'"></span>
+                <span>{{ group.sellerName }}</span>
+                <span class="summary-seller-amount">
+                  NT$ {{ getGroupSubtotal(group) | number }}
+                </span>
+              </div>
+              <div class="summary-seller-shipping">
+                <i class="pi pi-truck"></i>
+                <span>運費 NT$ 80</span>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>

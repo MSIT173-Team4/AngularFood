@@ -1,0 +1,111 @@
+<p-toast></p-toast>
+
+<div class="planner-layout">
+
+  <!-- 左欄：搜尋條件 -->
+  <p-card header="規劃條件" class="left-column">
+
+    <div class="field">
+      <label>採買清單 ID</label>
+      <p-inputnumber [(ngModel)]="shoppingListId" [useGrouping]="false" />
+    </div>
+
+    <div class="field">
+      <label>起點緯度</label>
+      <p-inputnumber [(ngModel)]="originLatitude" [minFractionDigits]="4" [maxFractionDigits]="7" />
+    </div>
+
+    <div class="field">
+      <label>起點經度</label>
+      <p-inputnumber [(ngModel)]="originLongitude" [minFractionDigits]="4" [maxFractionDigits]="7" />
+    </div>
+
+    <button pButton type="button" label="使用目前位置" severity="secondary" size="small" (click)="useCurrentLocation()">
+    </button>
+
+    <p-divider />
+
+    <div class="field">
+      <label>交通方式</label>
+      <p-select [(ngModel)]="selectedTravelMode" [options]="travelModeOptions" optionLabel="label"
+        optionValue="value" />
+    </div>
+
+    <div class="field">
+      <label>搜尋半徑（公尺）</label>
+      <p-inputnumber [(ngModel)]="searchRadiusMeters" [useGrouping]="false" suffix=" m" />
+    </div>
+
+    <button pButton type="button" label="規劃行程" [loading]="loading()" (click)="planTrip()" class="plan-button">
+    </button>
+
+    @if (errorMessage()) {
+    <p class="error-text">{{ errorMessage() }}</p>
+    }
+
+  </p-card>
+
+  <!-- 中欄：路線預覽（清單形式，尚未接真正地圖，見 README 說明） -->
+  <p-card header="路線預覽" class="middle-column">
+
+    @if (tripName()) {
+    <h3>{{ tripName() }}</h3>
+
+    <div class="coverage-row">
+      <span>採買覆蓋率</span>
+      <p-progressbar [value]="formatCoveragePercentage()" />
+    </div>
+
+    @if (uncoveredItemNames().length > 0) {
+    <div class="uncovered-box">
+      <strong>附近買不到：</strong>
+      @for (item of uncoveredItemNames(); track item) {
+      <p-tag [value]="item" severity="warn" />
+      }
+    </div>
+    }
+
+    <p-divider />
+
+    <div class="route-preview">
+      @for (place of tripPlaces(); track place.fTripPlaceId; let i = $index) {
+      <div class="route-step">
+        <div class="step-marker">{{ i + 1 }}</div>
+        <div class="step-info">
+          <strong>{{ place.fPlaceName }}</strong>
+          <span>{{ place.fAddress }}</span>
+        </div>
+      </div>
+      @if (!$last) {
+      <div class="route-connector"></div>
+      }
+      }
+    </div>
+    } @else {
+    <p class="empty-hint">左欄按下「規劃行程」後，路線會顯示在這裡。</p>
+    }
+
+  </p-card>
+
+  <!-- 右欄：行程列表（可拖曳排序） -->
+  <p-card header="行程列表" class="right-column">
+
+    @if (tripPlaces().length === 0) {
+    <p class="empty-hint">尚未規劃行程。</p>
+    } @else {
+    <div cdkDropList class="itinerary-list" (cdkDropListDropped)="onDrop($event)">
+      @for (place of tripPlaces(); track place.fTripPlaceId; let i = $index) {
+      <div cdkDrag class="itinerary-item">
+        <div class="itinerary-badge">{{ i + 1 }}</div>
+        <div class="itinerary-body">
+          <strong>{{ place.fPlaceName }}</strong>
+          <span>{{ place.fAddress }}</span>
+        </div>
+      </div>
+      }
+    </div>
+    }
+
+  </p-card>
+
+</div>

@@ -1,1 +1,30 @@
-/* You can add global styles to this file, and also import other style files */
+@import 'tailwindcss';
+@import 'tailwindcss-primeui';
+@import 'primeicons/primeicons.css';
+
+:root {
+  --friendly-primary: #ab3500;
+  --friendly-secondary: #406840;
+  --friendly-surface: #fff8f6;
+  --friendly-text: #261814;
+  --friendly-muted: #6d5a51;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  min-width: 320px;
+  margin: 0;
+  color: var(--friendly-text);
+  background: var(--friendly-surface);
+  font-family: Inter, 'Noto Sans TC', 'Microsoft JhengHei', sans-serif;
+}
+
+button,
+input,
+textarea,
+select { font: inherit; }
+
+img { max-width: 100%; }

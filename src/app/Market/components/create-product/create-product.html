@@ -1,0 +1,58 @@
+<div>
+  <h2>新增商品</h2>
+
+  <form (ngSubmit)="onSubmit()">
+
+    <div>
+      <label>分類編號</label>
+      <input type="text" [(ngModel)]="form.productsCategoryNo" name="productsCategoryNo" required />
+    </div>
+
+    <div>
+      <label>商品名稱</label>
+      <input type="text" [(ngModel)]="form.productName" name="productName" required />
+    </div>
+
+    <div>
+      <label>商品描述</label>
+      <textarea [(ngModel)]="form.description" name="description"></textarea>
+    </div>
+
+    <div>
+      <label>庫存</label>
+      <input type="number" [(ngModel)]="form.stock" name="stock" min="0" required />
+    </div>
+
+    <div>
+      <label>售價</label>
+      <input type="number" [(ngModel)]="form.price" name="price" min="0.01" step="0.01" required />
+    </div>
+
+    <div>
+      <label>品牌 / 產地</label>
+      <input type="text" [(ngModel)]="form.brandOrOrigin" name="brandOrOrigin" />
+    </div>
+
+    <div>
+      <label>製造日期</label>
+      <input type="date" [(ngModel)]="form.manufacturingDate" name="manufacturingDate" />
+    </div>
+
+    <div>
+      <label>有效期限</label>
+      <input type="date" [(ngModel)]="form.expirationDate" name="expirationDate" />
+    </div>
+
+    <div>
+      <label>商品圖片（可多選）</label>
+      <input type="file" multiple accept="image/*" (change)="onFileChange($event)" />
+    </div>
+
+    <button type="submit">新增商品</button>
+
+  </form>
+
+  <!-- 顯示成功或失敗訊息 -->
+  <p *ngIf="message">{{ message }}</p>
+
+</div>
