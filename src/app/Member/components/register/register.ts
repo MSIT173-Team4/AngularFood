@@ -58,7 +58,9 @@ export class Register {
 
     fIdNum: ['', [Validators.required, Validators.pattern(/^[A-Z][1289]\d{8}$/)]],
   });
-
+  goToLogin(): void {
+    this.router.navigate(['/login']);
+  }
   register(): void {
     if (this.registerData.invalid) {
       this.registerData.markAllAsTouched();
