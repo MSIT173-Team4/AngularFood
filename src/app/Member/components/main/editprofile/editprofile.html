@@ -1,0 +1,123 @@
+<form [formGroup]="editForm" (ngSubmit)="submit()" class="edit-profile-form">
+  <!-- 頭像區域 -->
+  <section class="avatar-section">
+    <div class="avatar-preview">
+      @if (previewUrl) {
+        <img [src]="previewUrl" alt="頭像預覽" />
+      } @else {
+        <div class="avatar-placeholder">
+          <i class="pi pi-user"></i>
+          <span>頭像預覽</span>
+        </div>
+      }
+    </div>
+
+    <div class="avatar-actions">
+      <label class="upload-button">
+        <i class="pi pi-image"></i>
+        選擇圖片
+
+        <input type="file" accept="image/*" hidden (change)="onImageSelected($event)" />
+      </label>
+
+      @if (selectedImage) {
+        <button type="button" class="crop-button" (click)="openCropper()">
+          <i class="pi pi-crop"></i>
+          裁切圖片
+        </button>
+      }
+    </div>
+
+    <span class="image-hint"> 建議使用正方形圖片 </span>
+  </section>
+
+  <!-- 基本資料 -->
+  <section class="profile-info">
+    <div class="section-title">
+      <span>基本資料</span>
+    </div>
+
+    <!-- 姓 / 名 -->
+    <div class="form-row">
+      <div class="form-field">
+        <label>姓</label>
+        <input type="text" formControlName="lastName" />
+      </div>
+
+      <div class="form-field">
+        <label>名</label>
+        <input type="text" formControlName="firstName" />
+      </div>
+    </div>
+
+    <!-- 用戶名 -->
+    <div class="form-field">
+      <label>用戶名</label>
+
+      <input type="text" formControlName="username" />
+    </div>
+
+    <!-- Email -->
+    <div class="form-field readonly-field">
+      <label>Email</label>
+
+      <div class="readonly-input">
+        <input type="email" [value]="userInfo.email" readonly />
+
+        <i class="pi pi-lock"></i>
+      </div>
+
+      <small>Email 無法在此修改</small>
+    </div>
+
+    <!-- 電話 -->
+    <div class="form-field">
+      <label>電話</label>
+
+      <input type="tel" formControlName="phone" />
+    </div>
+
+    <!-- 地址 -->
+    <div class="form-field">
+      <label>地址</label>
+
+      <input type="text" formControlName="address" />
+    </div>
+  </section>
+
+  <!-- 底部 -->
+  <div class="form-footer">
+    <button type="submit" class="save-button" [disabled]="editForm.invalid">儲存變更</button>
+  </div>
+</form>
+<p-dialog
+  header="裁切頭像"
+  [(visible)]="cropperVisible"
+  [modal]="true"
+  [dismissableMask]="false"
+  [style]="{ width: '600px' }"
+>
+  @if (selectedImage) {
+    <image-cropper
+      [imageFile]="selectedImage"
+      [maintainAspectRatio]="true"
+      [aspectRatio]="1 / 1"
+      format="jpeg"
+      [resizeToWidth]="500"
+      (imageCropped)="imageCropped($event)"
+    >
+    </image-cropper>
+  }
+
+  <div class="cropper-actions">
+    <p-button
+      label="取消"
+      icon="pi pi-times"
+      severity="secondary"
+      [outlined]="true"
+      (click)="cancelCrop()"
+    />
+
+    <p-button label="套用裁切" icon="pi pi-check" (click)="confirmCrop()" />
+  </div>
+</p-dialog>

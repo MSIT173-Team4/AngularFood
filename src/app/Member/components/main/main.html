@@ -6,7 +6,7 @@
 
     <div class="profile-header">
       <!-- 頭像 -->
-      <p-avatar [image]="profile.image" size="xlarge" shape="circle"> </p-avatar>
+      <p-avatar [image]="getImageUrl(userInfo?.image)" size="xlarge" shape="circle"> </p-avatar>
 
       <!-- 基本資料 -->
       <div class="profile-info">
@@ -31,7 +31,29 @@
       <div class="profile-actions">
         <!-- 自己 -->
         @if (isOwnProfile) {
-          <p-button label="編輯個人資料" icon="pi pi-pencil" severity="secondary"> </p-button>
+          @if (isSeller) {
+            <p-button
+              label="前往商家頁面"
+              icon="pi pi-shop"
+              styleClass="seller-apply-btn"
+              severity="success"
+            ></p-button>
+          } @else {
+            <p-button
+              label="申請成為商家"
+              icon="pi pi-briefcase"
+              severity="secondary"
+              styleClass="seller-apply-btn"
+              [outlined]="true"
+              (click)="sellerApplyVisible = true"
+            ></p-button>
+          }
+          <p-button
+            label="編輯個人資料"
+            icon="pi pi-pencil"
+            severity="secondary"
+            (click)="editProfileVisible = true"
+          ></p-button>
         }
 
         <!-- 其他會員 -->
@@ -39,6 +61,27 @@
           <p-button label="追蹤" icon="pi pi-user-plus"> </p-button>
         }
       </div>
+      <p-dialog
+        header="編輯個人資料"
+        [(visible)]="editProfileVisible"
+        [modal]="true"
+        [dismissableMask]="true"
+        [style]="{ width: '620px' }"
+      >
+        @if (userInfo) {
+          <app-edit-profile [userInfo]="userInfo" (updated)="onProfileUpdated()" />
+        }
+      </p-dialog>
+      <p-dialog
+        header="申請成為商家"
+        [(visible)]="sellerApplyVisible"
+        [modal]="true"
+        [dismissableMask]="true"
+        [style]="{ width: '620px' }"
+        [breakpoints]="{ '768px': '92vw' }"
+      >
+        <app-apply />
+      </p-dialog>
     </div>
     @if (isOwnProfile && dashboard) {
       <section class="profile-dashboard">

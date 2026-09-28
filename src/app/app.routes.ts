@@ -10,6 +10,7 @@ import {
 import { Login } from './Member/components/login/login';
 import { Register } from './Member/components/register/register';
 import { Main } from './Member/components/main/main';
+import { VerifyEmail } from './Member/components/verifyemail/verifyemail';
 import { guestGuardGuard } from './Member/guard/guest-guard-guard';
 import { GetPublicProduct } from './Market/components/get-public-product/get-public-product';
 import { ProductDetailComponent } from './Market/components/product-detail/product-detail';
@@ -40,6 +41,11 @@ export const routes: Routes = [
     path: 'main/:id',
     canActivate: [authGuard],
     component: Main,
+  },
+  {
+    path: 'verifyemail',
+    canActivate: [guestGuardGuard],
+    component: VerifyEmail,
   },
   {
     path: 'recipes',
@@ -85,17 +91,15 @@ export const routes: Routes = [
     title: '料理採購清單｜友料美食生活平台',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./Recipe/shopping-list/shopping-list').then(
-        (module) => module.ShoppingList
-      )
+      import('./Recipe/shopping-list/shopping-list').then((module) => module.ShoppingList),
   },
   {
     path: 'forum',
     title: '討論區｜友料美食生活平台',
     loadComponent: () =>
       import('./Forum/forum-placeholder/forum-placeholder').then(
-        (module) => module.ForumPlaceholder
-      )
+        (module) => module.ForumPlaceholder,
+      ),
   },
   { path: 'market/create-product', component: CreateProduct },
   { path: 'trip-builder', component: TripBuilder },
@@ -106,6 +110,9 @@ export const routes: Routes = [
   { path: 'market/cart', component: ShoppingCartComponent },
   { path: 'market/checkout/shipping', component: CheckoutShippingComponent },
   { path: 'checkout/complete/:batchId', component: OrderCompleteComponent },
-  { path: 'sellcenter', loadChildren: () => import('./sellcenter/sellcenter.routes').then(r => r.SELLCENTER_ROUTES), },
-  { path: '**', redirectTo: 'recipes' }
+  {
+    path: 'sellcenter',
+    loadChildren: () => import('./sellcenter/sellcenter.routes').then((r) => r.SELLCENTER_ROUTES),
+  },
+  { path: '**', redirectTo: 'recipes' },
 ];

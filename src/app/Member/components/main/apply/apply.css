@@ -1,0 +1,239 @@
+/* =========================
+   整體表單
+========================= */
+
+.apply-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* =========================
+   區塊
+========================= */
+
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.section-description {
+  margin-top: -8px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #6b7280;
+}
+
+/* =========================
+   身分證上傳區
+========================= */
+
+.id-upload {
+  width: 100%;
+  height: 230px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background: #f7f8fa;
+
+  border: 1px dashed #d1d5db;
+  border-radius: 14px;
+
+  overflow: hidden;
+  cursor: pointer;
+
+  transition:
+    border-color 0.2s,
+    background-color 0.2s;
+}
+
+.id-upload:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+@media (max-width: 600px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+/* 沒有圖片時 */
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  color: #6b7280;
+}
+
+.upload-placeholder i {
+  font-size: 36px;
+  color: #9ca3af;
+}
+
+.upload-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.upload-description {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+/* 身分證預覽 */
+
+.id-preview {
+  width: 100%;
+  height: 100%;
+
+  object-fit: contain;
+
+  padding: 12px;
+}
+
+/* =========================
+   輸入欄位
+========================= */
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.form-field label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.form-field input,
+.form-field textarea {
+  width: 100%;
+
+  padding: 11px 13px;
+
+  font-size: 14px;
+  font-family: inherit;
+
+  color: #1f2937;
+  background: #ffffff;
+
+  border: 1px solid #d1d5db;
+  border-radius: 9px;
+
+  outline: none;
+
+  box-sizing: border-box;
+
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+/* focus */
+
+.form-field input:focus,
+.form-field textarea:focus {
+  border-color: #6b7280;
+
+  box-shadow: 0 0 0 3px rgb(107 114 128 / 10%);
+}
+
+/* placeholder */
+
+.form-field input::placeholder,
+.form-field textarea::placeholder {
+  color: #9ca3af;
+}
+
+/* 商家簡介 */
+
+.form-field textarea {
+  min-height: 120px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+/* 字數 */
+
+.character-count {
+  align-self: flex-end;
+
+  margin-top: -2px;
+
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+/* =========================
+   底部按鈕
+========================= */
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+
+  gap: 10px;
+
+  padding-top: 18px;
+
+  border-top: 1px solid #e5e7eb;
+}
+
+/* 送出申請按鈕 */
+
+:host ::ng-deep .submit-apply-btn {
+  background: #374151;
+  border-color: #374151;
+  color: #ffffff;
+}
+
+:host ::ng-deep .submit-apply-btn:hover {
+  background: #1f2937;
+  border-color: #1f2937;
+}
+
+/* =========================
+   手機
+========================= */
+
+@media (max-width: 600px) {
+  .apply-form {
+    gap: 20px;
+  }
+
+  .id-upload {
+    height: 190px;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .form-actions p-button {
+    width: 100%;
+  }
+}
