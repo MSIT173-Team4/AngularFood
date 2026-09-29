@@ -177,6 +177,10 @@
   line-height: 1.4;
 }
 
+.post-summary ::ng-deep img {
+  display: none !important;
+}
+
 .post-summary {
   font-size: 14px;
   color: #555555;

@@ -54,7 +54,7 @@ export interface Comment {
 
 @Injectable({ providedIn: 'root' })
 export class SocialService {
-  private baseUrl = 'http://localhost:4200/api';
+  private baseUrl = 'https://localhost:7164/api';
 
   constructor(private http: HttpClient) {}
 

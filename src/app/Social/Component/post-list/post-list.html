@@ -43,7 +43,7 @@
         </button>
 
         <h2 class="post-title">{{ post.title }}</h2>
-        <p class="post-summary">{{ post.summaryText }}</p>
+        <p class="post-summary" [innerHTML]="post.summaryText"></p>
 
         <div class="author-info">
           <img 
@@ -76,7 +76,6 @@
       </div>
     } @empty {
       <div class="empty-state">
-        <i class="far fa-folder-open empty-icon"></i>
         <p>目前尚無貼文</p>
       </div>
     }
