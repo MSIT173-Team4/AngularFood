@@ -67,6 +67,11 @@ export class Main implements OnInit {
       this.checkSeller();
     }
   }
+  goToSellCenter() {
+    this.router.navigate(['/sellcenter'], {
+    replaceUrl: true,
+    });
+  }
   checkSeller() {
     this.http
       .get<{ isSeller: boolean }>(`${this.baseURL}/Users/CheckSeller`, {
