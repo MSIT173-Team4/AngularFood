@@ -131,6 +131,7 @@ export interface AppliedSellerCoupon {
   sellerId: number;
   couponId: number;
   couponName: string;
+  scopeType: string;
   appliedAmount: number;
   message: string;
 }
@@ -151,6 +152,20 @@ export interface ShippingAddress {
   district: string;
   streetAddress: string;
   useDefault: boolean;  // true=套用全域預設，false=個別指定
+}
+
+export interface SellerShippingRequest {
+  sellerId: number;
+  recipientName: string;
+  recipientPhone: string;
+  shippingAddress: string;
+}
+
+export interface CreateOrderRequest {
+  cartItemIds: number[];
+  sellerShippings: SellerShippingRequest[];
+  sellerCoupons: { sellerId: number; couponId: number }[];
+  platformCouponId: number | null;
 }
 
 @Injectable({
@@ -278,7 +293,7 @@ export class MarketService {
   }
 
   // 建立訂單（結帳用）
-  createOrder(dto: { cartItemIds: number[] }): Observable<{ batchId: number; bathNo: string; totalAmount: number }> {
+  createOrder(dto: CreateOrderRequest): Observable<{ batchId: number; bathNo: string; totalAmount: number }> {
     return this.http.post<{ batchId: number; bathNo: string; totalAmount: number }>(
       `${this.apiBase}/CreateOrder`, dto
     );

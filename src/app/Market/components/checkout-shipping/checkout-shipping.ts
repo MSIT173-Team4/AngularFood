@@ -8,9 +8,13 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 
 import { CheckoutStepsComponent } from '../checkout-steps/checkout-steps';
-import { MarketService, UserProfileDto, ShippingAddress, CartSellerGroupDto } from '../../Service/market';
+import {
+  MarketService, UserProfileDto, ShippingAddress, CartSellerGroupDto,
+  AppliedSellerCoupon, ValidateCouponResultDto
+} from '../../Service/market';
 import { TAIWAN_CITIES, City } from '../../data/taiwan-districts';
 import { CheckoutStateService, CheckoutShippingData } from '../../Service/checkout-state.service';
+import { SHIPPING_FEE_PER_SELLER } from '../../data/market-constants';
 
 @Component({
   selector: 'app-checkout-shipping',
@@ -57,6 +61,9 @@ export class CheckoutShippingComponent implements OnInit, OnDestroy {
 
   selectedPayment = 'ecpay';
   cartItemIds: number[] = [];
+  // 購物車頁套用的優惠券（從 CheckoutStateService 帶過來，只用於顯示試算）
+  sellerCoupons: AppliedSellerCoupon[] = [];
+  platformCoupon: ValidateCouponResultDto | null = null;
   isSubmitting = false;
 
   ngOnInit(): void {
@@ -68,6 +75,8 @@ export class CheckoutShippingComponent implements OnInit, OnDestroy {
       return;
     }
     this.cartItemIds = state.cartItemIds;
+    this.sellerCoupons = state.sellerCoupons ?? [];
+    this.platformCoupon = state.platformCoupon ?? null;
     this.loadUserProfile();
     this.loadCart();
   }
@@ -94,9 +103,22 @@ export class CheckoutShippingComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data) => {
-          this.sellerGroups = data;
-          // 初始化每個賣家的配送設定（預設套用全域地址）
-          data.forEach(group => {
+          // 只保留購物車頁勾選的項目；整組都沒被勾的賣家直接拿掉
+          this.sellerGroups = data
+            .map(g => ({
+              ...g,
+              items: g.items.filter(i => this.cartItemIds.includes(i.cartItemId))
+            }))
+            .filter(g => g.items.length > 0);
+
+          // 勾選的商品可能已在別的分頁被刪掉，沒東西可結就回購物車
+          if (this.sellerGroups.length === 0) {
+            this.router.navigate(['/market/cart']);
+            return;
+          }
+
+          // 初始化每個賣家的配送設定（改成對過濾後的 sellerGroups 跑）
+          this.sellerGroups.forEach(group => {
             this.sellerShippingMap[group.sellerId] = {
               recipientName: '',
               phone: '',
@@ -213,9 +235,38 @@ export class CheckoutShippingComponent implements OnInit, OnDestroy {
     }
 
     this.isSubmitting = true;
+    const sellerShippings = this.sellerGroups.map(g => {
+      const s = this.sellerShippingMap[g.sellerId];
+      const src = s.useDefault
+        ? {
+          name: this.globalRecipient.name, phone: this.globalRecipient.phone,
+          city: this.globalRecipient.city, district: this.globalRecipient.district,
+          street: this.globalRecipient.streetAddress
+        }
+        : {
+          name: s.recipientName, phone: s.phone,
+          city: s.city, district: s.district, street: s.streetAddress
+        };
+      return {
+        sellerId: g.sellerId,
+        recipientName: src.name,
+        recipientPhone: src.phone,
+        shippingAddress: `${src.city}${src.district}${src.street}`
+      };
+    });
+
+    // 只送券的 ID，折扣金額由後端重新驗證、重新計算
+    const sellerCoupons = this.sellerCoupons
+      .map(c => ({ sellerId: c.sellerId, couponId: c.couponId }));
+    const platformCouponId = this.platformCoupon?.couponId ?? null;
 
     // Step 1：建立訂單
-    this.marketService.createOrder({ cartItemIds: this.cartItemIds })
+    this.marketService.createOrder({
+      cartItemIds: this.cartItemIds,
+      sellerShippings,
+      sellerCoupons,
+      platformCouponId
+    })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (result) => {
@@ -239,4 +290,44 @@ export class CheckoutShippingComponent implements OnInit, OnDestroy {
     return group.items.reduce((sum, i) => sum + i.subtotal, 0);
   }
 
+  readonly shippingFeePerSeller = SHIPPING_FEE_PER_SELLER;
+
+  getItemsTotal(): number {
+    return this.sellerGroups.reduce((sum, g) => sum + this.getGroupSubtotal(g), 0);
+  }
+
+  getSellerStoreDiscount(sellerId: number): number {
+    const c = this.sellerCoupons.find(x => x.sellerId === sellerId);
+    return c && c.scopeType !== 'Shipping' ? c.appliedAmount : 0;
+  }
+
+  get sellerDiscountTotal(): number {
+    return this.sellerGroups.reduce((sum, g) => sum + this.getSellerStoreDiscount(g.sellerId), 0);
+  }
+
+  get platformDiscount(): number {
+    return this.platformCoupon?.scopeType === 'Platform' ? this.platformCoupon.appliedAmount : 0;
+  }
+
+  isSellerShippingFree(sellerId: number): boolean {
+    return this.platformCoupon?.scopeType === 'Shipping'
+      || this.sellerCoupons.some(c => c.sellerId === sellerId && c.scopeType === 'Shipping');
+  }
+
+  getSellerShippingFee(sellerId: number): number {
+    return this.isSellerShippingFree(sellerId) ? 0 : this.shippingFeePerSeller;
+  }
+
+  get freeShippingSellerCount(): number {
+    return this.sellerGroups.filter(g => this.isSellerShippingFree(g.sellerId)).length;
+  }
+
+  getShippingTotal(): number {
+    return this.sellerGroups.reduce((sum, g) => sum + this.getSellerShippingFee(g.sellerId), 0);
+  }
+
+  getGrandTotal(): number {
+    return Math.max(0,
+      this.getItemsTotal() - this.sellerDiscountTotal - this.platformDiscount + this.getShippingTotal());
+  }
 }
