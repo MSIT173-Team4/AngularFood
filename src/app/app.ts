@@ -29,19 +29,27 @@ export class App implements OnInit {
     },
   ];
   private readonly destroyRef = inject(DestroyRef);
+  readonly authService = inject(AuthService);
   readonly notificationCenter = inject(NotificationCenterService);
 
+  // ===== 畫面狀態（signals） =====
   readonly isMobileNavigationOpen = signal(false);
+  readonly hideLayout = signal(false); // 控制 Header / Footer 是否隱藏
   readonly activePanel = signal<HeaderPanel | null>(null);
   readonly quickSearchTerm = signal('');
-  readonly notifications = this.notificationCenter.notifications;
-  readonly notificationCount = this.notificationCenter.unreadCount;
   readonly isSellerCenter = signal(false);
 
-  ngOnInit(): void {
-    this.authService.getCurrentUser().subscribe({
-      error: () => {
-        this.authService.clearUser();
+  // ===== 通知 =====
+  readonly notifications = this.notificationCenter.notifications;
+  readonly notificationCount = this.notificationCenter.unreadCount;
+
+  // ===== 使用者選單 =====
+  userMenuItems: MenuItem[] = [
+    {
+      label: '登出',
+      icon: 'pi pi-sign-out',
+      command: () => {
+        this.logout();
       },
     });
   }
@@ -62,9 +70,12 @@ export class App implements OnInit {
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((event) => {
+        const url = event.urlAfterRedirects;
+
         this.isMobileNavigationOpen.set(false);
         this.activePanel.set(null);
-        this.isSellerCenter.set(event.urlAfterRedirects.startsWith('/sellcenter'));
+        this.isSellerCenter.set(url.startsWith('/sellcenter'));
+        this.hideLayout.set(url.startsWith('/login') || url.startsWith('/register'));
       });
   }
 
@@ -77,7 +88,9 @@ export class App implements OnInit {
   toggleMobileNavigation(): void {
     this.isMobileNavigationOpen.update((isOpen) => !isOpen);
   }
-  logout() {
+
+  // ===== 登出 =====
+  logout(): void {
     this.authService.logout().subscribe({
       next: () => {
         this.router.navigate(['/login']);
@@ -88,6 +101,7 @@ export class App implements OnInit {
     });
   }
 
+  // ===== Header 面板 =====
   openPanel(panel: HeaderPanel): void {
     this.activePanel.set(panel);
   }
@@ -102,6 +116,7 @@ export class App implements OnInit {
     }
   }
 
+  // ===== 快速搜尋 =====
   submitQuickSearch(): void {
     const keyword = this.quickSearchTerm().trim();
     void this.router.navigate(['/recipes'], {
@@ -109,6 +124,7 @@ export class App implements OnInit {
     });
   }
 
+  // ===== 通知 =====
   markNotificationAsRead(notificationId: string): void {
     this.notificationCenter.markAsRead(notificationId);
   }

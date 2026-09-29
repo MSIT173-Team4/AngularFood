@@ -244,18 +244,13 @@
         <a class="user-profile-link" [routerLink]="['/main']">
           <img [src]="getUserImage(user.userImage)" class="user-avatar" />
 
-          <span class="user-name">
-            {{ user.userName }}
-          </span>
-        </a>
+      <span class="user-name">
+        {{ user.userName }}
+      </span>
+    </a>
 
-        <!-- 下拉按鈕 -->
-        <p-button
-          icon="pi pi-chevron-down"
-          [text]="true"
-          [rounded]="true"
-          (onClick)="userMenu.toggle($event)"
-        />
+    <!-- 下拉按鈕 -->
+    <p-button icon="pi pi-chevron-down" [text]="true" [rounded]="true" (onClick)="userMenu.toggle($event)" />
 
         <!-- PrimeNG Menu -->
         <p-menu #userMenu [model]="userMenuItems" [popup]="true" />
