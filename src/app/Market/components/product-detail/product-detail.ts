@@ -1,11 +1,12 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { ButtonModule } from 'primeng/button';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { DialogModule } from 'primeng/dialog';
+
 
 import {
   MarketService,
@@ -56,6 +57,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private marketService: MarketService,
     private messageService: MessageService
   ) { }
@@ -84,6 +86,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (data) => {
           this.product = data;
+          this.isFavorite = data.isFavorite;
           // 預設顯示第一張圖
           this.selectedImageUrl = data.imageUrls?.[0] ?? '';
           this.isLoading = false;
@@ -174,6 +177,10 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
           });
         },
         error: (err) => {
+          if (err.status === 401) {
+            this.router.navigate(['/login']);
+            return;
+          }
           this.messageService.add({
             severity: 'error',
             summary: '加入失敗',
@@ -200,13 +207,15 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           if (err.status === 401) {
-            this.messageService.add({
-              severity: 'warn',
-              summary: '請先登入',
-              detail: '收藏功能需要登入後才能使用',
-              life: 3000
-            });
+            this.router.navigate(['/login']);
+            return;
           }
+          this.messageService.add({
+            severity: 'error',
+            summary: '操作失敗',
+            detail: err.error?.message ?? '收藏失敗，請稍後再試',
+            life: 3000
+          });
         }
       });
   }

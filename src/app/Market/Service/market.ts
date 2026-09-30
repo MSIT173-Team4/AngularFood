@@ -18,6 +18,8 @@ export interface MarketProduct {
   expirationDate: string | null;
   productStatus: number;             // 0=審核中/1=架上/2=售完/3=未上架/4=違規
   imageUrls: string[] | null;
+  isFavorite: boolean;     // 目前登入者是否已收藏（未登入為 false）
+  isOwnProduct: boolean;   // 是否為自己賣場的商品（未登入為 false）
 }
 
 // ── 搜尋參數，對應後端 MarketProductSearchDto ────────────────────
@@ -63,6 +65,8 @@ export interface MarketProductDetail {
   sellerName: string;
   sellerDescription: string | null;
   sellerProductCount: number;
+  isFavorite: boolean;     // 目前登入者是否已收藏（未登入為 false）
+  isOwnProduct: boolean;   // 是否為自己賣場的商品（未登入為 false）
 }
 
 export interface MarketReview {
@@ -101,6 +105,7 @@ export interface CartItemDto {
   stock: number;
   quantity: number;
   subtotal: number;
+  isFavorite: boolean;
 }
 
 export interface CartSellerGroupDto {
@@ -140,6 +145,7 @@ export interface AppliedSellerCoupon {
 export interface UserProfileDto {
   userId: number;
   username: string;
+  recipientName: string;
   phone: string;
   address: string;
 }
@@ -177,7 +183,8 @@ export class MarketService {
   private readonly baseUrl = 'https://localhost:7164/api/MarketProduct';
   private readonly cartUrl = 'https://localhost:7164/api/ShoppingCart';
   private readonly couponUrl = 'https://localhost:7164/api/MarketCoupon';
-  private readonly apiBase = 'https://localhost:7164/api/Checkout'
+  private readonly apiBase = 'https://localhost:7164/api/Checkout';
+  private readonly withCred = { withCredentials: true };
 
   constructor(private http: HttpClient) { }
 
@@ -209,7 +216,7 @@ export class MarketService {
 
     return this.http.get<PagedResult<MarketProduct>>(
       `${this.baseUrl}/search`,
-      { params: httpParams }
+      { params: httpParams, withCredentials: true }
     );
   }
 
@@ -220,7 +227,7 @@ export class MarketService {
 
   // 商品詳情
   getProductDetail(id: number): Observable<MarketProductDetail> {
-    return this.http.get<MarketProductDetail>(`${this.baseUrl}/${id}`);
+    return this.http.get<MarketProductDetail>(`${this.baseUrl}/${id}`, this.withCred);
   }
 
   // 評論（分頁）
@@ -243,66 +250,56 @@ export class MarketService {
     );
   }
 
-  // 確認是否已收藏
-  checkFavorite(productId: number): Observable<{ isFavorite: boolean }> {
-    return this.http.get<{ isFavorite: boolean }>(
-      `https://localhost:7164/api/MarketFavorite/check/${productId}`,
-      { withCredentials: true }
-    );
-  }
-
   //加入購物車
   addToCart(dto: AddToCartDto): Observable<{ message: string }> {
-    return this.http.post<{ message: string }>(
-      'https://localhost:7164/api/ShoppingCart/add', dto
-    );
+    return this.http.post<{ message: string }>(`${this.cartUrl}/add`, dto, this.withCred);
   }
 
   // 取得購物車
   getCart(): Observable<CartSellerGroupDto[]> {
-    return this.http.get<CartSellerGroupDto[]>(this.cartUrl);
+    return this.http.get<CartSellerGroupDto[]>(this.cartUrl, this.withCred);
   }
 
   // 修改數量
   updateCartItem(cartItemId: number, quantity: number): Observable<{ message: string; quantity: number; subtotal: number }> {
     return this.http.put<{ message: string; quantity: number; subtotal: number }>(
-      `${this.cartUrl}/${cartItemId}`, { quantity }
+      `${this.cartUrl}/${cartItemId}`, { quantity }, this.withCred
     );
   }
 
   // 刪除單筆
   deleteCartItem(cartItemId: number): Observable<{ message: string }> {
-    return this.http.delete<{ message: string }>(`${this.cartUrl}/${cartItemId}`);
+    return this.http.delete<{ message: string }>(`${this.cartUrl}/${cartItemId}`, this.withCred);
   }
 
   // 清空購物車
   clearCart(): Observable<{ message: string }> {
-    return this.http.delete<{ message: string }>(`${this.cartUrl}/all`);
+    return this.http.delete<{ message: string }>(`${this.cartUrl}/all`, this.withCred);
   }
 
   // 驗證優惠券
   validateCoupon(dto: ValidateCouponDto): Observable<ValidateCouponResultDto> {
-    return this.http.post<ValidateCouponResultDto>(`${this.couponUrl}/validate`, dto);
+    return this.http.post<ValidateCouponResultDto>(`${this.couponUrl}/validate`, dto, this.withCred);
   }
 
   // 取得使用者資料（填寫送貨地址用）
   getUserProfile(): Observable<UserProfileDto> {
     return this.http.get<UserProfileDto>(
-      'https://localhost:7164/api/ShoppingCartUsers/profile'
+      'https://localhost:7164/api/ShoppingCartUsers/profile', this.withCred
     );
   }
 
   // 建立訂單（結帳用）
   createOrder(dto: CreateOrderRequest): Observable<{ batchId: number; bathNo: string; totalAmount: number }> {
     return this.http.post<{ batchId: number; bathNo: string; totalAmount: number }>(
-      `${this.apiBase}/CreateOrder`, dto
+      `${this.apiBase}/CreateOrder`, dto, this.withCred
     );
   }
 
   // ── 訂單完成頁資料 ──────────────────────────────────────────────
   getOrderComplete(batchId: number): Observable<OrderCompleteDto> {
     return this.http.get<OrderCompleteDto>(
-      `${this.apiBase}/OrderComplete/${batchId}`
+      `${this.apiBase}/OrderComplete/${batchId}`, this.withCred
     );
   }
 }

@@ -10,6 +10,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
+import { Router } from '@angular/router';
 
 import { MarketService, MarketProduct, ProductSearchParams, MarketCategory, AddToCartDto } from '../../Service/market';
 
@@ -71,7 +72,8 @@ export class GetPublicProduct implements OnInit, OnDestroy {
 
   constructor(
     private marketService: MarketService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private router: Router
   ) { }
 
   ngOnInit(): void {
@@ -174,6 +176,10 @@ export class GetPublicProduct implements OnInit, OnDestroy {
           });
         },
         error: (err) => {
+          if (err.status === 401) {
+            this.router.navigate(['/login']);
+            return;
+          }
           this.messageService.add({
             severity: 'error',
             summary: '加入失敗',
@@ -185,12 +191,32 @@ export class GetPublicProduct implements OnInit, OnDestroy {
   }
 
   onToggleFavorite(product: MarketProduct): void {
-    this.messageService.add({
-      severity: 'info',
-      summary: '已加入收藏',
-      detail: `「${product.productName}」已加入收藏清單`,
-      life: 2000
-    });
+    this.marketService.toggleFavorite(product.productId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (result) => {
+          // 直接改這個商品物件，卡片拿到的是同一個物件，愛心會跟著變
+          product.isFavorite = result.isFavorite;
+          this.messageService.add({
+            severity: 'success',
+            summary: result.isFavorite ? '已加入收藏' : '已取消收藏',
+            detail: `「${product.productName}」${result.message}`,
+            life: 2000
+          });
+        },
+        error: (err) => {
+          if (err.status === 401) {
+            this.router.navigate(['/login']);
+            return;
+          }
+          this.messageService.add({
+            severity: 'error',
+            summary: '操作失敗',
+            detail: err.error?.message ?? '收藏失敗，請稍後再試',
+            life: 3000
+          });
+        }
+      });
   }
 
   loadCategories(): void {

@@ -95,9 +95,12 @@
               NT$ {{ item.subtotal | number }}
             </div>
 
-            <!-- 收藏按鈕 -->
-            <button class="item-favorite-btn" (click)="toggleItemFavorite(item)" title="加入收藏">
-              <i class="pi pi-heart"></i>
+            <!-- 收藏按鈕：已收藏顯示實心愛心 -->
+            <button class="item-favorite-btn" [class.active]="item.isFavorite"
+                    (click)="toggleItemFavorite(item)"
+                    [title]="item.isFavorite ? '取消收藏' : '加入收藏'">
+              <i class="pi" [class.pi-heart-fill]="item.isFavorite"
+                          [class.pi-heart]="!item.isFavorite"></i>
             </button>
 
             <!-- 刪除按鈕 -->

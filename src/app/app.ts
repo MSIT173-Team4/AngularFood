@@ -16,6 +16,7 @@ import { Button } from 'primeng/button';
 
 import { AuthService } from './Member/services/auth-services';
 import { NotificationCenterService } from './layout/notification-center.service';
+import { SellerStateService } from './Market/Service/seller-state.service';
 
 type HeaderPanel = 'recipe' | 'market' | 'search' | 'cart' | 'notifications' | 'profile';
 
@@ -31,6 +32,7 @@ export class App implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   readonly authService = inject(AuthService);
   readonly notificationCenter = inject(NotificationCenterService);
+  readonly sellerState = inject(SellerStateService);
 
   // ===== 畫面狀態（signals） =====
   readonly isMobileNavigationOpen = signal(false);

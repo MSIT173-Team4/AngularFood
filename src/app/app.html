@@ -73,10 +73,12 @@
             <i class="pi pi-file"></i>
             <span><b>我的訂單</b><small>看看你買過哪些好東西吧</small></span>
           </a>
+          @if (sellerState.isSeller()) {
           <a routerLink="/sellcenter" routerLinkActive="active">
             <i class="pi pi-shop"></i>
             <span><b>賣家中心</b><small>管理商品，開啟你的賣場吧</small></span>
           </a>
+          }
         </div>
       </section>
       }

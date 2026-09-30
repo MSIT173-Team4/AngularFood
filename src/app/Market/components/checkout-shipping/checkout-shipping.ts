@@ -135,7 +135,7 @@ export class CheckoutShippingComponent implements OnInit, OnDestroy {
   private fillFromProfile(): void {
     if (!this.userProfile) return;
     const p = this.userProfile;
-    if (p.username) this.globalRecipient.name = p.username;
+    if (p.recipientName) this.globalRecipient.name = p.recipientName;
     if (p.phone) this.globalRecipient.phone = p.phone;
     if (p.address) this.globalRecipient.address = p.address;
   }

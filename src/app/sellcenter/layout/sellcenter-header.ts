@@ -1,6 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { SellerStateService } from '../../Market/Service/seller-state.service';
+import { AuthService } from '../../Member/services/auth-services';
 
 @Component({
   selector: 'app-sellcenter-header',
@@ -18,7 +20,11 @@ export class SellcenterHeaderComponent {
     '/sellcenter/settings': '賣場設定',
   };
 
-  constructor(private router: Router) {
+  constructor(
+    private router: Router,
+    readonly sellerState: SellerStateService,
+    readonly authService: AuthService,
+  ) {
     this.router.events
       .pipe(filter(e => e instanceof NavigationEnd))
       .subscribe((e: NavigationEnd) => {

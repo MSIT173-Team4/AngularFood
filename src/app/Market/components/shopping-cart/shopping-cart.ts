@@ -361,14 +361,33 @@ export class ShoppingCartComponent implements OnInit, OnDestroy {
       .filter(i => this.checkedItems[i.cartItemId])
       .reduce((sum, i) => sum + i.subtotal, 0);
   }
-  // 收藏（目前先用 Toast 示意，等 JWT 整合再串 API）
+  // 收藏 Toggle：以後端回傳的狀態為準
   toggleItemFavorite(item: CartItemDto): void {
-    this.messageService.add({
-      severity: 'info',
-      summary: '已加入收藏',
-      detail: `「${item.productName}」已加入收藏清單`,
-      life: 2000
-    });
+    this.marketService.toggleFavorite(item.productId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (result) => {
+          item.isFavorite = result.isFavorite;
+          this.messageService.add({
+            severity: 'success',
+            summary: result.isFavorite ? '已加入收藏' : '已取消收藏',
+            detail: `「${item.productName}」${result.message}`,
+            life: 2000
+          });
+        },
+        error: (err) => {
+          if (err.status === 401) {
+            this.router.navigate(['/login']);
+            return;
+          }
+          this.messageService.add({
+            severity: 'error',
+            summary: '操作失敗',
+            detail: err.error?.message ?? '收藏失敗，請稍後再試',
+            life: 3000
+          });
+        }
+      });
   }
 
   goToCheckout(): void {

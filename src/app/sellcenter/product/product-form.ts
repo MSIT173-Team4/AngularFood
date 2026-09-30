@@ -18,6 +18,7 @@ import { ButtonModule } from 'primeng/button';
 import { ToastModule } from 'primeng/toast';
 import { DialogModule } from 'primeng/dialog';
 import { TagModule } from 'primeng/tag';
+import { SellerStateService } from '../../Market/Service/seller-state.service';
 
 // 畫面上統一用這個結構表示一張圖片
 interface DisplayImage {
@@ -95,6 +96,7 @@ export class ProductFormComponent implements OnInit, OnDestroy {
     private messageService: MessageService,
     private router: Router,
     private route: ActivatedRoute,
+    private sellerState: SellerStateService,
   ) { }
 
   ngOnInit(): void {
@@ -351,6 +353,7 @@ export class ProductFormComponent implements OnInit, OnDestroy {
             severity: 'success',
             summary: status === 1 ? '商品已上架！' : '草稿已儲存！',
           });
+          this.sellerState.loadSummary();
           setTimeout(() => this.router.navigate(['/sellcenter/products']), 1500);
         },
         error: () => {
@@ -390,6 +393,7 @@ export class ProductFormComponent implements OnInit, OnDestroy {
           this.messageService.add({
             severity: 'success', summary: '更新成功！',
           });
+          this.sellerState.loadSummary();
           setTimeout(() => this.router.navigate(['/sellcenter/products']), 1500);
         },
         error: () => {
