@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface SellerProduct {
   productId: number;
@@ -54,8 +55,8 @@ export interface SellerProductDetail {
 
 @Injectable({ providedIn: 'root' })
 export class SellcenterProductService {
-  private readonly base = 'https://localhost:7164/api/MarketProduct';
-  private readonly categoryBase = 'https://localhost:7164/api/MarketCategory';
+  private readonly base = `${environment.apiUrl}/MarketProduct`;
+  private readonly categoryBase = `${environment.apiUrl}/MarketCategory`;
 
   constructor(private http: HttpClient) { }
 

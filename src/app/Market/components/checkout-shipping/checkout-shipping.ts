@@ -11,6 +11,7 @@ import { CheckoutStepsComponent } from '../checkout-steps/checkout-steps';
 import { MarketService, UserProfileDto, ShippingAddress, CartSellerGroupDto } from '../../Service/market';
 import { TAIWAN_CITIES, City } from '../../data/taiwan-districts';
 import { CheckoutStateService, CheckoutShippingData } from '../../Service/checkout-state.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-checkout-shipping',
@@ -221,7 +222,7 @@ export class CheckoutShippingComponent implements OnInit, OnDestroy {
         next: (result) => {
           // Step 2：拿到 batchId，導到綠界付款頁面
           // 直接用 window.location.href 導到後端產生的 ECPay 表單
-          window.location.href = `https://localhost:7164/api/Checkout/Pay/${result.batchId}`;
+          window.location.href = `${environment.apiUrl}/Checkout/Pay/${result.batchId}`;
         },
         error: (err) => {
           this.isSubmitting = false;
