@@ -6,6 +6,7 @@ import { ButtonModule } from 'primeng/button';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { DialogModule } from 'primeng/dialog';
+import { CartCountService } from '../../Service/cart-count.service';
 
 
 import {
@@ -59,7 +60,8 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private marketService: MarketService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private cartCount: CartCountService
   ) { }
 
   ngOnInit(): void {
@@ -169,6 +171,7 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (result) => {
+          this.cartCount.refresh();
           this.messageService.add({
             severity: 'success',
             summary: '已加入購物車',

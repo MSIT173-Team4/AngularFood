@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, signal, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, signal, OnInit, HostListener } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   NavigationEnd,
@@ -17,6 +17,7 @@ import { Button } from 'primeng/button';
 import { AuthService } from './Member/services/auth-services';
 import { NotificationCenterService } from './layout/notification-center.service';
 import { SellerStateService } from './Market/Service/seller-state.service';
+import { CartCountService } from './Market/Service/cart-count.service';
 
 type HeaderPanel = 'recipe' | 'market' | 'search' | 'cart' | 'notifications' | 'profile';
 
@@ -33,6 +34,7 @@ export class App implements OnInit {
   readonly authService = inject(AuthService);
   readonly notificationCenter = inject(NotificationCenterService);
   readonly sellerState = inject(SellerStateService);
+  readonly cartCount = inject(CartCountService);
 
   // ===== 畫面狀態（signals） =====
   readonly isMobileNavigationOpen = signal(false);
@@ -124,5 +126,21 @@ export class App implements OnInit {
   // ===== 通知 =====
   markNotificationAsRead(notificationId: string): void {
     this.notificationCenter.markAsRead(notificationId);
+  }
+
+  // 點擊 Header 按鈕 / 面板以外的地方 → 關閉面板
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.activePanel()) return;
+    const target = event.target as HTMLElement;
+    if (!target.closest('.header-action, .navigation-group')) {
+      this.closePanel();
+    }
+  }
+
+  // 按 Esc 也關閉面板
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.closePanel();
   }
 }

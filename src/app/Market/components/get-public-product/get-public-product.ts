@@ -11,6 +11,7 @@ import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { Router } from '@angular/router';
+import { CartCountService } from '../../Service/cart-count.service';
 
 import { MarketService, MarketProduct, ProductSearchParams, MarketCategory, AddToCartDto } from '../../Service/market';
 
@@ -73,7 +74,8 @@ export class GetPublicProduct implements OnInit, OnDestroy {
   constructor(
     private marketService: MarketService,
     private messageService: MessageService,
-    private router: Router
+    private router: Router,
+    private cartCount: CartCountService
   ) { }
 
   ngOnInit(): void {
@@ -168,6 +170,7 @@ export class GetPublicProduct implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
+          this.cartCount.refresh();
           this.messageService.add({
             severity: 'success',
             summary: '已加入購物車',

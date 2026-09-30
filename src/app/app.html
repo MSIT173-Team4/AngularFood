@@ -110,16 +110,29 @@
       <button type="button" class="icon-button" aria-label="開啟購物車" [attr.aria-expanded]="activePanel() === 'cart'"
         (click)="togglePanel('cart')">
         <i class="pi pi-shopping-bag"></i>
+        @if (cartCount.count() > 0) {
+        <span class="action-badge">{{ cartCount.count() > 99 ? '99+' : cartCount.count() }}</span>
+        }
       </button>
       @if (activePanel() === 'cart') {
       <section class="quick-panel cart-panel" aria-label="購物車">
         <div class="panel-heading">
           <strong>購物車</strong>
         </div>
+        @if (cartCount.count() > 0) {
+        <div class="empty-panel">
+          <i class="pi pi-shopping-bag" aria-hidden="true"></i>
+          <span>購物車中有 {{ cartCount.count() }} 項商品</span>
+        </div>
+        <a class="cart-panel-link" routerLink="/market/cart" (click)="closePanel()">
+          前往購物車 <i class="pi pi-arrow-right"></i>
+        </a>
+        } @else {
         <div class="empty-panel">
           <i class="pi pi-shopping-bag" aria-hidden="true"></i>
           <span>購物車目前沒有商品。</span>
         </div>
+        }
       </section>
       }
     </div>

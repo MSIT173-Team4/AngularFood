@@ -9,6 +9,7 @@ import { MessageService } from 'primeng/api';
 import { CheckoutStepsComponent } from '../checkout-steps/checkout-steps';
 import { Router } from '@angular/router';
 import { SHIPPING_FEE_PER_SELLER } from '../../data/market-constants';
+import { CartCountService } from '../../Service/cart-count.service';
 
 
 import {
@@ -51,11 +52,15 @@ export class ShoppingCartComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
 
+  private syncCartCount(): void {
+    this.cartCount.count.set(this.allItems.length);
+  }
   constructor(
     private marketService: MarketService,
     private messageService: MessageService,
     private router: Router,
-    private checkoutState: CheckoutStateService
+    private checkoutState: CheckoutStateService,
+    private cartCount: CartCountService
   ) { }
 
   ngOnInit(): void {
@@ -80,6 +85,7 @@ export class ShoppingCartComponent implements OnInit, OnDestroy {
               this.checkedItems[item.cartItemId] = true;
             });
           });
+          this.syncCartCount();
           this.isLoading = false;
         },
         error: () => { this.isLoading = false; }
@@ -166,6 +172,7 @@ export class ShoppingCartComponent implements OnInit, OnDestroy {
             .map(g => ({ ...g, items: g.items.filter(i => i.cartItemId !== item.cartItemId) }))
             .filter(g => g.items.length > 0);
           delete this.checkedItems[item.cartItemId];
+          this.syncCartCount();
         },
         error: () => { }
       });
@@ -187,6 +194,7 @@ export class ShoppingCartComponent implements OnInit, OnDestroy {
               .map(g => ({ ...g, items: g.items.filter(i => i.cartItemId !== item.cartItemId) }))
               .filter(g => g.items.length > 0);
             delete this.checkedItems[item.cartItemId];
+            this.syncCartCount();
           }
         });
     });

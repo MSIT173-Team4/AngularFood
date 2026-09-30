@@ -624,3 +624,17 @@ nav > a:hover,
           mask-composite: intersect;
 }
 /* 結束_商城選單：咖啡色細框 + 柔邊圖片 */
+
+.cart-panel-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #832600;
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+}
