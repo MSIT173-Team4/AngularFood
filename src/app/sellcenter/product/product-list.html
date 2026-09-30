@@ -1,0 +1,175 @@
+<p-toast />
+
+<div class="welcome-banner">
+  <div>
+    <span class="banner-chip">農友早安</span>
+    <h1 class="banner-title">歡迎回來，禾日自然農園 &amp; 手作醬坊！</h1>
+  </div>
+  <div class="banner-actions">
+    <a routerLink="/" class="btn-back">
+      <i class="pi pi-arrow-left"></i>返回友料美食生活平台
+    </a>
+    <button pButton label="發布新商品" icon="pi pi-plus" class="p-button-success btn-new" (click)="goToNew()">
+    </button>
+  </div>
+</div>
+
+<div class="list-card">
+  <!-- 搜尋列 -->
+  <div class="search-bar">
+    <div class="search-input-wrap">
+      <i class="pi pi-search search-icon"></i>
+      <input type="text" [(ngModel)]="searchKeyword" placeholder="搜尋商品名稱、描述、產地..." class="search-input"
+        (keydown.enter)="onSearchEnter()" />
+      @if (searchKeyword) {
+      <button class="search-clear" (click)="clearSearch()">
+        <i class="pi pi-times"></i>
+      </button>
+      }
+    </div>
+    <button pButton label="搜尋" icon="pi pi-search" class="p-button-outlined" (click)="onSearchEnter()">
+    </button>
+  </div>
+
+  <div class="tab-bar">
+    @for (tab of tabs; track tab.label; let i = $index) {
+    <button class="tab-btn" [class.active]="activeTabIndex === i" [class.tab-danger]="tab.label === '已違規'"
+      (click)="selectTab(i)">
+      {{ tab.label }}
+    </button>
+    }
+  </div>
+
+  <p-table [value]="products" [loading]="loading" [paginator]="true" [rows]="pageSize" [totalRecords]="totalCount"
+    [lazy]="true" (onLazyLoad)="onPageChange($event)" styleClass="p-datatable-sm seller-table" [rowHover]="true">
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="width: 3rem"><p-tableHeaderCheckbox /></th>
+        <th>商品資訊 / 規格</th>
+        <th class="text-right">售價</th>
+        <th class="text-center">目前庫存</th>
+        <th class="text-right">近30天銷量</th>
+        <th class="text-center">上下架狀態</th>
+        <th class="text-center">管理操作</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-product>
+      <tr [class.row-low-stock]="isLowStock(product)"
+        [class.row-inactive]="product.productStatus === 2 || product.productStatus === 3">
+        <td><p-tableCheckbox [value]="product" /></td>
+
+        <td>
+          <div class="product-info">
+            <img [src]="product.imageUrls?.[0] || 'assets/no-image.png'" [alt]="product.productName"
+              class="product-thumb" />
+            <div class="product-meta">
+              <span class="product-name" (click)="goToEdit(product.productId)">
+                {{ product.productName }}
+              </span>
+              <div class="product-tags">
+                @if (isLowStock(product)) {
+                <p-tag value="庫存警告" severity="danger" styleClass="tag-sm" />
+                }
+                @if (product.productStatus !== 1) {
+                <p-tag [value]="getStatusLabel(product.productStatus)"
+                  [severity]="getStatusSeverity(product.productStatus)" styleClass="tag-sm" />
+                }
+                <span class="sku-text">SKU: {{ product.productNo }}</span>
+              </div>
+            </div>
+          </div>
+        </td>
+
+        <td class="text-right price-cell">
+          NT$ {{ product.price | number }}
+        </td>
+
+        <td class="text-center">
+          <span [class]="isLowStock(product) ? 'stock-badge danger' : 'stock-badge'">
+            {{ product.stock }}
+          </span>
+        </td>
+
+        <td class="text-right">
+          <span [class]="product.salesLast30Days > 0 ? 'sales-num' : 'text-muted'">
+            {{ product.salesLast30Days > 0 ? (product.salesLast30Days | number) : '—' }}
+          </span>
+        </td>
+
+        <td class="text-center">
+          @if (canToggle(product)) {
+          <p-toggleswitch [(ngModel)]="product.productStatus" [trueValue]="1" [falseValue]="3"
+            (onChange)="toggleStatus(product)" />
+          } @else {
+          <p-tag [value]="getStatusLabel(product.productStatus)" [severity]="getStatusSeverity(product.productStatus)"
+            styleClass="tag-sm" />
+          }
+        </td>
+
+        <td class="text-center">
+          <div class="action-btns">
+            @if (isViewOnly(product)) {
+            <button pButton icon="pi pi-eye" class="p-button-text p-button-sm" pTooltip="查看商品" tooltipPosition="top"
+              (click)="goToEdit(product.productId)">
+            </button>
+            } @else {
+            <button pButton icon="pi pi-pencil" class="p-button-text p-button-sm" pTooltip="編輯商品" tooltipPosition="top"
+              (click)="goToEdit(product.productId)">
+            </button>
+            @if (showUrgentRestock(product)) {
+            <button pButton label="緊急補貨" class="p-button-danger p-button-sm p-button-outlined restock-btn"
+              (click)="goToEdit(product.productId)">
+            </button>
+            }
+            @if (showRestock(product)) {
+            <button pButton label="回補庫存" class="p-button-sm restock-btn" (click)="goToEdit(product.productId)">
+            </button>
+            }
+            @if (!showUrgentRestock(product) && !showRestock(product)) {
+            <button pButton icon="pi pi-sort-alt" class="p-button-text p-button-sm" pTooltip="庫存微調"
+              tooltipPosition="top" (click)="openStockDialog(product)">
+            </button>
+            }
+            }
+          </div>
+        </td>
+
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="7" class="text-center text-muted empty-msg">
+          目前沒有符合條件的商品
+        </td>
+      </tr>
+    </ng-template>
+
+  </p-table>
+</div>
+
+<!-- 庫存微調 Dialog -->
+<p-dialog [(visible)]="showStockDialog" [modal]="true" [style]="{ width: '400px' }" header="庫存微調" [draggable]="false"
+  (onHide)="closeStockDialog()">
+  @if (stockEditProduct) {
+  <div class="stock-dialog-content">
+    <p class="stock-product-name">{{ stockEditProduct.productName }}</p>
+    <div class="stock-input-row">
+      <span class="stock-row-label">目前庫存</span>
+      <span class="stock-current">{{ stockEditProduct.stock }}</span>
+    </div>
+    <div class="stock-input-row">
+      <span class="stock-row-label">調整為</span>
+      <p-inputnumber [(ngModel)]="newStock" [min]="0" [showButtons]="true" styleClass="stock-input" />
+    </div>
+  </div>
+  }
+
+  <ng-template pTemplate="footer">
+    <button pButton label="取消" class="p-button-text" (click)="closeStockDialog()">
+    </button>
+    <button pButton label="確認更新" class="p-button-success" [loading]="stockSubmitting" (click)="submitStock()">
+    </button>
+  </ng-template>
+</p-dialog>

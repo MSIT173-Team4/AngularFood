@@ -1,0 +1,80 @@
+.steps-wrapper {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border-radius: 1rem;
+  padding: 1.25rem 2rem;
+  box-shadow: 0 1px 4px rgba(38,24,20,.06);
+}
+
+.step-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.step-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+  background: #fee2db;
+  color: #8d7168;
+  transition: all .2s;
+}
+
+.step-item.active .step-circle {
+  background: #832600;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(131,38,0,.3);
+}
+
+.step-item.done .step-circle {
+  background: #406840;
+  color: #ffffff;
+}
+
+.step-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.step-main {
+  font-size: 14px;
+  font-weight: 600;
+  color: #8d7168;
+  transition: color .2s;
+}
+
+.step-item.active .step-main {
+  color: #832600;
+}
+
+.step-item.done .step-main {
+  color: #406840;
+}
+
+.step-sub {
+  font-size: 11px;
+  color: #8d7168;
+}
+
+/* 連接線 */
+.step-line {
+  flex: 1;
+  height: 2px;
+  background: #e1bfb5;
+  margin: 0 0.75rem;
+  transition: background .2s;
+}
+
+.step-line.done {
+  background: #406840;
+}

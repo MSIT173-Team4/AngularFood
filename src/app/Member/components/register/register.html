@@ -1,0 +1,264 @@
+<div class="register-page">
+  <div class="register-container">
+    <!-- ========================= -->
+    <!-- 頁面標題 -->
+    <!-- ========================= -->
+
+    <div class="register-heading">
+      <div class="register-badge">
+        <i class="pi pi-sparkles"></i>
+        <span>友料生活 · 會員註冊</span>
+      </div>
+
+      <h1>加入 FriendlyFood，開始你的美食生活</h1>
+
+      <p>探索美味食譜、智慧冰箱管理與專屬料理社群</p>
+    </div>
+
+    <!-- ========================= -->
+    <!-- 註冊 Card -->
+    <!-- ========================= -->
+
+    <p-card styleClass="register-card">
+      <div class="form-title">
+        <div>
+          <i class="pi pi-id-card"></i>
+          <span>填寫會員資料</span>
+        </div>
+
+        <p>請填寫你的基本會員資料，建立屬於你的 FriendlyFood 帳號。</p>
+      </div>
+
+      <form [formGroup]="registerData" (ngSubmit)="register()">
+        <!-- ========================= -->
+        <!-- 帳號 -->
+        <!-- ========================= -->
+
+        <div class="form-row">
+          <label for="username">
+            帳號
+            <span class="required">*</span>
+          </label>
+
+          <div class="field-container">
+            <input
+              pInputText
+              id="username"
+              type="text"
+              formControlName="fUserName"
+              placeholder="請輸入帳號"
+            />
+
+            @if (
+              registerData.controls.fUserName.touched &&
+              registerData.controls.fUserName.hasError('required')
+            ) {
+              <small class="error-message"> 請輸入帳號 </small>
+            }
+          </div>
+        </div>
+
+        <!-- ========================= -->
+        <!-- Email -->
+        <!-- ========================= -->
+
+        <div class="form-row">
+          <label for="email">
+            Email
+            <span class="required">*</span>
+          </label>
+
+          <div class="field-container">
+            <input
+              pInputText
+              id="email"
+              type="email"
+              formControlName="fEmail"
+              placeholder="example@email.com"
+            />
+
+            @if (
+              registerData.controls.fEmail.touched &&
+              registerData.controls.fEmail.hasError('required')
+            ) {
+              <small class="error-message"> 請輸入 Email </small>
+            }
+
+            @if (
+              registerData.controls.fEmail.touched && registerData.controls.fEmail.hasError('email')
+            ) {
+              <small class="error-message"> Email 格式不正確 </small>
+            }
+          </div>
+        </div>
+
+        <!-- ========================= -->
+        <!-- 密碼 -->
+        <!-- ========================= -->
+
+        <div class="form-row">
+          <label for="password">
+            密碼
+            <span class="required">*</span>
+          </label>
+
+          <div class="field-container">
+            <p-password
+              inputId="password"
+              formControlName="fPassword"
+              placeholder="請輸入密碼"
+              [toggleMask]="true"
+              [feedback]="false"
+              [fluid]="true"
+            />
+
+            @if (
+              registerData.controls.fPassword.touched &&
+              registerData.controls.fPassword.hasError('required')
+            ) {
+              <small class="error-message"> 請輸入密碼 </small>
+            }
+
+            @if (
+              registerData.controls.fPassword.touched &&
+              registerData.controls.fPassword.hasError('minlength')
+            ) {
+              <small class="error-message"> 密碼至少需要 8 個字元 </small>
+            }
+          </div>
+        </div>
+
+        <!-- ========================= -->
+        <!-- 手機 -->
+        <!-- ========================= -->
+
+        <div class="form-row">
+          <label for="phone">
+            手機號碼
+            <span class="required">*</span>
+          </label>
+
+          <div class="field-container">
+            <input
+              pInputText
+              id="phone"
+              type="tel"
+              formControlName="fPhone"
+              placeholder="0912345678"
+              maxlength="10"
+            />
+
+            @if (
+              registerData.controls.fPhone.touched &&
+              registerData.controls.fPhone.hasError('required')
+            ) {
+              <small class="error-message"> 請輸入手機號碼 </small>
+            }
+
+            @if (
+              registerData.controls.fPhone.touched &&
+              registerData.controls.fPhone.hasError('pattern')
+            ) {
+              <small class="error-message"> 手機號碼格式不正確，例如：0912345678 </small>
+            }
+          </div>
+        </div>
+
+        <!-- ========================= -->
+        <!-- 身分證 -->
+        <!-- ========================= -->
+
+        <div class="form-row">
+          <label for="idNum">
+            身分證字號
+            <span class="required">*</span>
+          </label>
+
+          <div class="field-container">
+            <input
+              pInputText
+              id="idNum"
+              type="text"
+              formControlName="fIdNum"
+              placeholder="A123456789"
+              maxlength="10"
+            />
+
+            @if (
+              registerData.controls.fIdNum.touched &&
+              registerData.controls.fIdNum.hasError('required')
+            ) {
+              <small class="error-message"> 請輸入身分證字號 </small>
+            }
+
+            @if (
+              registerData.controls.fIdNum.touched &&
+              registerData.controls.fIdNum.hasError('pattern')
+            ) {
+              <small class="error-message"> 身分證字號格式不正確 </small>
+            }
+          </div>
+        </div>
+
+        <!-- ========================= -->
+        <!-- 地址 -->
+        <!-- ========================= -->
+
+        <div class="form-row">
+          <label for="address">
+            地址
+            <span class="required">*</span>
+          </label>
+
+          <div class="field-container">
+            <input
+              pInputText
+              id="address"
+              type="text"
+              formControlName="fAddress"
+              placeholder="請輸入地址"
+            />
+
+            @if (
+              registerData.controls.fAddress.touched &&
+              registerData.controls.fAddress.hasError('required')
+            ) {
+              <small class="error-message"> 請輸入地址 </small>
+            }
+          </div>
+        </div>
+
+        <!-- ========================= -->
+        <!-- API Error -->
+        <!-- ========================= -->
+
+        @if (errorMsg) {
+          <p-message severity="error" [text]="errorMsg" styleClass="register-error" />
+        }
+
+        <!-- ========================= -->
+        <!-- 按鈕 -->
+        <!-- ========================= -->
+
+        <div class="form-actions">
+          <p-button
+            type="button"
+            label="返回登入"
+            icon="pi pi-arrow-left"
+            severity="secondary"
+            [outlined]="true"
+            (onClick)="goToLogin()"
+          />
+
+          <p-button
+            type="submit"
+            label="建立會員"
+            icon="pi pi-arrow-right"
+            iconPos="right"
+            [loading]="isSubmitting"
+          />
+        </div>
+      </form>
+    </p-card>
+  </div>
+</div>

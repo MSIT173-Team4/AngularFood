@@ -1,0 +1,30 @@
+<div class="steps-wrapper">
+  @for (s of steps; track s.step) {
+    <div class="step-item" [class.active]="s.step === currentStep"
+         [class.done]="s.step < currentStep">
+
+      <!-- 圓圈 -->
+      <div class="step-circle">
+        @if (s.step < currentStep) {
+          <i class="pi pi-check"></i>
+        } @else {
+          {{ s.step }}
+        }
+      </div>
+
+      <!-- 文字 -->
+      <div class="step-label">
+        <span class="step-main">{{ s.label }}</span>
+        @if (s.subLabel) {
+          <span class="step-sub">{{ s.subLabel }}</span>
+        }
+      </div>
+
+    </div>
+
+    <!-- 連接線（最後一個不加） -->
+    @if (s.step < steps.length) {
+      <div class="step-line" [class.done]="s.step < currentStep"></div>
+    }
+  }
+</div>
