@@ -295,12 +295,6 @@
 }
 
 /* ── 收件 + 付款資訊雙欄 ────────────────────────────── */
-.oc-info-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
 
 @media (max-width: 768px) {
   .oc-info-grid {
@@ -308,10 +302,6 @@
   }
 }
 
-.oc-card--info .oc-card-header {
-  padding-bottom: 0.75rem;
-  margin-bottom: 0.75rem;
-}
 
 .oc-info-list {
   list-style: none;
@@ -489,4 +479,53 @@
 .oc-receipt-card .p-button.p-button-text:hover {
   background: var(--surface-container-low) !important;
   color: var(--on-surface);
+}
+
+.oc-hero-card--pending {
+  background: #fff4ec;
+}
+
+.oc-pending-icon {
+  background: #f6d3c3;
+  color: #832600;
+}
+
+.oc-pending-desc {
+  margin: 8px 0 16px;
+  color: #6b5a52;
+  font-size: 14px;
+}
+
+/* 每個賣家卡片底部的收件 / 付款資訊 */
+.oc-group-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #eadbd5;
+}
+
+.oc-group-info-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #832600;
+}
+
+.oc-info-value--discount {
+  color: #406840;
+}
+
+.oc-info-value--strong {
+  font-weight: 700;
+}
+
+@media (max-width: 768px) {
+  .oc-group-info-grid {
+    grid-template-columns: 1fr;
+  }
 }

@@ -379,7 +379,7 @@ export class ShoppingCartComponent implements OnInit, OnDestroy {
 
     this.checkoutState.setCheckoutData({
       cartItemIds,
-      globalRecipient: { name: '', phone: '', city: '', district: '', streetAddress: '' },
+      globalRecipient: { name: '', phone: '', address: '' },
       sellerShipping: [],
       paymentMethod: 'ecpay',
       // 只帶有勾選商品的賣家的券

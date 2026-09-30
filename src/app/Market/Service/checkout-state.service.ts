@@ -10,9 +10,7 @@ export interface CheckoutShippingData {
   globalRecipient: {
     name: string;
     phone: string;
-    city: string;
-    district: string;
-    streetAddress: string;
+    address: string;
   };
 
   // 每個賣家的配送設定

@@ -33,14 +33,11 @@ export class CheckoutShippingComponent implements OnInit, OnDestroy {
   globalRecipient = {
     name: '',
     phone: '',
-    city: '',
-    district: '',
-    streetAddress: ''
+    address: ''
   };
 
   // 縣市/區資料
   cities: City[] = TAIWAN_CITIES;
-  globalDistricts: string[] = [];
 
   // 購物車賣家（從 API 拿，用來顯示每個賣家的配送設定）
   sellerGroups: CartSellerGroupDto[] = [];
@@ -93,6 +90,7 @@ export class CheckoutShippingComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (data) => {
           this.userProfile = data;
+          this.fillFromProfile();
         },
         error: () => { }
       });
@@ -134,25 +132,28 @@ export class CheckoutShippingComponent implements OnInit, OnDestroy {
   }
 
   // 套用會員帳號預設到全域收件人
-  applyUserProfile(): void {
+  private fillFromProfile(): void {
     if (!this.userProfile) return;
-    this.globalRecipient.name = this.userProfile.username;
-    this.globalRecipient.phone = this.userProfile.phone;
-    this.globalRecipient.streetAddress = this.userProfile.address;
-    // 縣市/區留給使用者自己選
-    this.messageService.add({
-      severity: 'success',
-      summary: '已套用',
-      detail: '已帶入會員帳號資料',
-      life: 2000
-    });
+    const p = this.userProfile;
+    if (p.username) this.globalRecipient.name = p.username;
+    if (p.phone) this.globalRecipient.phone = p.phone;
+    if (p.address) this.globalRecipient.address = p.address;
   }
 
-  // 全域縣市變更 → 更新區下拉
-  onGlobalCityChange(): void {
-    const city = this.cities.find(c => c.name === this.globalRecipient.city);
-    this.globalDistricts = city ? city.districts.map(d => d.name) : [];
-    this.globalRecipient.district = '';  // 重設區
+  // 「套用會員帳號預設」按鈕：買家改過後想恢復會員資料時使用
+  applyUserProfile(): void {
+    if (!this.userProfile) {
+      this.messageService.add({
+        severity: 'warn', summary: '無法套用',
+        detail: '尚未取得會員資料', life: 2000
+      });
+      return;
+    }
+    this.fillFromProfile();
+    this.messageService.add({
+      severity: 'success', summary: '已套用',
+      detail: '已帶入會員帳號資料', life: 2000
+    });
   }
 
   // 個別賣家縣市變更
@@ -179,12 +180,7 @@ export class CheckoutShippingComponent implements OnInit, OnDestroy {
   getEffectiveAddress(sellerId: number): string {
     const s = this.sellerShippingMap[sellerId];
     if (!s || s.useDefault) {
-      const parts = [
-        this.globalRecipient.city,
-        this.globalRecipient.district,
-        this.globalRecipient.streetAddress
-      ].filter(Boolean);
-      return parts.join('') || '尚未填寫全域預設地址';
+      return this.globalRecipient.address.trim() || '尚未填寫全域預設地址';
     }
     const parts = [s.city, s.district, s.streetAddress].filter(Boolean);
     return parts.join('') || '尚未填寫個別地址';
@@ -206,9 +202,8 @@ export class CheckoutShippingComponent implements OnInit, OnDestroy {
   isFormValid(): boolean {
     if (this.isSubmitting) return false;
     // 全域收件人必填
-    if (!this.globalRecipient.name || !this.globalRecipient.phone ||
-      !this.globalRecipient.city || !this.globalRecipient.district ||
-      !this.globalRecipient.streetAddress) {
+    if (!this.globalRecipient.name.trim() || !this.globalRecipient.phone.trim() ||
+      !this.globalRecipient.address.trim()) {
       return false;
     }
     // 有個別指定的賣家也要填完整
@@ -235,23 +230,22 @@ export class CheckoutShippingComponent implements OnInit, OnDestroy {
     }
 
     this.isSubmitting = true;
+    // 預設地址直接用整串；個別指定才由縣市 + 區 + 街道組合
     const sellerShippings = this.sellerGroups.map(g => {
       const s = this.sellerShippingMap[g.sellerId];
-      const src = s.useDefault
-        ? {
-          name: this.globalRecipient.name, phone: this.globalRecipient.phone,
-          city: this.globalRecipient.city, district: this.globalRecipient.district,
-          street: this.globalRecipient.streetAddress
-        }
-        : {
-          name: s.recipientName, phone: s.phone,
-          city: s.city, district: s.district, street: s.streetAddress
+      if (s.useDefault) {
+        return {
+          sellerId: g.sellerId,
+          recipientName: this.globalRecipient.name.trim(),
+          recipientPhone: this.globalRecipient.phone.trim(),
+          shippingAddress: this.globalRecipient.address.trim()
         };
+      }
       return {
         sellerId: g.sellerId,
-        recipientName: src.name,
-        recipientPhone: src.phone,
-        shippingAddress: `${src.city}${src.district}${src.street}`
+        recipientName: s.recipientName.trim(),
+        recipientPhone: s.phone.trim(),
+        shippingAddress: `${s.city}${s.district}${s.streetAddress.trim()}`
       };
     });
 
