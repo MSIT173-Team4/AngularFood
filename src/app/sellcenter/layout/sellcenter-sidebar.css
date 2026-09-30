@@ -182,3 +182,17 @@
   justify-content: center;
   flex-shrink: 0;
 }*/
+
+.sidebar-brand {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.seller-avatar-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
