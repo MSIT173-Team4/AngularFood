@@ -1,6 +1,9 @@
 // trip-builder 自己的設定（這次只改 FoodMap 範圍，所以沒有動 src/environments）
 
-export const API_BASE_URL = 'https://localhost:7164/api';
+import { environment } from '../../../environments/environment';
+
+// 本機開發：https://localhost:7164/api；正式版：/api（由 nginx 轉給後端）
+export const API_BASE_URL = environment.apiUrl;
 
 // ⚠️ 前端顯示地圖用的「瀏覽器金鑰」，跟後端 User Secrets 裡呼叫 Places/Routes 的金鑰要分開：
 //   1. Google Cloud Console 建一把新的 API Key

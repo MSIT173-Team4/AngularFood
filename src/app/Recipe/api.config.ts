@@ -1,4 +1,6 @@
-const friendlyFoodApiBaseUrl = 'https://localhost:7164/api';
+import { environment } from '../../environments/environment';
+
+const friendlyFoodApiBaseUrl = environment.apiUrl;
 
 export const apiConfig = {
   recipes: {
