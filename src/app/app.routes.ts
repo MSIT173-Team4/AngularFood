@@ -104,7 +104,6 @@ export const routes: Routes = [
   { path: 'market/create-product', component: CreateProduct },
   { path: 'trip-builder', component: TripBuilder },
   { path: 'cooking/:id', redirectTo: 'cooking-mode/:id' },
-  { path: '**', redirectTo: 'recipes' },
   { path: 'market/products/:id', component: ProductDetailComponent },
   { path: 'market/products', component: GetPublicProduct },
   { path: 'market/cart', component: ShoppingCartComponent },
