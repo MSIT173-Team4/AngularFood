@@ -168,3 +168,13 @@
   color: #94A3B8;
   font-size: 0.875rem;
 }
+.user-chip-fallback {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #e8f3ec;
+  color: #2d6a4f;
+}

@@ -1,17 +1,18 @@
-// 欄位命名對齊 .NET 預設 System.Text.Json 的 camelCase 序列化規則：
-// FPlaceId → fPlaceId、FGooglePlaceId → fGooglePlaceId ...以此類推。
-// 如果後端 Program.cs 另外關掉 camelCase，這裡要改回 PascalCase。
+// 欄位命名對齊 .NET 預設的 camelCase 序列化：FPlaceId → fPlaceId
 
+// POST /api/places/nearby 的 body
 export interface NearbyRequest {
   fLatitude: number;
   fLongitude: number;
   fPlacesCategoryId?: number | null;
   minimumRequests?: number;
+  radiusMeters?: number | null;
 }
 
 export interface PlaceDto {
-  fPlaceId: number;
+  fPlaceId: number; // 0 代表還沒存進 tFoodMapPlace
   fGooglePlaceId?: string | null;
+  fPlaceCategoryId?: number | null;
   fName: string;
   fAddress: string;
   fLatitude: number;
@@ -32,9 +33,16 @@ export interface NearbyResponse {
   places: PlaceDto[];
 }
 
-// ⚠️ 假設：/api/places/resolve 吃這個形狀，對照你實際的
-// ResolvePlaceRequestDto 調整欄位名稱。
+// POST /api/places/search 的 body
+export interface PlaceSearchRequest {
+  query: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  radiusMeters?: number | null;
+}
+
+// POST /api/places/resolve 的 body（後端 ResolvePlaceRequestDTO，欄位名稱要一致）
 export interface ResolvePlaceRequest {
-  googlePlaceId: string;
-  categoryId: number;
+  fGooglePlaceId: string;
+  fPlaceCategoryId?: number;
 }

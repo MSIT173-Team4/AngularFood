@@ -13,8 +13,10 @@
     }
 
     <!-- 收藏按鈕 -->
-    <button class="favorite-btn" (click)="onToggleFavorite(); $event.stopPropagation()">
-      <i class="pi pi-heart"></i>
+    <button class="favorite-btn" [class.active]="product.isFavorite"
+        (click)="onToggleFavorite(); $event.stopPropagation()">
+        <i class="pi" [class.pi-heart-fill]="product.isFavorite"
+               [class.pi-heart]="!product.isFavorite"></i>
     </button>
   </div>
 
@@ -28,13 +30,18 @@
     <div class="card-footer">
       <span class="product-price">NT$ {{ product.price | number }}</span>
 
-      <!-- 1. 正常商品：加入購物車 -->
-      @if (!isSoldOut) {
-      <p-button label="加入購物車" icon="pi pi-shopping-cart" size="small" (onClick)="onAddToCart()" />
-      } @else {
-      <!-- 2. 售完商品：到貨通知 -->
-      <p-button label="到貨通知我" icon="pi pi-bell" size="small" severity="secondary" [outlined]="true" />
-      }
+      @if (product.isOwnProduct) {
+        <!-- 自己賣場的商品：不能購買 -->
+        <span class="own-product-tag">
+          <i class="pi pi-shop"></i> 你的商品
+        </span>
+        } @else if (!isSoldOut) {
+        <!-- 1. 正常商品：加入購物車 -->
+        <p-button label="加入購物車" icon="pi pi-shopping-cart" size="small" (onClick)="onAddToCart()" />
+        } @else {
+        <!-- 2. 售完商品：到貨通知 -->
+        <p-button label="到貨通知我" icon="pi pi-bell" size="small" severity="secondary" [outlined]="true" />
+        }
     </div>
   </div>
 </div>

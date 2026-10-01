@@ -67,34 +67,50 @@
           </div>
         </div>
 
-        <!-- 數量選擇 -->
-        <div class="qty-row">
-          <div class="qty-control">
-            <button (click)="decreaseQty()" [disabled]="quantity <= 1">
-              <i class="pi pi-minus"></i>
-            </button>
-            <span>{{ quantity }}</span>
-            <button (click)="increaseQty()" [disabled]="quantity >= product.stock">
-              <i class="pi pi-plus"></i>
-            </button>
+        @if (product.isOwnProduct) {
+          <!-- 自己賣場的商品：不顯示數量與購物車，只保留收藏 -->
+          <div class="own-product-notice">
+            <i class="pi pi-shop"></i>
+            <span>這是你的賣場商品，無法購買</span>
           </div>
-          <div class="stock-info">
-            <span class="stock-label">庫存尚有</span>
-            <span class="stock-value">{{ product.stock }} 件</span>
+          <div class="action-buttons">
+            <p-button
+              [label]="isFavorite ? '已收藏' : '加入喜愛清單'"
+              [icon]="isFavorite ? 'pi pi-heart-fill' : 'pi pi-heart'"
+              severity="secondary"
+              styleClass="btn-favorite"
+              (onClick)="toggleFavorite()" />
           </div>
-        </div>
+        } @else {
+          <!-- 數量選擇 -->
+          <div class="qty-row">
+            <div class="qty-control">
+              <button (click)="decreaseQty()" [disabled]="quantity <= 1">
+                <i class="pi pi-minus"></i>
+              </button>
+              <span>{{ quantity }}</span>
+              <button (click)="increaseQty()" [disabled]="quantity >= product.stock">
+                <i class="pi pi-plus"></i>
+              </button>
+            </div>
+            <div class="stock-info">
+              <span class="stock-label">庫存尚有</span>
+              <span class="stock-value">{{ product.stock }} 件</span>
+            </div>
+          </div>
 
-        <!-- 操作按鈕 -->
-        <div class="action-buttons">
-          <p-button label="加入購物車" icon="pi pi-shopping-bag"
-                    styleClass="btn-cart" (onClick)="addToCart()" />
-          <p-button
-            [label]="isFavorite ? '已收藏' : '加入喜愛清單'"
-            [icon]="isFavorite ? 'pi pi-heart-fill' : 'pi pi-heart'"
-            severity="secondary"
-            styleClass="btn-favorite"
-            (onClick)="toggleFavorite()" />
-        </div>
+          <!-- 操作按鈕 -->
+          <div class="action-buttons">
+            <p-button label="加入購物車" icon="pi pi-shopping-bag"
+                      styleClass="btn-cart" (onClick)="addToCart()" />
+            <p-button
+              [label]="isFavorite ? '已收藏' : '加入喜愛清單'"
+              [icon]="isFavorite ? 'pi pi-heart-fill' : 'pi pi-heart'"
+              severity="secondary"
+              styleClass="btn-favorite"
+              (onClick)="toggleFavorite()" />
+          </div>
+        }
 
         <!-- 商品描述 -->
         <div class="description-box">

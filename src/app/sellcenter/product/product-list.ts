@@ -13,11 +13,13 @@ import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { DialogModule } from 'primeng/dialog';
+import { SellerStateService, SellerSummary } from '../../Market/Service/seller-state.service';
 
 interface TabOption {
   label: string;
   status?: number;
   lowStock?: boolean;
+  countKey: keyof SellerSummary;   // 對應 summary 裡的哪個數量
 }
 
 @Component({
@@ -44,13 +46,13 @@ export class ProductListComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   tabs: TabOption[] = [
-    { label: '全部商品' },
-    { label: '販售中', status: 1 },
-    { label: '庫存警告', status: 1, lowStock: true },
-    { label: '已售完', status: 2 },
-    { label: '審核中', status: 0 },
-    { label: '已違規', status: 4 },
-    { label: '未上架', status: 3 },
+    { label: '全部商品', countKey: 'total' },
+    { label: '販售中', status: 1, countKey: 'onSale' },
+    { label: '庫存警告', status: 1, lowStock: true, countKey: 'lowStock' },
+    { label: '已售完', status: 2, countKey: 'soldOut' },
+    { label: '審核中', status: 0, countKey: 'reviewing' },
+    { label: '已違規', status: 4, countKey: 'violated' },
+    { label: '未上架', status: 3, countKey: 'unlisted' },
   ];
 
   activeTabIndex = 0;
@@ -66,11 +68,13 @@ export class ProductListComponent implements OnInit, OnDestroy {
   newStock: number | null = null;
   stockSubmitting = false;
   searchKeyword = '';
+  stockDialogTitle = '庫存微調';
 
   constructor(
     private productService: SellcenterProductService,
     private messageService: MessageService,
     private router: Router,
+    readonly sellerState: SellerStateService,
   ) { }
 
   ngOnInit(): void {
@@ -130,6 +134,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
       .updateStatus(product.productId, newStatus)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
+        next: () => this.afterProductChanged(product),
         error: () => {
           product.productStatus = oldStatus;
           this.messageService.add({
@@ -143,6 +148,34 @@ export class ProductListComponent implements OnInit, OnDestroy {
 
   canToggle(product: SellerProduct): boolean {
     return product.productStatus === 1 || product.productStatus === 3;
+  }
+
+  // 商品目前的狀態是否仍符合目前分頁的篩選條件
+  private matchesActiveTab(product: SellerProduct): boolean {
+    const tab = this.activeTab;
+    if (tab.status !== undefined && product.productStatus !== tab.status) return false;
+    if (tab.lowStock && !this.isLowStock(product)) return false;
+    return true;
+  }
+
+  // 狀態或庫存異動後：更新數量；不符合目前分頁就重新載入，讓它移到該去的分類
+  private afterProductChanged(product: SellerProduct): void {
+    this.sellerState.loadSummary();
+
+    if (this.matchesActiveTab(product)) return;
+
+    this.messageService.add({
+      severity: 'info',
+      summary: '商品已移動',
+      detail: `「${product.productName}」已移至「${this.getStatusLabel(product.productStatus)}」`,
+      life: 2500,
+    });
+
+    // 這頁只剩這一筆、又不是第一頁 → 退回上一頁，避免停在空白頁
+    if (this.products.length === 1 && this.currentPage > 1) {
+      this.currentPage--;
+    }
+    this.loadProducts();
   }
 
   isLowStock(product: SellerProduct): boolean {
@@ -176,6 +209,10 @@ export class ProductListComponent implements OnInit, OnDestroy {
     return map[status] ?? '未知';
   }
 
+  getTabCount(tab: TabOption): number | null {
+    return this.sellerState.summary()?.[tab.countKey] ?? null;
+  }
+
   getStatusSeverity(status: number): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
     const map: Record<number, 'success' | 'info' | 'warn' | 'danger' | 'secondary'> = {
       0: 'warn', 1: 'success', 2: 'secondary', 3: 'info', 4: 'danger',
@@ -183,7 +220,8 @@ export class ProductListComponent implements OnInit, OnDestroy {
     return map[status] ?? 'secondary';
   }
 
-  openStockDialog(product: SellerProduct): void {
+  openStockDialog(product: SellerProduct, title: string = '庫存微調'): void {
+    this.stockDialogTitle = title;
     this.stockEditProduct = product;
     this.newStock = product.stock;
     this.showStockDialog = true;
@@ -216,6 +254,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
           this.messageService.add({
             severity: 'success', summary: '庫存已更新',
           });
+          this.afterProductChanged(this.stockEditProduct!);
           this.closeStockDialog();
         },
         error: () => {

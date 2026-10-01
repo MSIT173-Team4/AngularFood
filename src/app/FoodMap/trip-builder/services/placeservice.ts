@@ -1,39 +1,34 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
+
 import { API_BASE_URL } from '../api-config';
 import {
   NearbyRequest,
   NearbyResponse,
+  PlaceDto,
+  PlaceSearchRequest,
   ResolvePlaceRequest
 } from '../models/place-model';
 
+const withCredentials = { withCredentials: true } as const;
+
 @Injectable({ providedIn: 'root' })
 export class PlaceService {
-  constructor(private readonly http: HttpClient) {}
+  private readonly http = inject(HttpClient);
 
-  // ⚠️ 假設：GET /api/places/nearby，用 Query String 帶條件。
-  // 如果 Controller 是 [FromBody]（POST），把 http.get 改成 http.post 即可，
-  // 呼叫端（trip-builder.ts）不用跟著改。
+  // 後端已改成 POST /api/places/nearby
   getNearbyPlaces(request: NearbyRequest): Observable<NearbyResponse> {
-    let params = new HttpParams()
-      .set('fLatitude', request.fLatitude)
-      .set('fLongitude', request.fLongitude);
-
-    if (request.fPlacesCategoryId != null) {
-      params = params.set('fPlacesCategoryId', request.fPlacesCategoryId);
-    }
-
-    if (request.minimumRequests != null) {
-      params = params.set('minimumRequests', request.minimumRequests);
-    }
-
-    return this.http.get<NearbyResponse>(`${API_BASE_URL}/places/nearby`, {
-      params
-    });
+    return this.http.post<NearbyResponse>(`${API_BASE_URL}/places/nearby`, request, withCredentials);
   }
 
-  resolvePlace(request: ResolvePlaceRequest): Observable<number> {
-    return this.http.post<number>(`${API_BASE_URL}/places/resolve`, request);
+  // 用店名、地名搜尋（後端呼叫 Google Text Search，有快取）
+  searchPlaces(request: PlaceSearchRequest): Observable<PlaceDto[]> {
+    return this.http.post<PlaceDto[]>(`${API_BASE_URL}/places/search`, request, withCredentials);
+  }
+
+  // Google 地點 → 內部店家（回傳含 fPlaceId 的完整資料）
+  resolvePlace(request: ResolvePlaceRequest): Observable<PlaceDto> {
+    return this.http.post<PlaceDto>(`${API_BASE_URL}/places/resolve`, request, withCredentials);
   }
 }

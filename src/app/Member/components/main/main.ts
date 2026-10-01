@@ -1,7 +1,7 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
-import { environment } from '../../../../environments/environment.development';
+import { environment } from '../../../../environments/environment';
 import { UserProfileDTO } from '../../interfaces/UserProfileDTO';
 import { PublicUserProfileDTO } from '../../interfaces/PublicUserProfileDTO';
 import { BaseUserProfileDTO } from '../../interfaces/BaseUserProfileDTO';
