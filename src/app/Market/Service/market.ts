@@ -1,3 +1,4 @@
+//原本market.ts
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -179,8 +180,6 @@ export interface CreateOrderRequest {
   providedIn: 'root'
 })
 export class MarketService {
-
-  // 用 7164（你跑的是 https profile，7164 是主要 port）
   private readonly baseUrl = `${environment.apiUrl}/MarketProduct`;
   private readonly cartUrl = `${environment.apiUrl}/ShoppingCart`;
   private readonly couponUrl = `${environment.apiUrl}/MarketCoupon`;
@@ -251,19 +250,9 @@ export class MarketService {
     );
   }
 
-  // 確認是否已收藏
-  checkFavorite(productId: number): Observable<{ isFavorite: boolean }> {
-    return this.http.get<{ isFavorite: boolean }>(
-      `${environment.apiUrl}/MarketFavorite/check/${productId}`,
-      { withCredentials: true }
-    );
-  }
-
   //加入購物車
   addToCart(dto: AddToCartDto): Observable<{ message: string }> {
-    return this.http.post<{ message: string }>(
-      `${environment.apiUrl}/ShoppingCart/add`, dto
-    );
+    return this.http.post<{ message: string }>(`${this.cartUrl}/add`, dto, this.withCred);
   }
 
   // 取得購物車
@@ -296,7 +285,7 @@ export class MarketService {
   // 取得使用者資料（填寫送貨地址用）
   getUserProfile(): Observable<UserProfileDto> {
     return this.http.get<UserProfileDto>(
-      `${environment.apiUrl}/ShoppingCartUsers/profile`
+      `${environment.apiUrl}/ShoppingCartUsers/profile`, this.withCred
     );
   }
 
