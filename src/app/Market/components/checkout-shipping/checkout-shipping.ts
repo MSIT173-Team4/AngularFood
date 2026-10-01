@@ -8,10 +8,14 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 
 import { CheckoutStepsComponent } from '../checkout-steps/checkout-steps';
-import { MarketService, UserProfileDto, ShippingAddress, CartSellerGroupDto } from '../../Service/market';
+import {
+  MarketService, UserProfileDto, ShippingAddress, CartSellerGroupDto,
+  AppliedSellerCoupon, ValidateCouponResultDto
+} from '../../Service/market';
 import { TAIWAN_CITIES, City } from '../../data/taiwan-districts';
 import { CheckoutStateService, CheckoutShippingData } from '../../Service/checkout-state.service';
 import { environment } from '../../../../environments/environment';
+import { SHIPPING_FEE_PER_SELLER } from '../../data/market-constants';
 
 @Component({
   selector: 'app-checkout-shipping',
@@ -30,14 +34,11 @@ export class CheckoutShippingComponent implements OnInit, OnDestroy {
   globalRecipient = {
     name: '',
     phone: '',
-    city: '',
-    district: '',
-    streetAddress: ''
+    address: ''
   };
 
   // 縣市/區資料
   cities: City[] = TAIWAN_CITIES;
-  globalDistricts: string[] = [];
 
   // 購物車賣家（從 API 拿，用來顯示每個賣家的配送設定）
   sellerGroups: CartSellerGroupDto[] = [];
@@ -58,6 +59,9 @@ export class CheckoutShippingComponent implements OnInit, OnDestroy {
 
   selectedPayment = 'ecpay';
   cartItemIds: number[] = [];
+  // 購物車頁套用的優惠券（從 CheckoutStateService 帶過來，只用於顯示試算）
+  sellerCoupons: AppliedSellerCoupon[] = [];
+  platformCoupon: ValidateCouponResultDto | null = null;
   isSubmitting = false;
 
   ngOnInit(): void {
@@ -69,6 +73,8 @@ export class CheckoutShippingComponent implements OnInit, OnDestroy {
       return;
     }
     this.cartItemIds = state.cartItemIds;
+    this.sellerCoupons = state.sellerCoupons ?? [];
+    this.platformCoupon = state.platformCoupon ?? null;
     this.loadUserProfile();
     this.loadCart();
   }
@@ -85,6 +91,7 @@ export class CheckoutShippingComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (data) => {
           this.userProfile = data;
+          this.fillFromProfile();
         },
         error: () => { }
       });
@@ -95,9 +102,22 @@ export class CheckoutShippingComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data) => {
-          this.sellerGroups = data;
-          // 初始化每個賣家的配送設定（預設套用全域地址）
-          data.forEach(group => {
+          // 只保留購物車頁勾選的項目；整組都沒被勾的賣家直接拿掉
+          this.sellerGroups = data
+            .map(g => ({
+              ...g,
+              items: g.items.filter(i => this.cartItemIds.includes(i.cartItemId))
+            }))
+            .filter(g => g.items.length > 0);
+
+          // 勾選的商品可能已在別的分頁被刪掉，沒東西可結就回購物車
+          if (this.sellerGroups.length === 0) {
+            this.router.navigate(['/market/cart']);
+            return;
+          }
+
+          // 初始化每個賣家的配送設定（改成對過濾後的 sellerGroups 跑）
+          this.sellerGroups.forEach(group => {
             this.sellerShippingMap[group.sellerId] = {
               recipientName: '',
               phone: '',
@@ -113,25 +133,28 @@ export class CheckoutShippingComponent implements OnInit, OnDestroy {
   }
 
   // 套用會員帳號預設到全域收件人
-  applyUserProfile(): void {
+  private fillFromProfile(): void {
     if (!this.userProfile) return;
-    this.globalRecipient.name = this.userProfile.username;
-    this.globalRecipient.phone = this.userProfile.phone;
-    this.globalRecipient.streetAddress = this.userProfile.address;
-    // 縣市/區留給使用者自己選
-    this.messageService.add({
-      severity: 'success',
-      summary: '已套用',
-      detail: '已帶入會員帳號資料',
-      life: 2000
-    });
+    const p = this.userProfile;
+    if (p.recipientName) this.globalRecipient.name = p.recipientName;
+    if (p.phone) this.globalRecipient.phone = p.phone;
+    if (p.address) this.globalRecipient.address = p.address;
   }
 
-  // 全域縣市變更 → 更新區下拉
-  onGlobalCityChange(): void {
-    const city = this.cities.find(c => c.name === this.globalRecipient.city);
-    this.globalDistricts = city ? city.districts.map(d => d.name) : [];
-    this.globalRecipient.district = '';  // 重設區
+  // 「套用會員帳號預設」按鈕：買家改過後想恢復會員資料時使用
+  applyUserProfile(): void {
+    if (!this.userProfile) {
+      this.messageService.add({
+        severity: 'warn', summary: '無法套用',
+        detail: '尚未取得會員資料', life: 2000
+      });
+      return;
+    }
+    this.fillFromProfile();
+    this.messageService.add({
+      severity: 'success', summary: '已套用',
+      detail: '已帶入會員帳號資料', life: 2000
+    });
   }
 
   // 個別賣家縣市變更
@@ -158,12 +181,7 @@ export class CheckoutShippingComponent implements OnInit, OnDestroy {
   getEffectiveAddress(sellerId: number): string {
     const s = this.sellerShippingMap[sellerId];
     if (!s || s.useDefault) {
-      const parts = [
-        this.globalRecipient.city,
-        this.globalRecipient.district,
-        this.globalRecipient.streetAddress
-      ].filter(Boolean);
-      return parts.join('') || '尚未填寫全域預設地址';
+      return this.globalRecipient.address.trim() || '尚未填寫全域預設地址';
     }
     const parts = [s.city, s.district, s.streetAddress].filter(Boolean);
     return parts.join('') || '尚未填寫個別地址';
@@ -185,9 +203,8 @@ export class CheckoutShippingComponent implements OnInit, OnDestroy {
   isFormValid(): boolean {
     if (this.isSubmitting) return false;
     // 全域收件人必填
-    if (!this.globalRecipient.name || !this.globalRecipient.phone ||
-      !this.globalRecipient.city || !this.globalRecipient.district ||
-      !this.globalRecipient.streetAddress) {
+    if (!this.globalRecipient.name.trim() || !this.globalRecipient.phone.trim() ||
+      !this.globalRecipient.address.trim()) {
       return false;
     }
     // 有個別指定的賣家也要填完整
@@ -214,9 +231,37 @@ export class CheckoutShippingComponent implements OnInit, OnDestroy {
     }
 
     this.isSubmitting = true;
+    // 預設地址直接用整串；個別指定才由縣市 + 區 + 街道組合
+    const sellerShippings = this.sellerGroups.map(g => {
+      const s = this.sellerShippingMap[g.sellerId];
+      if (s.useDefault) {
+        return {
+          sellerId: g.sellerId,
+          recipientName: this.globalRecipient.name.trim(),
+          recipientPhone: this.globalRecipient.phone.trim(),
+          shippingAddress: this.globalRecipient.address.trim()
+        };
+      }
+      return {
+        sellerId: g.sellerId,
+        recipientName: s.recipientName.trim(),
+        recipientPhone: s.phone.trim(),
+        shippingAddress: `${s.city}${s.district}${s.streetAddress.trim()}`
+      };
+    });
+
+    // 只送券的 ID，折扣金額由後端重新驗證、重新計算
+    const sellerCoupons = this.sellerCoupons
+      .map(c => ({ sellerId: c.sellerId, couponId: c.couponId }));
+    const platformCouponId = this.platformCoupon?.couponId ?? null;
 
     // Step 1：建立訂單
-    this.marketService.createOrder({ cartItemIds: this.cartItemIds })
+    this.marketService.createOrder({
+      cartItemIds: this.cartItemIds,
+      sellerShippings,
+      sellerCoupons,
+      platformCouponId
+    })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (result) => {
@@ -240,4 +285,44 @@ export class CheckoutShippingComponent implements OnInit, OnDestroy {
     return group.items.reduce((sum, i) => sum + i.subtotal, 0);
   }
 
+  readonly shippingFeePerSeller = SHIPPING_FEE_PER_SELLER;
+
+  getItemsTotal(): number {
+    return this.sellerGroups.reduce((sum, g) => sum + this.getGroupSubtotal(g), 0);
+  }
+
+  getSellerStoreDiscount(sellerId: number): number {
+    const c = this.sellerCoupons.find(x => x.sellerId === sellerId);
+    return c && c.scopeType !== 'Shipping' ? c.appliedAmount : 0;
+  }
+
+  get sellerDiscountTotal(): number {
+    return this.sellerGroups.reduce((sum, g) => sum + this.getSellerStoreDiscount(g.sellerId), 0);
+  }
+
+  get platformDiscount(): number {
+    return this.platformCoupon?.scopeType === 'Platform' ? this.platformCoupon.appliedAmount : 0;
+  }
+
+  isSellerShippingFree(sellerId: number): boolean {
+    return this.platformCoupon?.scopeType === 'Shipping'
+      || this.sellerCoupons.some(c => c.sellerId === sellerId && c.scopeType === 'Shipping');
+  }
+
+  getSellerShippingFee(sellerId: number): number {
+    return this.isSellerShippingFree(sellerId) ? 0 : this.shippingFeePerSeller;
+  }
+
+  get freeShippingSellerCount(): number {
+    return this.sellerGroups.filter(g => this.isSellerShippingFree(g.sellerId)).length;
+  }
+
+  getShippingTotal(): number {
+    return this.sellerGroups.reduce((sum, g) => sum + this.getSellerShippingFee(g.sellerId), 0);
+  }
+
+  getGrandTotal(): number {
+    return Math.max(0,
+      this.getItemsTotal() - this.sellerDiscountTotal - this.platformDiscount + this.getShippingTotal());
+  }
 }

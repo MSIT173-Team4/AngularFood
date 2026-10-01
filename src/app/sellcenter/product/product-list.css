@@ -378,3 +378,14 @@
 .search-clear:hover {
   color: #475569;
 }
+
+.tab-count {
+  margin-left: 4px;
+  font-size: 12px;
+  opacity: 0.75;
+}
+.stock-hint {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #b45309;
+}

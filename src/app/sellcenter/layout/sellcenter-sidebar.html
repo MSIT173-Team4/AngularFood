@@ -1,17 +1,22 @@
 <aside class="sellcenter-sidebar">
 
-  <div class="sidebar-brand">
+  <!-- 點 Logo 回到商品管理 -->
+  <a class="sidebar-brand" routerLink="/sellcenter/products">
     <div class="brand-icon"><i class="pi pi-shop"></i></div>
     <div>
       <div class="brand-title">友料賣家中心</div>
       <div class="brand-sub">SELLER HUB PRO</div>
     </div>
-  </div>
+  </a>
 
   <div class="seller-info">
-    <img src="assets/seller-avatar.png" alt="賣家" class="seller-avatar" />
+    @if (authService.currentUser()?.userImage) {
+      <img [src]="authService.currentUser()?.userImage" alt="賣家頭像" class="seller-avatar" />
+    } @else {
+      <span class="seller-avatar seller-avatar-fallback"><i class="pi pi-shop"></i></span>
+    }
     <div>
-      <div class="seller-name">禾日自然農園 &amp; 手作醬坊</div>
+      <div class="seller-name">{{ sellerState.sellerInfo()?.sellerName }}</div>
       <div class="seller-status">
         <span class="status-dot"></span>正常接單中
       </div>
@@ -19,7 +24,7 @@
   </div>
 
   <nav class="sidebar-nav">
-    @for (item of navItems; track item.route) {
+    @for (item of navItems(); track item.route) {
     <a [routerLink]="item.route" routerLinkActive="active" class="nav-item">
       <span class="nav-left">
         <i [class]="item.icon"></i>
