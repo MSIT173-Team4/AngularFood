@@ -1,10 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
-import { environment } from '../../../../environments/environment.development';
+import { environment } from '../../../../environments/environment';
 import { UserProfileDTO } from '../../interfaces/UserProfileDTO';
 import { PublicUserProfileDTO } from '../../interfaces/PublicUserProfileDTO';
 import { BaseUserProfileDTO } from '../../interfaces/BaseUserProfileDTO';
+import { DialogModule } from 'primeng/dialog';
+import { EditProfile } from './editprofile/editprofile';
+import { Apply } from './apply/apply';
+import { AuthService } from '../../services/auth-services';
 // PrimeNG
 import { AvatarModule } from 'primeng/avatar';
 import { TabsModule } from 'primeng/tabs';
@@ -14,13 +18,14 @@ import { ButtonModule } from 'primeng/button';
 @Component({
   selector: 'app-main',
   standalone: true,
-  imports: [AvatarModule, TabsModule, CardModule, ButtonModule],
+  imports: [AvatarModule, TabsModule, CardModule, ButtonModule, DialogModule, EditProfile, Apply],
   templateUrl: './main.html',
   styleUrl: './main.css',
 })
 export class Main implements OnInit {
   baseURL: string = environment.apiUrl;
   isOwnProfile = true;
+  private authService = inject(AuthService);
   /*userInfo: UserProfileDTO = {
     username: '',
     email: '',
@@ -33,14 +38,14 @@ export class Main implements OnInit {
   };
   publicUserInfo: PublicUserProfileDTO | null = null;
 */
-
+  isSeller = false;
   profile: BaseUserProfileDTO | null = null;
   userInfo: UserProfileDTO | null = null;
+  editProfileVisible = false;
+  sellerApplyVisible = false;
 
-  // 之後從 API 取得
   posts: any[] = [];
 
-  // 之後從 API 取得
   recipes: any[] = [];
   dashboard: any[] = ['0'];
   constructor(
@@ -58,7 +63,28 @@ export class Main implements OnInit {
     } else {
       this.isOwnProfile = true;
       this.loadingProfile();
+      this.checkSeller();
     }
+  }
+  goToSellCenter() {
+    this.router.navigate(['/sellcenter'], {
+    replaceUrl: true,
+    });
+  }
+  checkSeller() {
+    this.http
+      .get<{ isSeller: boolean }>(`${this.baseURL}/Users/CheckSeller`, {
+        withCredentials: true,
+      })
+      .subscribe({
+        next: (res) => {
+          this.isSeller = res.isSeller;
+        },
+
+        error: (err) => {
+          console.error('取得商家狀態失敗', err);
+        },
+      });
   }
   loadingProfile(): void {
     this.http
@@ -75,6 +101,9 @@ export class Main implements OnInit {
         },
       });
   }
+  //讀取貼文,食譜
+  loadPost(id: number) {}
+  loadRecipe(id: number) {}
   loadPublicProfile(id: number): void {
     this.http
       .get<PublicUserProfileDTO>(`${this.baseURL}/Users/GetPublicUserProfile/${id}`, {
@@ -107,5 +136,21 @@ export class Main implements OnInit {
           console.log(err);
         },
       });
+  }
+  getImageUrl(image?: string): string {
+    if (!image) {
+      return '/images/default.jpg';
+    }
+
+    return `https://localhost:7164${image}`;
+  }
+  onApplySuccess() {
+    this.sellerApplyVisible = false;
+    this.isSeller = true;
+  }
+  onProfileUpdated() {
+    this.editProfileVisible = false;
+    this.loadingProfile();
+    this.authService.getCurrentUser().subscribe();
   }
 }

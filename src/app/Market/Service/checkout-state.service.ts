@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
+import { AppliedSellerCoupon, ValidateCouponResultDto } from './market';
 
 export interface CheckoutShippingData {
   // 勾選的購物車項目 ID
@@ -9,9 +10,7 @@ export interface CheckoutShippingData {
   globalRecipient: {
     name: string;
     phone: string;
-    city: string;
-    district: string;
-    streetAddress: string;
+    address: string;
   };
 
   // 每個賣家的配送設定
@@ -28,6 +27,10 @@ export interface CheckoutShippingData {
 
   // 付款方式
   paymentMethod: string;
+
+  // 購物車頁套用的優惠券（存完整資訊，shipping 頁顯示折扣時也會用到）
+  sellerCoupons: AppliedSellerCoupon[];
+  platformCoupon: ValidateCouponResultDto | null;
 
   // 金額（從購物車帶過來）
   totalAmount: number;

@@ -81,6 +81,30 @@ describe('RecipeService', () => {
     expect(request.request.body).toEqual({ content: '番茄炒蛋' });
     request.flush(createEnvelope(null));
   });
+
+  it('loads the authenticated member shopping list with the login cookie', () => {
+    service.getShoppingList().subscribe();
+
+    const request = httpController.expectOne(apiConfig.recipes.shoppingList);
+    expect(request.request.method).toBe('GET');
+    expect(request.request.withCredentials).toBe(true);
+    request.flush(createEnvelope(null));
+  });
+
+  it('saves the authenticated member shopping list without a client user id', () => {
+    const payload = {
+      listName: '本週採購',
+      items: []
+    };
+
+    service.saveShoppingList(payload).subscribe();
+
+    const request = httpController.expectOne(apiConfig.recipes.shoppingList);
+    expect(request.request.method).toBe('PUT');
+    expect(request.request.body).toEqual(payload);
+    expect(request.request.withCredentials).toBe(true);
+    request.flush(createEnvelope(null));
+  });
 });
 
 function createEnvelope<T>(data: T | null): ApiResponse<T> {

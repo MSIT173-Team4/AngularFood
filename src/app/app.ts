@@ -1,4 +1,4 @@
-import { Component, DestroyRef, inject, signal, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, signal, OnInit, HostListener } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {
   NavigationEnd,
@@ -16,6 +16,9 @@ import { Button } from 'primeng/button';
 
 import { AuthService } from './Member/services/auth-services';
 import { NotificationCenterService } from './layout/notification-center.service';
+import { SellerStateService } from './Market/Service/seller-state.service';
+import { CartCountService } from './Market/Service/cart-count.service';
+import { environment } from '../environments/environment';
 
 type HeaderPanel = 'recipe' | 'market' | 'search' | 'cart' | 'notifications' | 'profile';
 
@@ -31,6 +34,8 @@ export class App implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   readonly authService = inject(AuthService);
   readonly notificationCenter = inject(NotificationCenterService);
+  readonly sellerState = inject(SellerStateService);
+  readonly cartCount = inject(CartCountService);
 
   // ===== 畫面狀態（signals） =====
   readonly isMobileNavigationOpen = signal(false);
@@ -79,7 +84,12 @@ export class App implements OnInit {
     });
   }
 
-  // ===== 手機版選單 =====
+  private checkLayout(url: string): void {
+    const hide = url.startsWith('/login') || url.startsWith('/register');
+
+    this.hideLayout.set(hide);
+  }
+
   toggleMobileNavigation(): void {
     this.isMobileNavigationOpen.update((isOpen) => !isOpen);
   }
@@ -95,7 +105,20 @@ export class App implements OnInit {
       },
     });
   }
+  // 後端回傳的頭像是相對路徑（/images/Member/xxx.jpg）：
+  // 本機開發要接上後端網址 https://localhost:7164；正式環境 apiUrl 是 /api，前綴為空，交給 nginx 轉發。
+  // 已經是完整網址（Google 頭像、Cloudinary）就直接用。
+  getUserImage(image?: string | null): string {
+    if (!image) {
+      return 'assets/default-avatar.png';
+    }
+    if (/^https?:\/\//i.test(image)) {
+      return image;
+    }
 
+    const backendOrigin = environment.apiUrl.replace(/\/api\/?$/, '');
+    return `${backendOrigin}${image.startsWith('/') ? '' : '/'}${image}`;
+  }
   // ===== Header 面板 =====
   openPanel(panel: HeaderPanel): void {
     this.activePanel.set(panel);
@@ -122,5 +145,22 @@ export class App implements OnInit {
   // ===== 通知 =====
   markNotificationAsRead(notificationId: string): void {
     this.notificationCenter.markAsRead(notificationId);
+  }
+
+  // 點擊 Header 按鈕 / 面板以外的地方 → 關閉面板
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.activePanel()) return;
+    const target = event.target as HTMLElement;
+    if (!target.closest('.header-action, .navigation-group')) {
+      this.closePanel();
+    }
+  }
+
+  // 按 Esc 也關閉面板
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.closePanel();
+
   }
 }

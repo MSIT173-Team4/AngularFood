@@ -1,0 +1,51 @@
+server {
+  listen ${PORT};
+  root /usr/share/nginx/html;
+  index index.html;
+
+  # 後端允許最大 50MB 上傳，這裡要一致，不然 nginx 會先擋掉（413）
+  client_max_body_size 50m;
+
+  # ---------- /api 轉給後端 ----------
+  location /api/ {
+    proxy_pass ${API_UPSTREAM};
+    proxy_set_header Host ${API_HOST};              # Cloud Run 靠 Host 判斷是哪個服務，一定要設
+    proxy_ssl_server_name on;                       # 連 https 的 Cloud Run 需要 SNI
+    proxy_set_header X-Forwarded-Proto https;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_read_timeout 120s;
+  }
+
+  # ---------- 後端 wwwroot 提供的上傳圖片：也轉給後端 ----------
+  # 後端回傳的圖片網址是相對路徑（例如 /ProductImageUploads/xxx.jpg），瀏覽器會向前端網域要，
+  # 所以這幾個資料夾要轉給後端。^~ 讓它們優先於下面的「靜態檔」規則。
+  location ^~ /ProductImageUploads/ {
+    proxy_pass ${API_UPSTREAM};
+    proxy_set_header Host ${API_HOST};
+    proxy_ssl_server_name on;
+  }
+  location ^~ /RecipeUploads/ {
+    proxy_pass ${API_UPSTREAM};
+    proxy_set_header Host ${API_HOST};
+    proxy_ssl_server_name on;
+  }
+  location ^~ /images/Member/ {
+    proxy_pass ${API_UPSTREAM};
+    proxy_set_header Host ${API_HOST};
+    proxy_ssl_server_name on;
+  }
+
+  # ---------- 帶雜湊的靜態檔：快取一年 ----------
+  location ~* \.(?:js|css|woff2?|png|jpg|jpeg|gif|svg|ico)$ {
+    expires 1y;
+    add_header Cache-Control "public, immutable";
+    try_files $uri =404;
+  }
+
+  # ---------- SPA fallback ----------
+  # Angular 的路由（例如 /trip-builder）不是真的檔案，一律回 index.html，交給 Angular 處理
+  location / {
+    try_files $uri $uri/ /index.html;
+    add_header Cache-Control "no-cache";   # index.html 不快取，才拿得到新版
+  }
+}

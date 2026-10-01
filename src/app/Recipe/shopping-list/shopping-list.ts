@@ -10,7 +10,6 @@ import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
 
-import { recipeDemoConfig } from '../api.config';
 import { RecipeShoppingListItem } from '../recipe.models';
 import { RecipeService } from '../service/recipe.service';
 
@@ -55,7 +54,7 @@ export class ShoppingList implements OnInit {
   loadShoppingList(): void {
     this.isLoading.set(true);
     this.loadFailed.set(false);
-    this.recipeService.getShoppingList(recipeDemoConfig.userId).subscribe({
+    this.recipeService.getShoppingList().subscribe({
       next: (response) => {
         this.isLoading.set(false);
         if (!response.success || !response.data) {
@@ -95,7 +94,7 @@ export class ShoppingList implements OnInit {
     }
 
     this.isSaving.set(true);
-    this.recipeService.saveShoppingList(recipeDemoConfig.userId, {
+    this.recipeService.saveShoppingList({
       listName: this.listName().trim() || '我的料理採購清單',
       items: items.map((item) => ({
         ingredientId: item.ingredientId,

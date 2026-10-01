@@ -209,3 +209,6 @@
   font-weight: 700;
   color: var(--primary);
 }
+.item-favorite-btn.active .pi-heart-fill {
+  color: #d64545;
+}

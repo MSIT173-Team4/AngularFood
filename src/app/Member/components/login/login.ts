@@ -2,7 +2,7 @@ import { AfterViewInit, Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Router, RouterLink } from '@angular/router';
-import { environment } from '../../../../environments/environment.development';
+import { environment } from '../../../../environments/environment';
 import { UserLoginDTO } from '../../interfaces/UserLoginDTO';
 
 // PrimeNG
@@ -30,7 +30,7 @@ declare const google: any;
   styleUrl: './login.css',
 })
 export class Login implements AfterViewInit {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
   private authService = inject(AuthService);
   private router = inject(Router);
 

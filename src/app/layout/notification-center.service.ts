@@ -4,7 +4,7 @@ export type NotificationCategory =
   | 'subscription'
   | 'market'
   | 'recipe'
-  | 'forum'
+  | 'social'
   | 'food-map'
   | 'system';
 

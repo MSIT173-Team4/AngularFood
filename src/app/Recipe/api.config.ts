@@ -1,4 +1,6 @@
-const friendlyFoodApiBaseUrl = 'https://localhost:7164/api';
+import { environment } from '../../environments/environment';
+
+const friendlyFoodApiBaseUrl = environment.apiUrl;
 
 export const apiConfig = {
   recipes: {
@@ -15,10 +17,9 @@ export const apiConfig = {
     view: (recipeId: number) => `${friendlyFoodApiBaseUrl}/recipe/${recipeId}/view`,
     like: (recipeId: number) => `${friendlyFoodApiBaseUrl}/recipe/${recipeId}/like`,
     favorite: (recipeId: number) => `${friendlyFoodApiBaseUrl}/recipe/${recipeId}/favorite`,
-    availability: (recipeId: number, userId: number, targetServings: number) =>
-      `${friendlyFoodApiBaseUrl}/recipe/${recipeId}/availability?userId=${userId}&targetServings=${targetServings}`,
-    shoppingList: (userId: number) =>
-      `${friendlyFoodApiBaseUrl}/recipe/shopping-list/user/${userId}`,
+    availability: (recipeId: number, targetServings: number) =>
+      `${friendlyFoodApiBaseUrl}/recipe/${recipeId}/availability?targetServings=${targetServings}`,
+    shoppingList: `${friendlyFoodApiBaseUrl}/recipe/shopping-list`,
     uploadCover: `${friendlyFoodApiBaseUrl}/recipe/assets/cover`,
     uploadStepImage: `${friendlyFoodApiBaseUrl}/recipe/assets/step-image`,
     normalizeIngredient: `${friendlyFoodApiBaseUrl}/recipe/ingredients/normalize`,
