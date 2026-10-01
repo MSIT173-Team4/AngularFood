@@ -83,7 +83,7 @@
       </section>
       }
     </div>
-    <a routerLink="/forum" routerLinkActive="active">討論區</a>
+    <a routerLink="/social" routerLinkActive="active">討論區</a>
     <a routerLink="/trip-builder" routerLinkActive="active">美食地圖</a>
   </nav>
 
@@ -159,42 +159,42 @@
           <i [class]="notification.icon" aria-hidden="true"></i>
           <span><b>{{ notification.title }}</b><small>{{ notification.message }}</small></span>
         </button>
-          } @empty {
-          <div class="empty-panel">
-            <i class="pi pi-bell" aria-hidden="true"></i>
-            <span>目前沒有新通知。</span>
-          </div>
-          }
-        </section>
+        } @empty {
+        <div class="empty-panel">
+          <i class="pi pi-bell" aria-hidden="true"></i>
+          <span>目前沒有新通知。</span>
+        </div>
         }
-      </div>
-
-
-
-
+      </section>
+      }
     </div>
-    <button type="button" class="mobile-navigation-button" aria-label="切換主要導覽"
-      [attr.aria-expanded]="isMobileNavigationOpen()" (click)="toggleMobileNavigation()">
-      <i class="pi" [class.pi-bars]="!isMobileNavigationOpen()" [class.pi-times]="isMobileNavigationOpen()"></i>
-    </button>
-    @if (authService.currentUser(); as user) {
-    <div class="current-user">
-      <!-- 頭像 + Username -->
-      <a class="user-profile-link" [routerLink]="['/main']">
-        <img [src]="getUserImage(user.userImage)" class="user-avatar" />
 
-        <span class="user-name">
-          {{ user.userName }}
-        </span>
-      </a>
 
-      <!-- 下拉按鈕 -->
-      <p-button icon="pi pi-chevron-down" [text]="true" [rounded]="true" (onClick)="userMenu.toggle($event)" />
 
-      <!-- PrimeNG Menu -->
-      <p-menu #userMenu [model]="userMenuItems" [popup]="true" />
-    </div>
-    }
+
+  </div>
+  <button type="button" class="mobile-navigation-button" aria-label="切換主要導覽"
+    [attr.aria-expanded]="isMobileNavigationOpen()" (click)="toggleMobileNavigation()">
+    <i class="pi" [class.pi-bars]="!isMobileNavigationOpen()" [class.pi-times]="isMobileNavigationOpen()"></i>
+  </button>
+  @if (authService.currentUser(); as user) {
+  <div class="current-user">
+    <!-- 頭像 + Username -->
+    <a class="user-profile-link" [routerLink]="['/main']">
+      <img [src]="getUserImage(user.userImage)" class="user-avatar" />
+
+      <span class="user-name">
+        {{ user.userName }}
+      </span>
+    </a>
+
+    <!-- 下拉按鈕 -->
+    <p-button icon="pi pi-chevron-down" [text]="true" [rounded]="true" (onClick)="userMenu.toggle($event)" />
+
+    <!-- PrimeNG Menu -->
+    <p-menu #userMenu [model]="userMenuItems" [popup]="true" />
+  </div>
+  }
 </header>
 }
 

@@ -13,7 +13,7 @@
       @for (block of post.blocks; track $index) {
         <div class="block-item">
           @if (block.blockType === 'text') {
-            <p class="text-content">{{ block.content }}</p>
+            <p class="text-content" [innerHTML]="block.content"></p>
           } @else if (block.blockType === 'image') {
             <img [src]="block.mediaUrl" alt="貼文圖片" class="media-content">
           } @else if (block.blockType === 'video') {
@@ -71,7 +71,6 @@
         }
       </div>
 
-      <!-- 留言輸入框 -->
       <div class="comment-input-area">
         @if (replyingTo) {
           <div class="reply-banner">
