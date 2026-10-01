@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { OrderCompleteDto } from '../components/order-complete/order-complete';
+import { environment } from '../../../environments/environment';
 
 
 // ── 對應後端 MarketPublicProductListDto ──────────────────────────
@@ -180,10 +181,10 @@ export interface CreateOrderRequest {
 export class MarketService {
 
   // 用 7164（你跑的是 https profile，7164 是主要 port）
-  private readonly baseUrl = 'https://localhost:7164/api/MarketProduct';
-  private readonly cartUrl = 'https://localhost:7164/api/ShoppingCart';
-  private readonly couponUrl = 'https://localhost:7164/api/MarketCoupon';
-  private readonly apiBase = 'https://localhost:7164/api/Checkout';
+  private readonly baseUrl = `${environment.apiUrl}/MarketProduct`;
+  private readonly cartUrl = `${environment.apiUrl}/ShoppingCart`;
+  private readonly couponUrl = `${environment.apiUrl}/MarketCoupon`;
+  private readonly apiBase = `${environment.apiUrl}/Checkout`
   private readonly withCred = { withCredentials: true };
 
   constructor(private http: HttpClient) { }
@@ -198,7 +199,7 @@ export class MarketService {
 
   getCategories(): Observable<MarketCategory[]> {
     return this.http.get<MarketCategory[]>(
-      'https://localhost:7164/api/MarketCategory'
+      `${environment.apiUrl}/MarketCategory`
     );
   }
 
@@ -245,14 +246,24 @@ export class MarketService {
   // 收藏 Toggle
   toggleFavorite(productId: number): Observable<{ isFavorite: boolean; message: string }> {
     return this.http.post<{ isFavorite: boolean; message: string }>(
-      `https://localhost:7164/api/MarketFavorite/toggle/${productId}`, {},
+      `${environment.apiUrl}/MarketFavorite/toggle/${productId}`, {},
+      { withCredentials: true }
+    );
+  }
+
+  // 確認是否已收藏
+  checkFavorite(productId: number): Observable<{ isFavorite: boolean }> {
+    return this.http.get<{ isFavorite: boolean }>(
+      `${environment.apiUrl}/MarketFavorite/check/${productId}`,
       { withCredentials: true }
     );
   }
 
   //加入購物車
   addToCart(dto: AddToCartDto): Observable<{ message: string }> {
-    return this.http.post<{ message: string }>(`${this.cartUrl}/add`, dto, this.withCred);
+    return this.http.post<{ message: string }>(
+      `${environment.apiUrl}/ShoppingCart/add`, dto
+    );
   }
 
   // 取得購物車
@@ -285,7 +296,7 @@ export class MarketService {
   // 取得使用者資料（填寫送貨地址用）
   getUserProfile(): Observable<UserProfileDto> {
     return this.http.get<UserProfileDto>(
-      'https://localhost:7164/api/ShoppingCartUsers/profile', this.withCred
+      `${environment.apiUrl}/ShoppingCartUsers/profile`
     );
   }
 
