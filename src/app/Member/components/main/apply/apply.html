@@ -1,0 +1,97 @@
+<form class="apply-form" [formGroup]="applyForm" (ngSubmit)="submit()">
+  <!-- 身分驗證 -->
+  <div class="form-section">
+    <div class="section-title">身分驗證</div>
+
+    <div class="section-description">
+      請填寫本人資料並上傳清晰的身分證圖片，用於確認申請人身分。
+    </div>
+
+    <!-- 身分證 -->
+    <label class="id-upload">
+      @if (idCardPreview) {
+        <img [src]="idCardPreview" class="id-preview" alt="身分證預覽" />
+      } @else {
+        <div class="upload-placeholder">
+          <i class="pi pi-id-card"></i>
+
+          <span class="upload-title"> 上傳身分證 </span>
+
+          <span class="upload-description"> 支援 JPG、PNG </span>
+        </div>
+      }
+
+      <input type="file" accept="image/jpeg,image/png" (change)="onIdCardSelected($event)" hidden />
+    </label>
+
+    <!-- 姓 / 名 -->
+    <div class="form-row">
+      <div class="form-field">
+        <label for="lastName">姓</label>
+
+        <input id="lastName" type="text" formControlName="lastName" placeholder="請輸入姓氏" />
+      </div>
+
+      <div class="form-field">
+        <label for="firstName">名</label>
+
+        <input id="firstName" type="text" formControlName="firstName" placeholder="請輸入名字" />
+      </div>
+    </div>
+
+    <!-- 手機 -->
+    <div class="form-field">
+      <label for="phone">手機號碼</label>
+
+      <input id="phone" type="tel" formControlName="phone" placeholder="例如：0912345678" />
+    </div>
+
+    <!-- 身分證字號 -->
+    <div class="form-field">
+      <label for="idNumber">身分證字號</label>
+
+      <input
+        id="idNumber"
+        type="text"
+        formControlName="idNumber"
+        placeholder="例如：A123456789"
+        maxlength="10"
+      />
+    </div>
+  </div>
+
+  <!-- 商家資料 -->
+  <div class="form-section">
+    <div class="section-title">商家資料</div>
+
+    <div class="form-field">
+      <label for="storeName"> 商家名稱 </label>
+
+      <input id="storeName" type="text" formControlName="storeName" placeholder="請輸入商家名稱" />
+    </div>
+
+    <div class="form-field">
+      <label for="storeDescription"> 商家簡介 </label>
+
+      <textarea
+        id="storeDescription"
+        formControlName="storeDescription"
+        rows="5"
+        placeholder="簡單介紹您的商家、販售內容等"
+      ></textarea>
+
+      <span class="character-count">
+        {{ applyForm.controls.storeDescription.value.length }} / 500
+      </span>
+    </div>
+  </div>
+
+  <div class="form-actions">
+    <p-button
+      type="submit"
+      label="送出申請"
+      icon="pi pi-send"
+      [disabled]="applyForm.invalid || !idCard"
+    />
+  </div>
+</form>

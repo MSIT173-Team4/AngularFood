@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { CreateProduct } from './create-product';
+import { GoogleRegister } from './google-register';
 
-describe('CreateProduct', () => {
-  let component: CreateProduct;
-  let fixture: ComponentFixture<CreateProduct>;
+describe('GoogleRegister', () => {
+  let component: GoogleRegister;
+  let fixture: ComponentFixture<GoogleRegister>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CreateProduct]
+      imports: [GoogleRegister]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(CreateProduct);
+    fixture = TestBed.createComponent(GoogleRegister);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

@@ -1,0 +1,261 @@
+:host {
+  display: block;
+}
+
+.register-page {
+  min-height: 100vh;
+  padding: 3rem 1.5rem;
+  background: #fff8f6;
+}
+
+.register-container {
+  width: 100%;
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+/* =========================
+   頁面標題
+========================= */
+
+.register-heading {
+  margin-bottom: 2rem;
+}
+
+.register-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+
+  padding: 0.4rem 0.8rem;
+  margin-bottom: 0.8rem;
+
+  border: 1px solid #ffcdbe;
+  border-radius: 999px;
+
+  background: #fff1ed;
+  color: #ab3500;
+
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.register-heading h1 {
+  margin: 0;
+
+  color: #261814;
+
+  font-size: 1.9rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.register-heading > p {
+  margin: 0.5rem 0 0;
+
+  color: #765c54;
+  font-size: 0.9rem;
+}
+
+/* =========================
+   PrimeNG Card
+========================= */
+
+:host ::ng-deep .register-card {
+  overflow: hidden;
+
+  border: 1px solid rgba(225, 191, 181, 0.65);
+  border-radius: 18px;
+
+  background: white;
+
+  box-shadow: 0 10px 30px rgba(80, 45, 30, 0.05);
+}
+
+:host ::ng-deep .register-card .p-card-body {
+  padding: 2.2rem 2.5rem;
+}
+
+:host ::ng-deep .register-card .p-card-content {
+  padding: 0;
+}
+
+/* =========================
+   Form 標題
+========================= */
+
+.form-title {
+  padding-bottom: 1.4rem;
+  margin-bottom: 1.8rem;
+
+  border-bottom: 1px solid #ffe9e4;
+}
+
+.form-title > div {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+
+  color: #261814;
+
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.form-title i {
+  color: #ab3500;
+  font-size: 1.25rem;
+}
+
+.form-title p {
+  margin: 0.5rem 0 0;
+
+  color: #765c54;
+  font-size: 0.85rem;
+}
+
+/* =========================
+   Form Row
+========================= */
+
+.form-row {
+  display: grid;
+
+  grid-template-columns: 120px minmax(0, 1fr);
+
+  align-items: start;
+
+  gap: 1rem;
+
+  margin-bottom: 1.25rem;
+}
+
+.form-row > label {
+  padding-top: 0.7rem;
+
+  color: #34231e;
+
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.required {
+  color: #ab3500;
+}
+
+.field-container {
+  width: 100%;
+  max-width: 500px;
+}
+
+/* =========================
+   PrimeNG Input
+========================= */
+
+:host ::ng-deep .field-container .p-inputtext {
+  width: 100%;
+
+  border-color: #e1bfb5;
+  border-radius: 9px;
+
+  font-size: 0.9rem;
+
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+:host ::ng-deep .field-container .p-inputtext:enabled:focus {
+  border-color: #ab3500;
+
+  box-shadow: 0 0 0 3px rgba(171, 53, 0, 0.1);
+}
+
+/* Password */
+
+:host ::ng-deep .field-container .p-password {
+  width: 100%;
+}
+
+:host ::ng-deep .field-container .p-password-input {
+  width: 100%;
+}
+
+/* =========================
+   Error
+========================= */
+
+.error-message {
+  display: block;
+
+  margin-top: 0.35rem;
+
+  color: #b42318;
+
+  font-size: 0.78rem;
+}
+
+/* =========================
+   Buttons
+========================= */
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+
+  padding-top: 1.7rem;
+  margin-top: 2rem;
+
+  border-top: 1px solid #ffe9e4;
+}
+
+/* 主按鈕使用原版型的橘色 */
+
+:host ::ng-deep .form-actions .p-button:not(.p-button-secondary) {
+  border-color: #ab3500;
+
+  background: #ab3500;
+}
+
+:host ::ng-deep .form-actions .p-button:not(.p-button-secondary):hover {
+  border-color: #832600;
+
+  background: #832600;
+}
+
+/* =========================
+   RWD
+========================= */
+
+@media (max-width: 640px) {
+  .register-page {
+    padding: 2rem 1rem;
+  }
+
+  .register-heading h1 {
+    font-size: 1.55rem;
+  }
+
+  :host ::ng-deep .register-card .p-card-body {
+    padding: 1.5rem;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+
+    gap: 0.4rem;
+  }
+
+  .form-row > label {
+    padding-top: 0;
+  }
+
+  .field-container {
+    max-width: none;
+  }
+
+  .form-actions {
+    justify-content: space-between;
+  }
+}

@@ -1,0 +1,16 @@
+<div class="verify-container">
+  @if (status === 'loading') {
+    <h2>正在驗證 Email...</h2>
+  }
+
+  @if (status === 'success') {
+    <h2>驗證成功</h2>
+    <p>{{ message }}</p>
+    <p>即將返回登入頁...</p>
+  }
+
+  @if (status === 'error') {
+    <h2>驗證失敗</h2>
+    <p>{{ message }}</p>
+  }
+</div>

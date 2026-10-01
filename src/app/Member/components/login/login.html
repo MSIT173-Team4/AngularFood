@@ -1,0 +1,96 @@
+<div class="login-page">
+  <div class="login-card">
+    <!-- Logo -->
+    <div class="login-logo">
+      <i class="pi pi-sparkles"></i>
+    </div>
+
+    <!-- 標題 -->
+    <div class="login-header">
+      <h1>歡迎回來</h1>
+      <p>登入 FriendlyFood 開始探索美食</p>
+    </div>
+
+    <!-- 登入表單 -->
+    <form (ngSubmit)="login()">
+      <!-- 帳號 -->
+      <div class="form-field">
+        <label for="username">帳號</label>
+
+        <div class="input-wrapper">
+          <i class="pi pi-user field-icon"></i>
+
+          <input
+            pInputText
+            id="username"
+            name="username"
+            type="text"
+            [(ngModel)]="loginData.username"
+            placeholder="請輸入帳號"
+            autocomplete="username"
+          />
+        </div>
+
+        @if (!loginData.username && errorMessage) {
+          <small class="field-error">
+            <i class="pi pi-info-circle"></i>
+            請輸入帳號
+          </small>
+        }
+      </div>
+
+      <!-- 密碼 -->
+      <div class="form-field">
+        <div class="field-header">
+          <label for="password">密碼</label>
+
+          <a routerLink="/forgot-password" class="forgot-password"> 忘記密碼？ </a>
+        </div>
+
+        <div class="password-wrapper">
+          <i class="pi pi-lock field-icon"></i>
+
+          <p-password
+            inputId="password"
+            name="password"
+            [(ngModel)]="loginData.password"
+            placeholder="請輸入密碼"
+            [toggleMask]="true"
+            [feedback]="false"
+            [fluid]="true"
+            autocomplete="current-password"
+          />
+        </div>
+      </div>
+
+      <!-- API 錯誤 -->
+      @if (errorMessage) {
+        <p-message severity="error" [text]="errorMessage" styleClass="login-error" />
+      }
+
+      <!-- 登入按鈕 -->
+      <p-button
+        type="submit"
+        label="登入"
+        icon="pi pi-sign-in"
+        styleClass="login-button"
+        [fluid]="true"
+      />
+    </form>
+
+    <!-- 註冊 -->
+    <div class="register-section">
+      <span>還沒有帳號？</span>
+
+      <a routerLink="/register"> 註冊會員 </a>
+    </div>
+
+    <!-- 社群登入 -->
+    <div class="social-title">或以社群帳號快速登入</div>
+
+    <!-- Google -->
+    <div class="google-login">
+      <div id="googleButton"></div>
+    </div>
+  </div>
+</div>

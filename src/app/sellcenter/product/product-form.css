@@ -1,0 +1,340 @@
+.form-page {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 1.5rem 0;
+}
+
+.form-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1E293B;
+  margin: 0 0 1rem;
+}
+
+.form-divider {
+  height: 1px;
+  background: #E2E8F0;
+  margin-bottom: 1.5rem;
+}
+
+/* ── 表單卡片 ── */
+.form-card {
+  background: #fff;
+  border-radius: 0.75rem;
+  border: 1px solid #E2E8F0;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ── 表單列 ── */
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-row.half {
+  flex-direction: row;
+  gap: 1.5rem;
+}
+
+.form-field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* ── Label ── */
+.form-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.form-label.required::after {
+  content: ' *';
+  color: #EF4444;
+}
+
+.form-hint {
+  font-size: 0.75rem;
+  color: #94A3B8;
+  margin: 0;
+}
+
+/* ── 圖片上傳 ── */
+.image-upload-area {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.image-slot {
+  width: 6rem;
+  height: 6rem;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.image-slot.filled {
+  border: 1px solid #E2E8F0;
+}
+
+.image-slot.filled img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-slot.add-slot {
+  border: 2px dashed #CBD5E1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #94A3B8;
+  font-size: 1.5rem;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.image-slot.add-slot:hover {
+  border-color: #2D6A4F;
+  color: #2D6A4F;
+}
+
+.main-badge {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(45, 106, 79, 0.85);
+  color: #fff;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-align: center;
+  padding: 0.125rem 0;
+}
+
+.remove-btn {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.5);
+  border: none;
+  color: #fff;
+  font-size: 0.625rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+/* ── 主圖預覽 ── */
+.main-preview {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.main-preview img {
+  width: 7rem;
+  height: 7rem;
+  object-fit: cover;
+  border-radius: 0.5rem;
+  border: 1px solid #E2E8F0;
+}
+
+/* ── 操作按鈕 ── */
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #E2E8F0;
+}
+
+/* ── 預覽 Dialog ── */
+.preview-content {
+  display: flex;
+  gap: 2rem;
+  padding: 0.5rem 0;
+}
+
+.preview-images {
+  flex-shrink: 0;
+  width: 18rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.preview-main-img img {
+  width: 100%;
+  height: 18rem;
+  object-fit: cover;
+  border-radius: 0.5rem;
+  border: 1px solid #E2E8F0;
+}
+
+.preview-thumbs {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.preview-thumb {
+  width: 3.5rem;
+  height: 3.5rem;
+  object-fit: cover;
+  border-radius: 0.375rem;
+  border: 1px solid #E2E8F0;
+  cursor: pointer;
+}
+
+.preview-no-image {
+  width: 100%;
+  height: 18rem;
+  border-radius: 0.5rem;
+  border: 1px dashed #CBD5E1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #94A3B8;
+  gap: 0.5rem;
+  font-size: 2rem;
+}
+
+.preview-no-image span {
+  font-size: 0.875rem;
+}
+
+.preview-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.preview-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1E293B;
+  margin: 0;
+}
+
+.preview-price {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2D6A4F;
+}
+
+.preview-meta {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  color: #475569;
+}
+
+.meta-label {
+  font-weight: 600;
+  color: #64748B;
+  min-width: 5rem;
+}
+
+.preview-stock {
+  margin-top: 0.25rem;
+}
+
+.preview-desc {
+  border-top: 1px solid #F1F5F9;
+  padding-top: 1rem;
+}
+
+.desc-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 0.5rem;
+}
+
+.preview-desc p:last-child {
+  font-size: 0.875rem;
+  color: #475569;
+  line-height: 1.6;
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+/* ── 拖曳中的樣式 ── */
+.cdk-drag-animating {
+  transition: transform 300ms ease;
+}
+
+.cdk-drop-list-dragging .image-slot:not(.cdk-drag-placeholder) {
+  transition: transform 300ms ease;
+}
+
+/* ── 拖曳佔位符 ── */
+.drag-placeholder {
+  width: 6rem;
+  height: 6rem;
+  border-radius: 0.5rem;
+  border: 2px dashed #2D6A4F;
+  background: #ECFDF5;
+}
+
+/* ── 拖曳中的圖片半透明 ── */
+.cdk-drag-preview {
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  opacity: 0.9;
+}
+
+/* ── 主圖預覽可點擊 ── */
+.main-preview-img {
+  width: 7rem;
+  height: 7rem;
+  object-fit: cover;
+  border-radius: 0.5rem;
+  border: 1px solid #E2E8F0;
+  cursor: zoom-in;
+  transition: opacity 0.15s;
+}
+
+.main-preview-img:hover {
+  opacity: 0.85;
+}
+
+/* ── 放大圖片 Dialog ── */
+:host ::ng-deep .zoom-dialog .p-dialog-content {
+  padding: 0;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: transparent;
+}
+
+.zoom-img {
+  display: block;
+  max-width: 80vw;
+  max-height: 80vh;
+  object-fit: contain;
+  cursor: zoom-out;
+}
+
+.loading-mask {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40vh;
+}

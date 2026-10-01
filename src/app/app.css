@@ -573,3 +573,80 @@ nav > a:hover,
     grid-template-columns: 1fr;
   }
 }
+
+/* 開始_商城選單：咖啡色細框 + 柔邊圖片 */
+.mega-menu .mega-menu-intro.mega-menu-intro--image {
+  padding: 0.4rem 0.4rem;
+  align-content: stretch;
+}
+
+.mega-menu .mega-menu-intro.mega-menu-intro--image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 0.75rem 0 0 0.75rem;
+  -webkit-mask-image:
+    linear-gradient(to right, transparent, #000 3%, #000 97%, transparent),
+    linear-gradient(to bottom, transparent, #000 3%, #000 97%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(to right, transparent, #000 3%, #000 97%, transparent),
+    linear-gradient(to bottom, transparent, #000 3%, #000 97%, transparent);
+  mask-composite: intersect;
+}
+/* 結束_商城選單：咖啡色細框 + 柔邊圖片 */
+
+.cart-panel-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: #832600;
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+.current-user {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 4px;
+}
+
+.user-profile-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  flex-shrink: 0;
+
+  text-decoration: none;
+  color: inherit;
+}
+
+.user-avatar {
+  display: block;
+
+  width: 38px;
+  height: 38px;
+
+  min-width: 38px;
+  min-height: 38px;
+  max-width: 38px;
+  max-height: 38px;
+
+  flex: 0 0 38px;
+
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.user-name {
+  font-size: 14px;
+  font-weight: 500;
+
+  white-space: nowrap;
+}
