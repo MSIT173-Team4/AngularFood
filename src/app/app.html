@@ -83,7 +83,7 @@
       </section>
       }
     </div>
-    <a routerLink="/forum" routerLinkActive="active">討論區</a>
+    <a routerLink="/social" routerLinkActive="active">討論區</a>
     <a routerLink="/trip-builder" routerLinkActive="active">美食地圖</a>
   </nav>
 
@@ -187,7 +187,6 @@
             </div>
           </section>
         }
-      </div>
       <div
         class="navigation-group"
         (mouseenter)="openPanel('market')"
@@ -232,7 +231,6 @@
       </div>
       <a routerLink="/forum" routerLinkActive="active">討論區</a>
       <a routerLink="/trip-builder" routerLinkActive="active">美食地圖</a>
-    </nav>
 
     <div class="header-actions">
       <div class="header-action">
@@ -357,7 +355,7 @@
       <div class="current-user">
         <!-- 頭像 + Username -->
         <a class="user-profile-link" [routerLink]="['/main']">
-          <img [src]="getUserImage(user.userImage)" class="user-avatar" />
+          <img [src]="user.userImage || '/images/default-avatar.png'" class="user-avatar" />
 
       <span class="user-name">
         {{ user.userName }}

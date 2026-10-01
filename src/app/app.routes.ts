@@ -94,12 +94,28 @@ export const routes: Routes = [
       import('./Recipe/shopping-list/shopping-list').then((module) => module.ShoppingList),
   },
   {
-    path: 'forum',
+    path: 'social',
     title: '討論區｜友料美食生活平台',
     loadComponent: () =>
-      import('./Forum/forum-placeholder/forum-placeholder').then(
-        (module) => module.ForumPlaceholder,
-      ),
+      import('./Social/Component/post-list/post-list').then(
+        (module) => module.PostListComponent
+      )
+  },
+  {
+    path: 'social/create',
+    title: '發佈文章｜友料美食生活平台',
+    loadComponent: () =>
+      import('./Social/Component/create-post/create-post').then(
+        (module) => module.CreatePostComponent
+      )
+  },
+  {
+    path: 'social/post/:id',
+    title: '討論區｜友料美食生活平台',
+    loadComponent: () =>
+      import('./Social/Component/post-detail/post-detail').then(
+        (module) => module.PostDetailComponent
+      )
   },
   {
     path: 'trip-builder',

@@ -90,3 +90,5 @@ export class PostDetailComponent implements OnInit {
     }
   }
 }
+
+export type { PostDetail };

@@ -25,77 +25,6 @@
       font-size: 1rem;
       box-sizing: border-box;
     }
-
-    .blocks-container {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-
-      .block-wrapper {
-        border: 1px solid var(--border-color);
-        border-radius: 6px;
-        padding: 15px;
-        background: var(--bg-color);
-
-        .block-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 10px;
-
-          .block-tag {
-            font-size: 0.85rem;
-            color: var(--secondary-color);
-            font-weight: bold;
-          }
-
-          .btn-remove {
-            background: none;
-            border: none;
-            color: #d9534f;
-            cursor: pointer;
-            font-size: 0.85rem;
-          }
-        }
-
-        .input-content {
-          width: 100%;
-          min-height: 120px;
-          padding: 10px;
-          border: 1px solid var(--border-color);
-          border-radius: 4px;
-          resize: vertical;
-          box-sizing: border-box;
-        }
-
-        .input-media {
-          width: 100%;
-          padding: 10px;
-          border: 1px solid var(--border-color);
-          border-radius: 4px;
-          box-sizing: border-box;
-        }
-      }
-    }
-
-    .add-block-actions {
-      display: flex;
-      gap: 10px;
-      margin-top: 15px;
-
-      button {
-        background: white;
-        border: 1px dashed var(--secondary-color);
-        color: var(--secondary-color);
-        padding: 8px 14px;
-        border-radius: 4px;
-        cursor: pointer;
-
-        &:hover {
-          background: #f0f7f0;
-        }
-      }
-    }
   }
 
   .submit-row {
@@ -103,7 +32,7 @@
     justify-content: flex-end;
 
     .btn-publish {
-      background-color: var(--secondary-color);
+      background-color: #b03a12;
       color: white;
       border: none;
       padding: 10px 24px;
@@ -112,7 +41,7 @@
       cursor: pointer;
 
       &:hover {
-        background-color: var(--secondary-hover);
+        background-color: #8e2e0e;
       }
     }
   }
