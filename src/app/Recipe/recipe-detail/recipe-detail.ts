@@ -296,7 +296,7 @@ export class RecipeDetail implements OnInit, AfterViewInit, OnDestroy {
     }
 
     this.isSavingShoppingList.set(true);
-    this.recipeService.saveShoppingList(recipeDemoConfig.userId, {
+    this.recipeService.saveShoppingList({
       listName: this.shoppingList()?.listName || '我的料理採購清單',
       items: items.map((item) => ({
         ingredientId: item.ingredientId,
@@ -362,7 +362,6 @@ export class RecipeDetail implements OnInit, AfterViewInit, OnDestroy {
     this.isLoadingAvailability.set(true);
     this.recipeService.getAvailability(
       recipe.recipeId,
-      recipeDemoConfig.userId,
       this.servings()
     ).subscribe({
       next: (response) => {
@@ -377,7 +376,7 @@ export class RecipeDetail implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private loadShoppingList(): void {
-    this.recipeService.getShoppingList(recipeDemoConfig.userId).subscribe({
+    this.recipeService.getShoppingList().subscribe({
       next: (response) => {
         if (response.success && response.data) {
           this.shoppingList.set(response.data);
