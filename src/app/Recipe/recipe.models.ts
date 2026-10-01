@@ -104,7 +104,6 @@ export interface PantryPageData {
 }
 
 export interface CompleteCookingRequest {
-  userId: number;
   recipeId: number;
   targetServings: number;
 }
@@ -196,7 +195,6 @@ export interface RecipeStepInput {
 }
 
 export interface CreateRecipePayload {
-  userId: number;
   categoryId: number;
   title: string;
   description: string | null;
@@ -214,6 +212,7 @@ export interface CreateRecipePayload {
 
 export interface RecipeAsset {
   url: string;
+  publicId: string;
   fileName: string;
   fileSize: number;
   contentType: string;
