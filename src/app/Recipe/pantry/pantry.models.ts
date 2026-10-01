@@ -8,7 +8,6 @@ export interface PantryAiDiagnosticDto {
 }
 
 export interface AddPantryItemPayload {
-  userId: number;
   ingredientName: string;
   amount: number;
   unit: string;
@@ -18,7 +17,6 @@ export interface AddPantryItemPayload {
 }
 
 export interface UpdatePantryItemPayload {
-  userId: number;
   amount: number;
   unit: string;
   storageLocation: '冷藏' | '冷凍' | '常溫';

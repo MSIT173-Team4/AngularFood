@@ -13,7 +13,6 @@ import { ButtonModule } from 'primeng/button';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { ToastModule } from 'primeng/toast';
 
-import { recipeDemoConfig } from '../api.config';
 import {
   RecipeDetail,
   RecipeDetailPageData,
@@ -204,7 +203,6 @@ export class CookingMode implements OnInit, OnDestroy {
 
     this.isDeducting.set(true);
     this.recipeService.completeCooking({
-      userId: recipeDemoConfig.userId,
       recipeId: this.recipeId,
       targetServings: this.targetServings()
     }).subscribe({

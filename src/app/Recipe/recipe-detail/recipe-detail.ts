@@ -22,7 +22,6 @@ import { InputTextModule } from 'primeng/inputtext';
 import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
 
-import { recipeDemoConfig } from '../api.config';
 import {
   RecipeAvailability,
   RecipeDetail as RecipeDetailModel,
@@ -393,8 +392,8 @@ export class RecipeDetail implements OnInit, AfterViewInit, OnDestroy {
 
     this.isUpdatingEngagement.set(true);
     const request = action === 'like'
-      ? this.recipeService.toggleLike(recipe.recipeId, recipeDemoConfig.userId)
-      : this.recipeService.toggleFavorite(recipe.recipeId, recipeDemoConfig.userId);
+      ? this.recipeService.toggleLike(recipe.recipeId)
+      : this.recipeService.toggleFavorite(recipe.recipeId);
 
     request.subscribe({
       next: (response) => {
