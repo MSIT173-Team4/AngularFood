@@ -30,7 +30,7 @@ declare const google: any;
   styleUrl: './login.css',
 })
 export class Login implements AfterViewInit {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
   private authService = inject(AuthService);
   private router = inject(Router);
 
