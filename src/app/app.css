@@ -68,7 +68,7 @@ nav {
   gap: clamp(0.65rem, 1.5vw, 1.35rem);
 }
 
-nav > a,
+nav>a,
 .navigation-trigger {
   display: flex;
   align-items: center;
@@ -81,8 +81,8 @@ nav > a,
   white-space: nowrap;
 }
 
-nav > a.active,
-nav > a:hover,
+nav>a.active,
+nav>a:hover,
 .navigation-trigger.active,
 .navigation-trigger:hover {
   color: #ab3500;
@@ -137,7 +137,7 @@ nav > a:hover,
   background: linear-gradient(145deg, #3b2a24, #7d2d10);
 }
 
-.mega-menu-intro > span {
+.mega-menu-intro>span {
   color: #f6c7ad;
   font-size: 0.72rem;
   font-weight: 800;
@@ -179,7 +179,7 @@ nav > a:hover,
   background: #fff2ec;
 }
 
-.mega-menu-links a > i {
+.mega-menu-links a>i {
   display: grid;
   width: 2rem;
   height: 2rem;
@@ -255,7 +255,7 @@ nav > a:hover,
   background: #d69d14;
 }
 
-.profile-button > span,
+.profile-button>span,
 .profile-avatar {
   display: grid;
   width: 2rem;
@@ -305,7 +305,7 @@ nav > a:hover,
   font-weight: 800;
 }
 
-.search-panel > div {
+.search-panel>div {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
@@ -370,7 +370,7 @@ nav > a:hover,
   opacity: 0.58;
 }
 
-.notification-item > i {
+.notification-item>i {
   color: #c47b12;
 }
 
@@ -396,7 +396,7 @@ nav > a:hover,
   text-align: center;
 }
 
-.empty-panel > i {
+.empty-panel>i {
   color: #b89c90;
   font-size: 1.6rem;
 }
@@ -412,7 +412,7 @@ nav > a:hover,
   width: 260px;
 }
 
-.profile-panel > div {
+.profile-panel>div {
   display: grid;
   gap: 0.18rem;
 }
@@ -500,7 +500,7 @@ nav > a:hover,
     display: flex;
   }
 
-  nav > a,
+  nav>a,
   .navigation-trigger {
     padding: 0.65rem 0.25rem;
   }
@@ -551,7 +551,7 @@ nav > a:hover,
     padding-inline: 0.8rem;
   }
 
-  .brand > span:last-child {
+  .brand>span:last-child {
     display: none;
   }
 
@@ -559,7 +559,7 @@ nav > a:hover,
     gap: 0;
   }
 
-  .header-actions > .header-action:nth-child(3) {
+  .header-actions>.header-action:nth-child(3) {
     display: none;
   }
 
@@ -595,6 +595,7 @@ nav > a:hover,
     linear-gradient(to bottom, transparent, #000 3%, #000 97%, transparent);
   mask-composite: intersect;
 }
+
 /* 結束_商城選單：咖啡色細框 + 柔邊圖片 */
 
 .cart-panel-link {
@@ -609,6 +610,8 @@ nav > a:hover,
   color: #fff;
   font-weight: 600;
   text-decoration: none;
+}
+
 .current-user {
   display: flex;
   align-items: center;

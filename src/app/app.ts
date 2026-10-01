@@ -18,6 +18,7 @@ import { AuthService } from './Member/services/auth-services';
 import { NotificationCenterService } from './layout/notification-center.service';
 import { SellerStateService } from './Market/Service/seller-state.service';
 import { CartCountService } from './Market/Service/cart-count.service';
+import { environment } from '../environments/environment';
 
 type HeaderPanel = 'recipe' | 'market' | 'search' | 'cart' | 'notifications' | 'profile';
 
@@ -104,7 +105,20 @@ export class App implements OnInit {
       },
     });
   }
+  // 後端回傳的頭像是相對路徑（/images/Member/xxx.jpg）：
+  // 本機開發要接上後端網址 https://localhost:7164；正式環境 apiUrl 是 /api，前綴為空，交給 nginx 轉發。
+  // 已經是完整網址（Google 頭像、Cloudinary）就直接用。
+  getUserImage(image?: string | null): string {
+    if (!image) {
+      return 'assets/default-avatar.png';
+    }
+    if (/^https?:\/\//i.test(image)) {
+      return image;
+    }
 
+    const backendOrigin = environment.apiUrl.replace(/\/api\/?$/, '');
+    return `${backendOrigin}${image.startsWith('/') ? '' : '/'}${image}`;
+  }
   // ===== Header 面板 =====
   openPanel(panel: HeaderPanel): void {
     this.activePanel.set(panel);
@@ -147,11 +161,6 @@ export class App implements OnInit {
   @HostListener('document:keydown.escape')
   onEscape(): void {
     this.closePanel();
-  getUserImage(image?: string | null): string {
-    if (!image) {
-      return 'assets/default-avatar.png';
-    }
 
-    return `https://localhost:7164${image}`;
   }
 }
