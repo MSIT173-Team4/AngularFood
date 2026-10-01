@@ -1,12 +1,13 @@
 import { Injectable, inject, signal, effect, untracked } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../Member/services/auth-services';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class CartCountService {
   private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
-  private readonly countUrl = 'https://localhost:7164/api/ShoppingCart/count';
+  private readonly countUrl = `${environment.apiUrl}/ShoppingCart/count`;
 
   // Header 購物車徽章顯示的數字（購物車有幾項商品）
   readonly count = signal(0);
