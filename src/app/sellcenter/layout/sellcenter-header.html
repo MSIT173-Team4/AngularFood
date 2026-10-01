@@ -26,10 +26,14 @@
     <div class="divider"></div>
 
     <div class="user-chip">
-      <img src="assets/seller-avatar.png" alt="賣家" />
-      <span>禾日自然農園</span>
-      <i class="pi pi-chevron-down"></i>
-    </div>
+  @if (authService.currentUser()?.userImage) {
+    <img [src]="authService.currentUser()?.userImage" alt="賣家頭像" />
+  } @else {
+    <i class="pi pi-user user-chip-fallback"></i>
+  }
+  <span>{{ sellerState.sellerInfo()?.ownerName || sellerState.sellerInfo()?.sellerName }}</span>
+  <i class="pi pi-chevron-down"></i>
+</div>
   </div>
 
 </header>

@@ -3,7 +3,7 @@
 <div class="welcome-banner">
   <div>
     <span class="banner-chip">農友早安</span>
-    <h1 class="banner-title">歡迎回來，禾日自然農園 &amp; 手作醬坊！</h1>
+    <h1 class="banner-title">歡迎回來，{{ sellerState.sellerInfo()?.sellerName }}！</h1>
   </div>
   <div class="banner-actions">
     <a routerLink="/" class="btn-back">
@@ -36,11 +36,14 @@
     <button class="tab-btn" [class.active]="activeTabIndex === i" [class.tab-danger]="tab.label === '已違規'"
       (click)="selectTab(i)">
       {{ tab.label }}
+      @if (getTabCount(tab) !== null) {
+      <span class="tab-count">{{ getTabCount(tab) }}</span>
+      }
     </button>
     }
   </div>
 
-  <p-table [value]="products" [loading]="loading" [paginator]="true" [rows]="pageSize" [totalRecords]="totalCount"
+  <p-table [value]="products" [loading]="loading" [paginator]="true" [rows]="pageSize" [totalRecords]="totalCount" [first]="(currentPage - 1) * pageSize"
     [lazy]="true" (onLazyLoad)="onPageChange($event)" styleClass="p-datatable-sm seller-table" [rowHover]="true">
     <ng-template pTemplate="header">
       <tr>
@@ -119,7 +122,7 @@
             </button>
             @if (showUrgentRestock(product)) {
             <button pButton label="緊急補貨" class="p-button-danger p-button-sm p-button-outlined restock-btn"
-              (click)="goToEdit(product.productId)">
+              (click)="openStockDialog(product, '緊急補貨')">
             </button>
             }
             @if (showRestock(product)) {
@@ -150,8 +153,7 @@
 </div>
 
 <!-- 庫存微調 Dialog -->
-<p-dialog [(visible)]="showStockDialog" [modal]="true" [style]="{ width: '400px' }" header="庫存微調" [draggable]="false"
-  (onHide)="closeStockDialog()">
+<p-dialog [(visible)]="showStockDialog" [modal]="true" [style]="{ width: '400px' }" [header]="stockDialogTitle" [draggable]="false" (onHide)="closeStockDialog()">
   @if (stockEditProduct) {
   <div class="stock-dialog-content">
     <p class="stock-product-name">{{ stockEditProduct.productName }}</p>
@@ -163,6 +165,9 @@
       <span class="stock-row-label">調整為</span>
       <p-inputnumber [(ngModel)]="newStock" [min]="0" [showButtons]="true" styleClass="stock-input" />
     </div>
+    @if (stockDialogTitle === '緊急補貨') {
+<p class="stock-hint">補到 {{ LOW_STOCK_THRESHOLD }} 件以上即可解除庫存警告</p>
+}
   </div>
   }
 

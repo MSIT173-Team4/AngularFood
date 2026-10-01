@@ -127,3 +127,21 @@
   background: #ab3500 !important;
   border-color: #ab3500 !important;
 }
+
+/* 已收藏：實心紅色愛心 */
+.favorite-btn.active .pi-heart-fill {
+  color: #d64545;
+}
+
+/* 自己賣場的商品標籤 */
+.own-product-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #fee2db;
+  color: #832600;
+  font-size: 13px;
+  font-weight: 600;
+}
