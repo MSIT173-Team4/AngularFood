@@ -43,10 +43,9 @@ export class Main implements OnInit {
   userInfo: UserProfileDTO | null = null;
   editProfileVisible = false;
   sellerApplyVisible = false;
-  // 之後從 API 取得
+
   posts: any[] = [];
 
-  // 之後從 API 取得
   recipes: any[] = [];
   dashboard: any[] = ['0'];
   constructor(
@@ -97,6 +96,9 @@ export class Main implements OnInit {
         },
       });
   }
+  //讀取貼文,食譜
+  loadPost(id: number) {}
+  loadRecipe(id: number) {}
   loadPublicProfile(id: number): void {
     this.http
       .get<PublicUserProfileDTO>(`${this.baseURL}/Users/GetPublicUserProfile/${id}`, {
@@ -136,6 +138,10 @@ export class Main implements OnInit {
     }
 
     return `https://localhost:7164${image}`;
+  }
+  onApplySuccess() {
+    this.sellerApplyVisible = false;
+    this.isSeller = true;
   }
   onProfileUpdated() {
     this.editProfileVisible = false;

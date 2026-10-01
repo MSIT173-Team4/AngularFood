@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, Output, EventEmitter } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { ButtonModule } from 'primeng/button';
@@ -11,6 +11,7 @@ import { environment } from '../../../../../environments/environment.development
   styleUrl: './apply.css',
 })
 export class Apply {
+  @Output() applySuccess = new EventEmitter<void>();
   private fb = inject(FormBuilder);
   private http = inject(HttpClient);
 
@@ -77,6 +78,7 @@ export class Apply {
       .subscribe({
         next: (res) => {
           console.log('申請成功', res);
+          this.applySuccess.emit();
         },
 
         error: (err) => {
