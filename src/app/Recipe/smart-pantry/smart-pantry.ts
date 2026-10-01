@@ -20,6 +20,7 @@ import {
   UpdatePantryItemPayload
 } from '../pantry/pantry.models';
 import { PantryService } from '../pantry/pantry.service';
+import { RecipeImageFallbackDirective } from '../recipe-image-fallback.directive';
 import { PantryItem, PantryPageData, RecipeRecommendation } from '../recipe.models';
 import { RecipeService } from '../service/recipe.service';
 
@@ -31,6 +32,7 @@ type ValidationErrors = Record<string, string>;
   imports: [
     FormsModule,
     RouterLink,
+    RecipeImageFallbackDirective,
     ButtonModule,
     DatePickerModule,
     DialogModule,

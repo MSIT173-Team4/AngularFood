@@ -1,7 +1,12 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { apiConfig } from '../api.config';
+import {
+  resolveRecipeDetailImages,
+  resolveRecipeRecommendationImages,
+  resolveRecipeSummaryImages
+} from '../recipe-image-url';
 import {
   ApiResponse,
   ChefRecommendation,
@@ -33,14 +38,20 @@ export class RecipeService {
     return this.http.get<ApiResponse<RecipeSummary[]>>(
       apiConfig.recipes.list,
       { withCredentials: true }
-    );
+    ).pipe(map((response) => ({
+      ...response,
+      data: response.data?.map(resolveRecipeSummaryImages) ?? null
+    })));
   }
 
   getRecipeById(id: number): Observable<ApiResponse<RecipeDetail>> {
     return this.http.get<ApiResponse<RecipeDetail>>(
       apiConfig.recipes.detail(id),
       { withCredentials: true }
-    );
+    ).pipe(map((response) => ({
+      ...response,
+      data: response.data ? resolveRecipeDetailImages(response.data) : null
+    })));
   }
 
   getMetadata(): Observable<ApiResponse<RecipeMetadata>> {
@@ -56,14 +67,23 @@ export class RecipeService {
     return this.http.get<ApiResponse<RecipeRecommendation[]>>(
       apiConfig.recipes.recommendations(limit),
       { withCredentials: true }
-    );
+    ).pipe(map((response) => ({
+      ...response,
+      data: response.data?.map(resolveRecipeRecommendationImages) ?? null
+    })));
   }
 
   getTrendingRecipes(limit = 8): Observable<ApiResponse<TrendingRecipe[]>> {
     return this.http.get<ApiResponse<TrendingRecipe[]>>(
       apiConfig.recipes.trending(limit),
       { withCredentials: true }
-    );
+    ).pipe(map((response) => ({
+      ...response,
+      data: response.data?.map((item) => ({
+        ...item,
+        recipe: resolveRecipeSummaryImages(item.recipe)
+      })) ?? null
+    })));
   }
 
   getPantryItems(): Observable<ApiResponse<PantryItem[]>> {

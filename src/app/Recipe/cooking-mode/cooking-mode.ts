@@ -18,6 +18,7 @@ import {
   RecipeDetailPageData,
   RecipeStep
 } from '../recipe.models';
+import { RecipeImageFallbackDirective } from '../recipe-image-fallback.directive';
 import { RecipeService } from '../service/recipe.service';
 
 interface BrowserSpeechRecognitionEvent extends Event {
@@ -52,7 +53,13 @@ type SpeechRecognitionWindow = Window & {
 
 @Component({
   selector: 'app-cooking-mode',
-  imports: [RouterLink, ButtonModule, ProgressBarModule, ToastModule],
+  imports: [
+    RouterLink,
+    RecipeImageFallbackDirective,
+    ButtonModule,
+    ProgressBarModule,
+    ToastModule
+  ],
   providers: [MessageService],
   templateUrl: './cooking-mode.html',
   styleUrl: './cooking-mode.css'
