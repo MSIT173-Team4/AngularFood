@@ -99,27 +99,28 @@ export class RecipeService {
 
   getAvailability(
     recipeId: number,
-    userId: number,
     targetServings: number
   ): Observable<ApiResponse<RecipeAvailability>> {
     return this.http.get<ApiResponse<RecipeAvailability>>(
-      apiConfig.recipes.availability(recipeId, userId, targetServings)
+      apiConfig.recipes.availability(recipeId, targetServings),
+      { withCredentials: true }
     );
   }
 
-  getShoppingList(userId: number): Observable<ApiResponse<RecipeShoppingList>> {
+  getShoppingList(): Observable<ApiResponse<RecipeShoppingList>> {
     return this.http.get<ApiResponse<RecipeShoppingList>>(
-      apiConfig.recipes.shoppingList(userId)
+      apiConfig.recipes.shoppingList,
+      { withCredentials: true }
     );
   }
 
   saveShoppingList(
-    userId: number,
     payload: SaveRecipeShoppingListPayload
   ): Observable<ApiResponse<RecipeShoppingList>> {
     return this.http.put<ApiResponse<RecipeShoppingList>>(
-      apiConfig.recipes.shoppingList(userId),
-      payload
+      apiConfig.recipes.shoppingList,
+      payload,
+      { withCredentials: true }
     );
   }
 
