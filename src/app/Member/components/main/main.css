@@ -36,9 +36,19 @@
 
 .profile-actions {
   display: flex;
-  gap: 0.75rem;
+  align-items: center;
+  gap: 10px;
+}
+:host ::ng-deep .seller-apply-btn {
+  background: #355f4b;
+  border-color: #355f4b;
+  color: white;
 }
 
+:host ::ng-deep .seller-apply-btn:hover {
+  background: #294b3b;
+  border-color: #294b3b;
+}
 /* =====================
    貼文
    ===================== */

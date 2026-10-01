@@ -83,7 +83,12 @@ export class App implements OnInit {
     });
   }
 
-  // ===== 手機版選單 =====
+  private checkLayout(url: string): void {
+    const hide = url.startsWith('/login') || url.startsWith('/register');
+
+    this.hideLayout.set(hide);
+  }
+
   toggleMobileNavigation(): void {
     this.isMobileNavigationOpen.update((isOpen) => !isOpen);
   }
@@ -142,5 +147,11 @@ export class App implements OnInit {
   @HostListener('document:keydown.escape')
   onEscape(): void {
     this.closePanel();
+  getUserImage(image?: string | null): string {
+    if (!image) {
+      return 'assets/default-avatar.png';
+    }
+
+    return `https://localhost:7164${image}`;
   }
 }
