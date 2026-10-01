@@ -2,6 +2,7 @@ import { Injectable, inject, signal, computed, effect, untracked } from '@angula
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { AuthService } from '../../Member/services/auth-services';
+import { environment } from '../../../environments/environment';
 
 export interface MySellerInfo {
   isSeller: boolean;
@@ -25,14 +26,14 @@ export interface SellerSummary {
 export class SellerStateService {
   private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
-  private readonly meUrl = 'https://localhost:7164/api/MarketSeller/me';
+  private readonly meUrl = `${environment.apiUrl}/MarketSeller/me`;
 
   // 目前登入者的賣家身份；null = 未登入或尚未查詢
   readonly sellerInfo = signal<MySellerInfo | null>(null);
   readonly isSeller = computed(() => this.sellerInfo()?.isSeller ?? false);
   // 側欄與商品分頁的數量；進入後台、上下架或改庫存後重新載入
   readonly summary = signal<SellerSummary | null>(null);
-  private readonly summaryUrl = 'https://localhost:7164/api/MarketSeller/summary';
+  private readonly summaryUrl = `${environment.apiUrl}/MarketSeller/summary`;
 
   loadSummary(): void {
     this.http.get<SellerSummary>(this.summaryUrl, { withCredentials: true })

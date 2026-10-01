@@ -16,7 +16,7 @@ import { HttpClient } from '@angular/common/http';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
 
-import { environment } from '../../../../../environments/environment.development';
+import { environment } from '../../../../../environments/environment';
 import { UserProfileDTO } from '../../../interfaces/UserProfileDTO';
 @Component({
   selector: 'app-edit-profile',
@@ -76,7 +76,12 @@ export class EditProfile implements OnChanges {
       return null;
     }
 
-    return `https://localhost:7164${image}`;
+    if (/^https?:\/\//i.test(image)) {
+      return image; // 已經是完整網址（Cloudinary、Google 頭像）
+    }
+    // 本機開發接上 https://localhost:7164；正式環境 apiUrl 是 /api，前綴為空，交給 nginx 轉發
+    const backendOrigin = environment.apiUrl.replace(/\/api\/?$/, '');
+    return `${backendOrigin}${image.startsWith('/') ? '' : '/'}${image}`;
   }
 
   onImageSelected(event: Event) {

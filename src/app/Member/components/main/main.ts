@@ -142,7 +142,12 @@ export class Main implements OnInit {
       return '/images/default.jpg';
     }
 
-    return `https://localhost:7164${image}`;
+    if (/^https?:\/\//i.test(image)) {
+      return image; // 已經是完整網址（Cloudinary、Google 頭像）
+    }
+    // 本機開發接上 https://localhost:7164；正式環境 apiUrl 是 /api，前綴為空，交給 nginx 轉發
+    const backendOrigin = environment.apiUrl.replace(/\/api\/?$/, '');
+    return `${backendOrigin}${image.startsWith('/') ? '' : '/'}${image}`;
   }
   onApplySuccess() {
     this.sellerApplyVisible = false;
