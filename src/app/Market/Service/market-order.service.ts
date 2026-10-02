@@ -57,6 +57,11 @@ export interface MyOrderListResult {
   counts: MyOrderCounts;
 }
 
+export interface RebuyResult {
+  addedCount: number;
+  skipped: { productName: string; reason: string }[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class MarketOrderService {
   private readonly http = inject(HttpClient);
@@ -71,5 +76,8 @@ export class MarketOrderService {
     if (keyword.trim()) params = params.set('keyword', keyword.trim());
 
     return this.http.get<MyOrderListResult>(`${this.baseUrl}/my`, { params, withCredentials: true });
+  }
+  rebuy(orderIds: number[]): Observable<RebuyResult> {
+    return this.http.post<RebuyResult>(`${this.baseUrl}/rebuy`, { orderIds }, { withCredentials: true });
   }
 }

@@ -6,6 +6,7 @@ import { Subject, of, switchMap, catchError, tap, takeUntil } from 'rxjs';
 import { ToastModule } from 'primeng/toast';
 import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { MessageService } from 'primeng/api';
+import { RebuyService } from '../../Service/rebuy.service';
 
 import {
   MarketOrderService, MyOrder, MyOrderCounts, MyOrderRange, MyOrderStatusKey, MyOrderTab
@@ -29,6 +30,7 @@ export class MyOrdersComponent implements OnInit, OnDestroy {
   private readonly orderService = inject(MarketOrderService);
   private readonly messageService = inject(MessageService);
   private readonly router = inject(Router);
+  private readonly rebuyService = inject(RebuyService);
 
   readonly tabs: OrderTab[] = [
     { key: 'pending-payment', label: '待付款', countKey: 'pendingPayment' },
@@ -170,9 +172,9 @@ export class MyOrdersComponent implements OnInit, OnDestroy {
     this.router.navigate(['/checkout/complete', order.batchId]);
   }
 
-  // O-3 會改成真正的再買一次
+  // 再買一次
   rebuy(order: MyOrder): void {
-    this.notReady('再買一次');
+    this.rebuyService.run([order.orderId], this.messageService);
   }
 
   contactSeller(order: MyOrder): void {

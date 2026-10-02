@@ -9,6 +9,7 @@ import { MessageService } from 'primeng/api';
 
 import { MarketService } from '../../Service/market';
 import { CheckoutStepsComponent } from '../checkout-steps/checkout-steps';
+import { RebuyService } from '../../Service/rebuy.service';
 
 
 // ── DTO 介面（對應後端 OrderCompleteDto）────────────────────
@@ -92,6 +93,7 @@ export class OrderCompleteComponent implements OnInit, OnDestroy {
     private router: Router,
     private marketService: MarketService,
     private messageService: MessageService,
+    private rebuyService: RebuyService,
   ) { }
 
   ngOnInit(): void {
@@ -189,5 +191,12 @@ export class OrderCompleteComponent implements OnInit, OnDestroy {
 
   goToMarket(): void {
     this.router.navigate(['/market']);
+  }
+
+  // 再買一次：整個結帳批次（所有賣家）的商品都加回購物車
+  rebuyAll(): void {
+    if (!this.order) return;
+    const orderIds = this.order.orderGroups.map(g => g.orderId);
+    this.rebuyService.run(orderIds, this.messageService);
   }
 }

@@ -10,6 +10,7 @@ import { CheckoutStepsComponent } from '../checkout-steps/checkout-steps';
 import { Router } from '@angular/router';
 import { SHIPPING_FEE_PER_SELLER } from '../../data/market-constants';
 import { CartCountService } from '../../Service/cart-count.service';
+import { RebuyNotice } from '../../Service/rebuy.service';
 
 
 import {
@@ -55,6 +56,8 @@ export class ShoppingCartComponent implements OnInit, OnDestroy {
   private syncCartCount(): void {
     this.cartCount.count.set(this.allItems.length);
   }
+  // 從「再買一次」帶過來的提示，等購物車載入後再顯示
+  private pendingNotice: RebuyNotice | null = null;
   constructor(
     private marketService: MarketService,
     private messageService: MessageService,
@@ -64,6 +67,12 @@ export class ShoppingCartComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
+    // 讀取跳轉時帶過來的提示，讀完就從 history.state 移除，避免重新整理時又跳一次
+    const { rebuyNotice, ...rest } = history.state ?? {};
+    if (rebuyNotice) {
+      this.pendingNotice = rebuyNotice;
+      history.replaceState(rest, '');
+    }
     this.loadCart();
   }
 
@@ -87,6 +96,15 @@ export class ShoppingCartComponent implements OnInit, OnDestroy {
           });
           this.syncCartCount();
           this.isLoading = false;
+          if (this.pendingNotice) {
+            this.messageService.add({
+              severity: this.pendingNotice.severity,
+              summary: '再買一次',
+              detail: this.pendingNotice.detail,
+              life: 5000,
+            });
+            this.pendingNotice = null;
+          }
         },
         error: () => { this.isLoading = false; }
       });
