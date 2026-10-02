@@ -19,6 +19,8 @@ export interface MyOrderItem {
   quantity: number;
   unitPrice: number;
   lineTotal: number;
+  orderDetailId: number;
+  isReviewed: boolean;
 }
 
 export interface MyOrder {
@@ -64,6 +66,12 @@ export interface RebuyResult {
   skipped: { productName: string; reason: string }[];
 }
 
+export interface ReviewItemRequest {
+  orderDetailId: number;
+  rating: number;      // 1～5
+  comment: string;     // 選填，最多 300 字
+}
+
 @Injectable({ providedIn: 'root' })
 export class MarketOrderService {
   private readonly http = inject(HttpClient);
@@ -91,6 +99,12 @@ export class MarketOrderService {
   confirmReceipt(orderId: number): Observable<{ message: string }> {
     return this.http.post<{ message: string }>(
       `${this.baseUrl}/${orderId}/confirm-receipt`, {}, { withCredentials: true }
+    );
+  }
+
+  submitReviews(orderId: number, items: ReviewItemRequest[]): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(
+      `${this.baseUrl}/${orderId}/reviews`, { items }, { withCredentials: true }
     );
   }
 }

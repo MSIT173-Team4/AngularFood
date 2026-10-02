@@ -163,7 +163,7 @@
                       <i class="pi pi-replay"></i>再買一次
                     </button>
                     @if (order.canReview) {
-                      <button class="mo-btn mo-btn-accent" (click)="notReady('給予評價')">
+                      <button class="mo-btn mo-btn-accent" (click)="openReview(order)">
                         <i class="pi pi-star"></i>給予評價
                       </button>
                     }
@@ -197,3 +197,53 @@
 
   </div>
 </section>
+<!-- 評價對話框 -->
+<p-dialog [(visible)]="reviewDialogVisible" [modal]="true" [draggable]="false"
+          [style]="{ width: '560px', maxWidth: '95vw' }"
+          header="評價商品">
+  @if (reviewOrder) {
+    <p class="rv-intro">
+      為「{{ reviewOrder.sellerName }}」的商品留下評價，至少為一項商品評分即可送出。
+    </p>
+
+    <div class="rv-list">
+      @for (form of reviewForms; track form.orderDetailId) {
+        <div class="rv-item">
+          <div class="rv-product">
+            <img class="rv-img" [src]="form.imageUrl || 'assets/images/product-placeholder.png'" [alt]="form.productName" />
+            <span class="rv-name">{{ form.productName }}</span>
+          </div>
+
+          <!-- 星等 -->
+          <div class="rv-stars">
+            @for (star of stars; track star) {
+              <button type="button" class="rv-star" [class.active]="star <= form.rating"
+                      (click)="setRating(form, star)" [attr.aria-label]="star + ' 顆星'">
+                <i class="pi" [class.pi-star-fill]="star <= form.rating" [class.pi-star]="star > form.rating"></i>
+              </button>
+            }
+            <span class="rv-star-hint">{{ form.rating > 0 ? form.rating + ' 顆星' : '尚未評分' }}</span>
+          </div>
+
+          <!-- 評論 -->
+          <textarea class="rv-comment" rows="3"
+                    [(ngModel)]="form.comment"
+                    [maxlength]="maxCommentLength"
+                    placeholder="分享你對這項商品的感想（選填）"></textarea>
+          <span class="rv-count">{{ form.comment.length }} / {{ maxCommentLength }}</span>
+        </div>
+      }
+    </div>
+  }
+
+  <ng-template pTemplate="footer">
+    <button class="mo-btn" (click)="reviewDialogVisible = false">取消</button>
+    <button class="mo-btn mo-btn-accent" [disabled]="!canSubmitReview" (click)="submitReview()">
+      @if (isSubmittingReview) {
+        <i class="pi pi-spin pi-spinner"></i> 送出中...
+      } @else {
+        送出評價
+      }
+    </button>
+  </ng-template>
+</p-dialog>

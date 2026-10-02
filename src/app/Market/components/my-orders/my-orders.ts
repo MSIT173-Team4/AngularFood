@@ -10,6 +10,7 @@ import { RebuyService } from '../../Service/rebuy.service';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService } from 'primeng/api';
 import { environment } from '../../../../environments/environment';
+import { DialogModule } from 'primeng/dialog';
 
 import {
   MarketOrderService, MyOrder, MyOrderCounts, MyOrderRange, MyOrderStatusKey, MyOrderTab
@@ -21,10 +22,19 @@ interface OrderTab {
   countKey: keyof MyOrderCounts;
 }
 
+// 評價對話框裡的每一項商品
+interface ReviewForm {
+  orderDetailId: number;
+  productName: string;
+  imageUrl: string | null;
+  rating: number;      // 0 = 尚未評分
+  comment: string;
+}
+
 @Component({
   selector: 'app-my-orders',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, ToastModule, PaginatorModule, ConfirmDialogModule],
+  imports: [CommonModule, FormsModule, RouterModule, ToastModule, PaginatorModule, ConfirmDialogModule, DialogModule],
   providers: [MessageService, ConfirmationService],
   templateUrl: './my-orders.html',
   styleUrl: './my-orders.css',
@@ -66,6 +76,14 @@ export class MyOrdersComponent implements OnInit, OnDestroy {
   counts: MyOrderCounts | null = null;
   isLoading = false;
   loadError = false;
+
+  // ── 評價對話框 ──
+  readonly maxCommentLength = 300;   // 與後端 ReviewService.MaxCommentLength 一致
+  readonly stars = [1, 2, 3, 4, 5];
+  reviewDialogVisible = false;
+  reviewOrder: MyOrder | null = null;
+  reviewForms: ReviewForm[] = [];
+  isSubmittingReview = false;
 
   private readonly reload$ = new Subject<void>();
   private readonly destroy$ = new Subject<void>();
@@ -271,5 +289,61 @@ export class MyOrdersComponent implements OnInit, OnDestroy {
       detail: `「${feature}」功能即將上線`,
       life: 2500,
     });
+  }
+
+  // 打開評價對話框：只列出還沒評價的商品
+  openReview(order: MyOrder): void {
+    this.reviewOrder = order;
+    this.reviewForms = order.items
+      .filter(item => !item.isReviewed)
+      .map(item => ({
+        orderDetailId: item.orderDetailId,
+        productName: item.productName,
+        imageUrl: item.imageUrl,
+        rating: 0,
+        comment: '',
+      }));
+    this.reviewDialogVisible = true;
+  }
+
+  setRating(form: ReviewForm, rating: number): void {
+    form.rating = rating;
+  }
+
+  // 至少一項有評分才能送出
+  get canSubmitReview(): boolean {
+    return !this.isSubmittingReview && this.reviewForms.some(f => f.rating > 0);
+  }
+
+  submitReview(): void {
+    if (!this.reviewOrder || !this.canSubmitReview) return;
+
+    // 沒評分的商品不送出，之後可以再回來評
+    const items = this.reviewForms
+      .filter(f => f.rating > 0)
+      .map(f => ({
+        orderDetailId: f.orderDetailId,
+        rating: f.rating,
+        comment: f.comment.trim(),
+      }));
+
+    this.isSubmittingReview = true;
+    this.orderService.submitReviews(this.reviewOrder.orderId, items)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: res => {
+          this.isSubmittingReview = false;
+          this.reviewDialogVisible = false;
+          this.messageService.add({ severity: 'success', summary: '評價已送出', detail: res.message, life: 3000 });
+          this.reload$.next();
+        },
+        error: err => {
+          this.isSubmittingReview = false;
+          this.messageService.add({
+            severity: 'error', summary: '評價送出失敗',
+            detail: err.error?.message ?? '請稍後再試', life: 3000,
+          });
+        },
+      });
   }
 }

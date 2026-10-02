@@ -142,3 +142,31 @@
 }
 .mo-deadline i { margin-top: 3px; color: #832600; }
 .mo-deadline strong { color: #832600; }
+
+/* 評價對話框 */
+.rv-intro { margin: 0 0 16px; font-size: 14px; color: #6b5a52; }
+.rv-list { display: flex; flex-direction: column; gap: 16px; }
+.rv-item {
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 14px; border: 1px solid #f0e2dc; border-radius: 10px;
+}
+.rv-product { display: flex; align-items: center; gap: 12px; }
+.rv-img { width: 48px; height: 48px; border-radius: 8px; object-fit: cover; background: #f5ebe6; }
+.rv-name { font-weight: 600; color: #2b1b14; }
+
+.rv-stars { display: flex; align-items: center; gap: 2px; }
+.rv-star {
+  padding: 2px; border: none; background: none; cursor: pointer;
+  color: #d8c8c0; font-size: 22px; line-height: 1;
+}
+.rv-star.active { color: #e0a100; }
+.rv-star:hover { transform: scale(1.1); }
+.rv-star-hint { margin-left: 8px; font-size: 13px; color: #8a7a72; }
+
+.rv-comment {
+  width: 100%; padding: 10px 12px; box-sizing: border-box;
+  border: 1px solid #e8d9d2; border-radius: 8px;
+  font-family: inherit; font-size: 14px; resize: vertical;
+}
+.rv-comment:focus { outline: none; border-color: #832600; }
+.rv-count { align-self: flex-end; font-size: 12px; color: #8a7a72; }
