@@ -80,7 +80,7 @@
             <div class="ol-items">
               @for (item of order.items; track item.productId) {
                 <div class="ol-item">
-                  <img class="ol-item-img" [src]="item.imageUrl || 'assets/no-image.png'" [alt]="item.productName" />
+                  <img class="ol-item-img" [src]="item.imageUrl || '/images/market/product-placeholder.png'" [alt]="item.productName" />
                   <div class="ol-item-info">
                     <span class="ol-item-name">{{ item.productName }}</span>
                     <span class="ol-item-unit">NT$ {{ item.unitPrice | number }} × {{ item.quantity }}</span>

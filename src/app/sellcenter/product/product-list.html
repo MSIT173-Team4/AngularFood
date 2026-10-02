@@ -61,7 +61,7 @@
 
         <td>
           <div class="product-info">
-            <img [src]="product.imageUrls?.[0] || 'assets/no-image.png'" [alt]="product.productName"
+            <img [src]="product.imageUrls?.[0] || '/images/market/product-placeholder.png'" [alt]="product.productName"
               class="product-thumb" />
             <div class="product-meta">
               <span class="product-name" (click)="goToEdit(product.productId)">

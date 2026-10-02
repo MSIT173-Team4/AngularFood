@@ -161,7 +161,7 @@
                 <div class="oc-item-row">
                   <div class="oc-item-img">
                     @if (item.imageUrl) {
-                    <img [src]="item.imageUrl" [alt]="item.productName" />
+                    <img [src]="item.imageUrl || '/images/market/product-placeholder.png'" [alt]="item.productName" />
                     } @else {
                     <i class="pi pi-image"></i>
                     }

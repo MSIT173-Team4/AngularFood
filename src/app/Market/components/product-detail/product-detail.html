@@ -26,7 +26,7 @@
 
         <!-- 主圖 -->
         <div class="main-image-wrapper" (click)="openImageDialog()">
-          <img [src]="selectedImageUrl" [alt]="product.productName" class="main-image" />
+          <img [src]="selectedImageUrl || '/images/market/product-placeholder.png'" [alt]="product.productName" class="main-image" />
           <div class="zoom-hint">
             <i class="pi pi-search-plus"></i>
           </div>
@@ -211,7 +211,7 @@
         @for (recipe of relatedRecipes; track recipe.recipeId) {
           <a class="recipe-card" [routerLink]="['/recipes', recipe.recipeId]">
             <div class="recipe-image">
-              <img [src]="recipe.imageUrl || 'assets/images/recipe-placeholder.png'"
+              <img [src]="recipe.imageUrl || '/images/market/recipe_placeholder.png'"
                    [alt]="recipe.recipeName" />
             </div>
             <div class="recipe-info">

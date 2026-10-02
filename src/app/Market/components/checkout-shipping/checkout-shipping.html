@@ -73,7 +73,7 @@
           <div class="item-strip">
             @for (item of group.items; track item.cartItemId) {
             <div class="item-strip-row">
-              <img [src]="item.imageUrl || 'assets/images/product-placeholder.png'" [alt]="item.productName" />
+              <img [src]="item.imageUrl || '/images/market/product-placeholder.png'" [alt]="item.productName" />
               <span>{{ item.productName }}</span>
               <span class="item-price">NT$ {{ item.subtotal | number }}</span>
             </div>
