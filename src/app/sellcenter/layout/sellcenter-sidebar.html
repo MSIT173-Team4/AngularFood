@@ -21,20 +21,29 @@
   </div>
 
   <nav class="sidebar-nav">
-    @for (item of navItems(); track item.route) {
-    <a [routerLink]="item.route" routerLinkActive="active" class="nav-item">
-      <span class="nav-left">
-        <i [class]="item.icon"></i>
-        {{ item.label }}
-      </span>
-      @if (item.badge) {
-      <span [class]="'nav-badge ' + (item.badgeClass || '')">
-        {{ item.badge }}
-      </span>
-      }
-    </a>
+  @for (item of navItems(); track item.route) {
+  <a [routerLink]="item.route" routerLinkActive="active" class="nav-item">
+    <span class="nav-left">
+      <i [class]="item.icon"></i>
+      {{ item.label }}
+    </span>
+    @if (item.badge) {
+    <span [class]="'nav-badge ' + (item.badgeClass || '')">
+      {{ item.badge }}
+    </span>
     }
-  </nav>
+  </a>
+  }
+
+  <!-- 分隔線 + 返回商城 -->
+  <div class="nav-divider"></div>
+  <a routerLink="/market/products" class="nav-item nav-item--back">
+    <span class="nav-left">
+      <i class="pi pi-arrow-left"></i>
+      返回友料美食生活平台
+    </span>
+  </a>
+</nav>
 
   <div class="sidebar-footer">
     <a href="#" class="footer-link">

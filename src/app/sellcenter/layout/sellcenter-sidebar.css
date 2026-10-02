@@ -180,3 +180,19 @@
   background: rgba(255, 255, 255, 0.15);
   color: #fff;
 }
+
+/* 選單與返回連結之間的分隔線 */
+.nav-divider {
+  height: 1px;
+  margin: 12px 8px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* 返回商城：顏色稍淡，跟功能選單做出區隔 */
+.nav-item--back {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.nav-item--back:hover {
+  color: #fff;
+}
