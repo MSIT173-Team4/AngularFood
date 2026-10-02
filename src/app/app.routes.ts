@@ -17,6 +17,7 @@ import { ShoppingCartComponent } from './Market/components/shopping-cart/shoppin
 import { CheckoutShippingComponent } from './Market/components/checkout-shipping/checkout-shipping';
 import { OrderCompleteComponent } from './Market/components/order-complete/order-complete';
 import { sellerGuard } from './Market/guard/seller-guard';
+import { MyOrdersComponent } from './Market/components/my-orders/my-orders';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'login' },
@@ -130,5 +131,6 @@ export const routes: Routes = [
   { path: 'market/checkout/shipping', canActivate: [authGuard], component: CheckoutShippingComponent },
   { path: 'checkout/complete/:batchId', canActivate: [authGuard], component: OrderCompleteComponent },
   { path: 'sellcenter', canActivate: [sellerGuard], loadChildren: () => import('./sellcenter/sellcenter.routes').then(r => r.SELLCENTER_ROUTES), },
+  { path: 'market/orders', canActivate: [authGuard], component: MyOrdersComponent },
   { path: '**', redirectTo: 'recipes' }
 ];

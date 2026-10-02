@@ -182,15 +182,9 @@ export class OrderCompleteComponent implements OnInit, OnDestroy {
       .reduce((sum, item) => sum + item.quantity, 0) ?? 0;
   }
 
-  /** 導到訂單查詢頁（頁面還沒做，先預留路徑） */
+  /** 導到訂單查詢頁*/
   goToOrderTracking(): void {
-    // TODO：等訂單查詢頁完成後改成 this.router.navigate(['/orders'])
-    this.messageService.add({
-      severity: 'info',
-      summary: '功能開發中',
-      detail: '訂單查詢頁面即將上線',
-      life: 2500,
-    });
+    this.router.navigate(['/market/orders']);
   }
 
   goToMarket(): void {

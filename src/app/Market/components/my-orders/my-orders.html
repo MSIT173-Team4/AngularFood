@@ -1,0 +1,185 @@
+<p-toast position="bottom-right" />
+
+<section class="mo-section">
+  <div class="mo-container">
+
+    <!-- 麵包屑 -->
+    <nav class="mo-breadcrumb">
+      <a routerLink="/market/products">友善商城</a>
+      <i class="pi pi-chevron-right"></i>
+      <span class="mo-breadcrumb-current">我的訂單</span>
+    </nav>
+
+    <!-- 標題 + 搜尋 -->
+    <div class="mo-header">
+      <div>
+        <h1 class="mo-title">我的訂單</h1>
+        <p class="mo-subtitle">管理您的商城訂購紀錄，追蹤出貨進度，並給予用心耕耘的生產者真摯評價。</p>
+      </div>
+      <div class="mo-search">
+        <i class="pi pi-search"></i>
+        <input type="text" [(ngModel)]="keyword" placeholder="搜尋訂單編號、小農商家或商品名稱..."
+               (keyup.enter)="onSearch()" />
+        @if (keyword) {
+          <button class="mo-search-clear" (click)="clearSearch()" aria-label="清除搜尋">
+            <i class="pi pi-times"></i>
+          </button>
+        }
+        <button class="mo-search-btn" (click)="onSearch()">搜尋</button>
+      </div>
+    </div>
+
+    <!-- 分頁 + 時間範圍 -->
+    <div class="mo-tabbar">
+      <div class="mo-tabs">
+        @for (tab of tabs; track tab.key) {
+          <button class="mo-tab" [class.active]="activeTab === tab.key" (click)="selectTab(tab.key)">
+            <span>{{ tab.label }}</span>
+            <span class="mo-tab-count">{{ getTabCount(tab) }}</span>
+          </button>
+        }
+      </div>
+      <div class="mo-range">
+        <i class="pi pi-filter"></i>
+        <select [ngModel]="range" (ngModelChange)="onRangeChange($event)">
+          @for (opt of rangeOptions; track opt.value) {
+            <option [value]="opt.value">{{ opt.label }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <!-- 載入中 -->
+    @if (isLoading) {
+      <div class="mo-state">
+        <i class="pi pi-spin pi-spinner"></i>
+        <p>載入訂單中...</p>
+      </div>
+    }
+
+    <!-- 錯誤 -->
+    @if (!isLoading && loadError) {
+      <div class="mo-state">
+        <i class="pi pi-exclamation-triangle"></i>
+        <p>無法載入訂單資料</p>
+        <button class="mo-btn" (click)="retry()">重新載入</button>
+      </div>
+    }
+
+    <!-- 沒有資料 -->
+    @if (!isLoading && !loadError && orders.length === 0) {
+      <div class="mo-state">
+        <i class="pi pi-inbox"></i>
+        <p>{{ keyword ? '查無符合條件的訂單' : '這個分類目前沒有訂單' }}</p>
+        <a class="mo-btn mo-btn-primary" routerLink="/market/products">去逛逛商城</a>
+      </div>
+    }
+
+    <!-- 訂單卡片 -->
+    @if (!isLoading && !loadError && orders.length > 0) {
+      <div class="mo-list">
+        @for (order of orders; track order.orderId) {
+          <article class="mo-card">
+
+            <!-- 卡片標頭 -->
+            <header class="mo-card-header">
+              <div class="mo-card-header-left">
+                <span class="mo-seller">
+                  <i class="pi pi-shop"></i>{{ order.sellerName }}
+                </span>
+                <button class="mo-chat-btn" (click)="contactSeller(order)" title="聯絡小農">
+                  <i class="pi pi-comments"></i>聯絡小農
+                </button>
+                <span class="mo-order-meta">
+                  #{{ order.orderNo }} · {{ order.orderDate | date:'yyyy/MM/dd HH:mm' }}
+                </span>
+              </div>
+              <span class="mo-status" [class]="'mo-status mo-status--' + order.statusKey">
+                {{ statusLabel(order.statusKey) }}
+              </span>
+            </header>
+
+            <!-- 品項 -->
+            <div class="mo-items">
+              @for (item of order.items; track item.productId) {
+                <div class="mo-item">
+                  <img class="mo-item-img"
+                       [src]="item.imageUrl || 'assets/images/product-placeholder.png'"
+                       [alt]="item.productName"
+                       [routerLink]="['/market/products', item.productId]" />
+                  <div class="mo-item-info">
+                    <a class="mo-item-name" [routerLink]="['/market/products', item.productId]">
+                      {{ item.productName }}
+                    </a>
+                    <span class="mo-item-unit">單價 NT$ {{ item.unitPrice | number }} × {{ item.quantity }}</span>
+                  </div>
+                  <div class="mo-item-total">NT$ {{ item.lineTotal | number }}</div>
+                </div>
+              }
+            </div>
+
+            <!-- 卡片底部：金額 + 按鈕 -->
+            <footer class="mo-card-footer">
+              <div class="mo-amount">
+                <span class="mo-amount-detail">
+                  商品合計 NT$ {{ order.subTotal | number }}
+                  @if (order.productDiscount > 0) {
+                    － 折抵 NT$ {{ order.productDiscount | number }}
+                  }
+                  ＋ 運費
+                  @if (shippingNet(order) === 0) { 免運 } @else { NT$ {{ shippingNet(order) | number }} }
+                </span>
+                <span class="mo-amount-sep">|</span>
+                <span>{{ order.statusKey === 'pending-payment' ? '應付總額' : '實付金額' }}：</span>
+                <span class="mo-amount-total">NT$ {{ order.orderAmount | number }}</span>
+              </div>
+
+              <div class="mo-actions">
+                <button class="mo-btn" (click)="viewDetail(order)">查看明細</button>
+
+                @switch (order.statusKey) {
+                  @case ('pending-payment') {
+                    <button class="mo-btn" (click)="notReady('取消訂單')">取消訂單</button>
+                    <button class="mo-btn mo-btn-primary" (click)="notReady('立即付款')">
+                      <i class="pi pi-lock"></i>立即付款 (綠界 ECPay)
+                    </button>
+                  }
+                  @case ('completed') {
+                    <button class="mo-btn" (click)="rebuy(order)">
+                      <i class="pi pi-replay"></i>再買一次
+                    </button>
+                    @if (order.canReview) {
+                      <button class="mo-btn mo-btn-accent" (click)="notReady('給予評價')">
+                        <i class="pi pi-star"></i>給予評價
+                      </button>
+                    }
+                  }
+                  @default {
+                    <button class="mo-btn" (click)="rebuy(order)">
+                      <i class="pi pi-replay"></i>再買一次
+                    </button>
+                    @if (isToReceive(order)) {
+                      <button class="mo-btn mo-btn-primary" (click)="notReady('確認收貨')">確認收貨</button>
+                    }
+                  }
+                }
+              </div>
+            </footer>
+
+          </article>
+        }
+      </div>
+    }
+
+    <!-- 分頁器 -->
+    @if (totalCount > 0) {
+      <div class="mo-pagination">
+        <span class="mo-range-text">{{ rangeText }}</span>
+        <p-paginator [rows]="pageSize" [totalRecords]="totalCount"
+                     [first]="(currentPage - 1) * pageSize"
+                     (onPageChange)="onPageChange($event)" />
+      </div>
+    }
+
+  </div>
+</section>
