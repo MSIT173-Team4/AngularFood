@@ -212,6 +212,36 @@ export class MyOrdersComponent implements OnInit, OnDestroy {
       });
   }
 
+  // 確認收貨：運送中或已送達的訂單，確認後訂單完成
+  confirmReceipt(order: MyOrder): void {
+    this.confirmationService.confirm({
+      header: '確認收貨',
+      message: `確認已收到「${order.sellerName}」寄出的商品了嗎？確認後訂單將完成，即可給予評價。`,
+      icon: 'pi pi-check-circle',
+      acceptLabel: '確認收貨',
+      rejectLabel: '還沒收到',
+      accept: () => this.doConfirmReceipt(order),
+    });
+  }
+
+  private doConfirmReceipt(order: MyOrder): void {
+    this.orderService.confirmReceipt(order.orderId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: res => {
+          this.messageService.add({ severity: 'success', summary: '訂單已完成', detail: res.message, life: 3000 });
+          this.reload$.next();
+        },
+        error: err => {
+          this.messageService.add({
+            severity: 'error', summary: '無法確認收貨',
+            detail: err.error?.message ?? '請稍後再試', life: 3000,
+          });
+          this.reload$.next();
+        },
+      });
+  }
+
   // 立即付款：整頁跳到後端 Pay，由後端產生綠界表單
   payNow(order: MyOrder): void {
     if (order.paymentDeadline && new Date(order.paymentDeadline) < new Date()) {

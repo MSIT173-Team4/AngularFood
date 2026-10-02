@@ -173,7 +173,7 @@
                       <i class="pi pi-replay"></i>再買一次
                     </button>
                     @if (isToReceive(order)) {
-                      <button class="mo-btn mo-btn-primary" (click)="notReady('確認收貨')">確認收貨</button>
+                      <button class="mo-btn mo-btn-primary" (click)="confirmReceipt(order)">確認收貨</button>
                     }
                   }
                 }

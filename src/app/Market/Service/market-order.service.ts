@@ -87,4 +87,10 @@ export class MarketOrderService {
       `${this.baseUrl}/${orderId}/cancel`, {}, { withCredentials: true }
     );
   }
+
+  confirmReceipt(orderId: number): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(
+      `${this.baseUrl}/${orderId}/confirm-receipt`, {}, { withCredentials: true }
+    );
+  }
 }
