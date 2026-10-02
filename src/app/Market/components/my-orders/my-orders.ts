@@ -7,6 +7,9 @@ import { ToastModule } from 'primeng/toast';
 import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { MessageService } from 'primeng/api';
 import { RebuyService } from '../../Service/rebuy.service';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmationService } from 'primeng/api';
+import { environment } from '../../../../environments/environment';
 
 import {
   MarketOrderService, MyOrder, MyOrderCounts, MyOrderRange, MyOrderStatusKey, MyOrderTab
@@ -21,8 +24,8 @@ interface OrderTab {
 @Component({
   selector: 'app-my-orders',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, ToastModule, PaginatorModule],
-  providers: [MessageService],
+  imports: [CommonModule, FormsModule, RouterModule, ToastModule, PaginatorModule, ConfirmDialogModule],
+  providers: [MessageService, ConfirmationService],
   templateUrl: './my-orders.html',
   styleUrl: './my-orders.css',
 })
@@ -31,6 +34,7 @@ export class MyOrdersComponent implements OnInit, OnDestroy {
   private readonly messageService = inject(MessageService);
   private readonly router = inject(Router);
   private readonly rebuyService = inject(RebuyService);
+  private readonly confirmationService = inject(ConfirmationService);
 
   readonly tabs: OrderTab[] = [
     { key: 'pending-payment', label: '待付款', countKey: 'pendingPayment' },
@@ -170,6 +174,55 @@ export class MyOrdersComponent implements OnInit, OnDestroy {
   // ── 按鈕動作 ─────────────────────────────────────────
   viewDetail(order: MyOrder): void {
     this.router.navigate(['/checkout/complete', order.batchId]);
+  }
+
+  // 取消訂單：未付款以「整個結帳批次」為單位，同批次有其他賣家時要先說清楚
+  cancelOrder(order: MyOrder): void {
+    const others = order.batchSellerNames.filter(name => name !== order.sellerName);
+    const message = others.length > 0
+      ? `這筆訂單與「${others.join('、')}」是同一次結帳，取消後會一併取消，共 ${order.batchSellerNames.length} 張訂單。確定要取消嗎？`
+      : '確定要取消這筆訂單嗎？取消後商品庫存將會釋出。';
+
+    this.confirmationService.confirm({
+      header: '取消訂單',
+      message,
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: '確定取消',
+      rejectLabel: '保留訂單',
+      accept: () => this.doCancel(order),
+    });
+  }
+
+  private doCancel(order: MyOrder): void {
+    this.orderService.cancelOrder(order.orderId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: res => {
+          this.messageService.add({ severity: 'success', summary: '訂單已取消', detail: res.message, life: 3000 });
+          this.reload$.next();
+        },
+        error: err => {
+          // 例如在確認的這段時間剛好付款完成或已逾期取消：顯示原因並重新整理狀態
+          this.messageService.add({
+            severity: 'error', summary: '無法取消',
+            detail: err.error?.message ?? '請稍後再試', life: 3000,
+          });
+          this.reload$.next();
+        },
+      });
+  }
+
+  // 立即付款：整頁跳到後端 Pay，由後端產生綠界表單
+  payNow(order: MyOrder): void {
+    if (order.paymentDeadline && new Date(order.paymentDeadline) < new Date()) {
+      this.messageService.add({
+        severity: 'warn', summary: '已超過付款期限',
+        detail: '此訂單已逾期，將自動取消並釋出庫存', life: 3000,
+      });
+      this.reload$.next();
+      return;
+    }
+    window.location.href = `${environment.apiUrl}/Checkout/Pay/${order.batchId}`;
   }
 
   // 再買一次

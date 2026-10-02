@@ -39,6 +39,8 @@ export interface MyOrder {
   orderAmount: number;
   canReview: boolean;
   items: MyOrderItem[];
+  paymentDeadline: string | null;   // 只有待付款有值
+  batchSellerNames: string[];       // 同一次結帳的所有賣家
 }
 
 export interface MyOrderCounts {
@@ -79,5 +81,10 @@ export class MarketOrderService {
   }
   rebuy(orderIds: number[]): Observable<RebuyResult> {
     return this.http.post<RebuyResult>(`${this.baseUrl}/rebuy`, { orderIds }, { withCredentials: true });
+  }
+  cancelOrder(orderId: number): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(
+      `${this.baseUrl}/${orderId}/cancel`, {}, { withCredentials: true }
+    );
   }
 }

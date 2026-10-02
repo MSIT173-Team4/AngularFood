@@ -37,6 +37,7 @@ export interface OrderGroupDto {
   shippingDiscount: number;
   orderAmount: number;
   items: OrderItemDto[];
+  orderStatus: number;   // 3 = 已取消
 }
 
 export interface OrderCompleteDto {
@@ -83,6 +84,11 @@ export class OrderCompleteComponent implements OnInit, OnDestroy {
 
   get isPaid(): boolean {
     return this.order?.paymentStatus === 1;
+  }
+
+  // 批次付款狀態 4：逾期或買家取消（最終狀態，不會再改變）
+  get isCancelled(): boolean {
+    return this.order?.paymentStatus === 4;
   }
   // ── 付款狀態輪詢 End──
 
@@ -142,7 +148,8 @@ export class OrderCompleteComponent implements OnInit, OnDestroy {
 
   // 未付款且還沒查滿次數 → 2 秒後再查一次；已付款或查滿 → 停止
   private checkPaymentStatus(): void {
-    if (this.isPaid || this.pollCount >= this.maxPollCount) {
+    // 已付款或已取消都是最終狀態，不需要再輪詢
+    if (this.isPaid || this.isCancelled || this.pollCount >= this.maxPollCount) {
       this.isCheckingPayment = false;
       return;
     }
@@ -166,8 +173,9 @@ export class OrderCompleteComponent implements OnInit, OnDestroy {
     return method === 'CVS' ? '超商取貨' : '宅配到府';
   }
 
-  /** 子訂單付款狀態中文 */
-  paymentStatusLabel(status: number): string {
+  /** 子訂單付款狀態中文；已取消的子訂單優先顯示「已取消」 */
+  paymentStatusLabel(status: number, orderStatus?: number): string {
+    if (orderStatus === 3) return '已取消';
     switch (status) {
       case 0: return '待付款';
       case 1: return '已付款';

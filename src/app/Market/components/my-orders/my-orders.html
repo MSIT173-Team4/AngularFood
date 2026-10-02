@@ -1,4 +1,5 @@
 <p-toast position="bottom-right" />
+<p-confirmdialog />
 
 <section class="mo-section">
   <div class="mo-container">
@@ -118,6 +119,19 @@
               }
             </div>
 
+            <!-- 待付款：付款期限提示 -->
+            @if (order.statusKey === 'pending-payment' && order.paymentDeadline) {
+              <div class="mo-deadline">
+                <i class="pi pi-clock"></i>
+                <span>
+                  請於 <strong>{{ order.paymentDeadline | date:'HH:mm' }}</strong> 前完成付款，逾期訂單將自動取消並釋出庫存。
+                  @if (order.batchSellerNames.length > 1) {
+                    此筆與其他 {{ order.batchSellerNames.length - 1 }} 個賣家的訂單為同一次結帳，需一併付款。
+                  }
+                </span>
+              </div>
+            }
+
             <!-- 卡片底部：金額 + 按鈕 -->
             <footer class="mo-card-footer">
               <div class="mo-amount">
@@ -139,11 +153,11 @@
 
                 @switch (order.statusKey) {
                   @case ('pending-payment') {
-                    <button class="mo-btn" (click)="notReady('取消訂單')">取消訂單</button>
-                    <button class="mo-btn mo-btn-primary" (click)="notReady('立即付款')">
-                      <i class="pi pi-lock"></i>立即付款 (綠界 ECPay)
-                    </button>
-                  }
+  <button class="mo-btn" (click)="cancelOrder(order)">取消訂單</button>
+  <button class="mo-btn mo-btn-primary" (click)="payNow(order)">
+    <i class="pi pi-lock"></i>立即付款 (綠界 ECPay)
+  </button>
+}
                   @case ('completed') {
                     <button class="mo-btn" (click)="rebuy(order)">
                       <i class="pi pi-replay"></i>再買一次
