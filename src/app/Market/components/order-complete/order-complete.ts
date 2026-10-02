@@ -198,7 +198,7 @@ export class OrderCompleteComponent implements OnInit, OnDestroy {
   }
 
   goToMarket(): void {
-    this.router.navigate(['/market']);
+    this.router.navigate(['/market/products']);
   }
 
   // 再買一次：整個結帳批次（所有賣家）的商品都加回購物車

@@ -153,11 +153,11 @@
 
                 @switch (order.statusKey) {
                   @case ('pending-payment') {
-  <button class="mo-btn" (click)="cancelOrder(order)">取消訂單</button>
-  <button class="mo-btn mo-btn-primary" (click)="payNow(order)">
-    <i class="pi pi-lock"></i>立即付款 (綠界 ECPay)
-  </button>
-}
+                    <button class="mo-btn" (click)="cancelOrder(order)">取消訂單</button>
+                    <button class="mo-btn mo-btn-primary" (click)="payNow(order)">
+                      <i class="pi pi-lock"></i>立即付款 (綠界 ECPay)
+                    </button>
+                  }
                   @case ('completed') {
                     <button class="mo-btn" (click)="rebuy(order)">
                       <i class="pi pi-replay"></i>再買一次

@@ -109,7 +109,7 @@
     <div class="header-action">
       <button type="button" class="icon-button" aria-label="開啟購物車" [attr.aria-expanded]="activePanel() === 'cart'"
         (click)="togglePanel('cart')">
-        <i class="pi pi-shopping-bag"></i>
+        <i class="pi pi-shopping-cart"></i>
         @if (cartCount.count() > 0) {
         <span class="action-badge">{{ cartCount.count() > 99 ? '99+' : cartCount.count() }}</span>
         }
