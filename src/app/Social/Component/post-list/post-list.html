@@ -27,10 +27,10 @@
 
     <div class="search-box">
       <i class="fas fa-search search-icon"></i>
-      <input 
-        type="text" 
-        [(ngModel)]="keyword" 
-        (keyup.enter)="onSearch()" 
+      <input
+        type="text"
+        [(ngModel)]="keyword"
+        (keyup.enter)="onSearch()"
         placeholder="搜尋關鍵字或用戶名..." />
     </div>
   </div>
@@ -46,9 +46,9 @@
         <p class="post-summary" [innerHTML]="post.summaryText"></p>
 
         <div class="author-info">
-          <img 
-            [src]="post.userImage || 'assets/images/default-avatar.png'" 
-            alt="用戶頭像" 
+          <img
+            [src]="post.userImage || '/images/default-avatar.png'"
+            alt="用戶頭像"
             class="author-avatar" />
           <div class="author-details">
             <span class="author-name">{{ post.userName }}</span>
@@ -88,9 +88,9 @@
       </button>
 
       @for (page of pagesArray; track page) {
-        <button 
-          class="page-btn number" 
-          [class.active]="page === currentPage" 
+        <button
+          class="page-btn number"
+          [class.active]="page === currentPage"
           (click)="changePage(page)">
           {{ page }}
         </button>
