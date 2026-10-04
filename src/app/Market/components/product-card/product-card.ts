@@ -22,7 +22,7 @@ export class ProductCardComponent {
 
   // 4. 處理圖片不存在的情況
   get firstImageUrl(): string {
-    return this.product.imageUrls?.[0] ?? 'assets/images/product-placeholder.png';
+    return this.product.imageUrls?.[0] ?? '/images/market/product-placeholder.png';
   }
 
   // 5. 根據 productStatus 決定顯示文字

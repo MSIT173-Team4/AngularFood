@@ -56,7 +56,57 @@
         </div>
       </div>
     </section>
-    } @else {
+    } @else if (isCancelled) {
+<!-- Hero：訂單已取消 -->
+<section class="oc-hero-section">
+  <div class="oc-container">
+    <div class="oc-hero-card oc-hero-card--cancelled">
+      <div class="oc-hero-inner">
+        <div class="oc-hero-left">
+          <div class="oc-success-icon oc-cancelled-icon">
+            <i class="pi pi-times-circle"></i>
+          </div>
+          <div class="oc-hero-text">
+            <span class="oc-status-badge">
+              <span class="oc-badge-dot"></span>
+              訂單已取消
+            </span>
+            <h1 class="oc-hero-title">訂單已取消</h1>
+            <p class="oc-pending-desc">
+              此訂單因逾期未付款或已由您取消。若您已完成付款，客服人員將協助您辦理退款。
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+} @else if (isCancelled) {
+<!-- Hero：訂單已取消 -->
+<section class="oc-hero-section">
+  <div class="oc-container">
+    <div class="oc-hero-card oc-hero-card--cancelled">
+      <div class="oc-hero-inner">
+        <div class="oc-hero-left">
+          <div class="oc-success-icon oc-cancelled-icon">
+            <i class="pi pi-times-circle"></i>
+          </div>
+          <div class="oc-hero-text">
+            <span class="oc-status-badge">
+              <span class="oc-badge-dot"></span>
+              訂單已取消
+            </span>
+            <h1 class="oc-hero-title">訂單已取消</h1>
+            <p class="oc-pending-desc">
+              此訂單因逾期未付款或已由您取消。若您已完成付款，客服人員將協助您辦理退款。
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+} @else {
     <!-- Hero：付款尚未完成 -->
     <section class="oc-hero-section">
       <div class="oc-container">
@@ -111,7 +161,7 @@
                 <div class="oc-item-row">
                   <div class="oc-item-img">
                     @if (item.imageUrl) {
-                    <img [src]="item.imageUrl" [alt]="item.productName" />
+                    <img [src]="item.imageUrl || '/images/market/product-placeholder.png'" [alt]="item.productName" />
                     } @else {
                     <i class="pi pi-image"></i>
                     }
@@ -188,7 +238,7 @@
                       <span class="oc-info-label">付款狀態</span>
                       <span class="oc-payment-badge">
                         <span class="oc-badge-dot"></span>
-                        {{ paymentStatusLabel(group.paymentStatus) }}
+                        {{ paymentStatusLabel(group.paymentStatus, group.orderStatus) }}
                       </span>
                     </li>
                   </ul>
@@ -236,7 +286,7 @@
 
               <div class="oc-receipt-total">
                 <div class="oc-receipt-total-inner">
-                  <span class="oc-total-label">{{ isPaid ? '實付結帳總額' : '應付結帳總額' }}</span>
+                  <span class="oc-total-label">{{ isPaid ? '實付結帳總額' : (isCancelled ? '訂單金額' : '應付結帳總額') }}</span>
                   <div class="oc-total-amount">
                     <span class="oc-total-currency">TWD</span>
                     <span class="oc-total-number">{{ order.totalAmount | number }}</span>
@@ -249,6 +299,7 @@
                           (onClick)="goToOrderTracking()" />
                 <p-button label="回到商城繼續逛逛" icon="pi pi-arrow-left" severity="secondary"
                           [text]="true" styleClass="oc-btn-secondary" (onClick)="goToMarket()" />
+                <p-button label="再買一次" icon="pi pi-replay" severity="secondary" [outlined]="true"   styleClass="oc-btn-secondary" (onClick)="rebuyAll()" />
               </div>
 
             </div>

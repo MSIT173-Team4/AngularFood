@@ -1,0 +1,110 @@
+import { Injectable, inject } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
+
+export type MyOrderTab =
+  'all' | 'pending-payment' | 'pending-ship' | 'to-receive' | 'completed' | 'to-review' | 'cancelled';
+
+export type MyOrderRange = '6m' | '1y' | 'all';
+
+// 後端判斷好的單張訂單狀態代碼
+export type MyOrderStatusKey =
+  'pending-payment' | 'pending-ship' | 'shipping' | 'delivered' | 'completed' | 'cancelled' | 'other';
+
+export interface MyOrderItem {
+  productId: number;
+  productName: string;
+  imageUrl: string | null;
+  quantity: number;
+  unitPrice: number;
+  lineTotal: number;
+  orderDetailId: number;
+  isReviewed: boolean;
+}
+
+export interface MyOrder {
+  orderId: number;
+  orderNo: string;
+  batchId: number;
+  orderDate: string;
+  sellerId: number;
+  sellerName: string;
+  orderStatus: number;
+  paymentStatus: number;
+  shippingStatus: number;
+  statusKey: MyOrderStatusKey;
+  subTotal: number;
+  productDiscount: number;
+  shippingFee: number;
+  shippingDiscount: number;
+  orderAmount: number;
+  canReview: boolean;
+  items: MyOrderItem[];
+  paymentDeadline: string | null;   // 只有待付款有值
+  batchSellerNames: string[];       // 同一次結帳的所有賣家
+}
+
+export interface MyOrderCounts {
+  pendingPayment: number;
+  pendingShip: number;
+  toReceive: number;
+  completed: number;
+  toReview: number;
+  cancelled: number;
+  all: number;
+}
+
+export interface MyOrderListResult {
+  items: MyOrder[];
+  totalCount: number;
+  counts: MyOrderCounts;
+}
+
+export interface RebuyResult {
+  addedCount: number;
+  skipped: { productName: string; reason: string }[];
+}
+
+export interface ReviewItemRequest {
+  orderDetailId: number;
+  rating: number;      // 1～5
+  comment: string;     // 選填，最多 300 字
+}
+
+@Injectable({ providedIn: 'root' })
+export class MarketOrderService {
+  private readonly http = inject(HttpClient);
+  private readonly baseUrl = `${environment.apiUrl}/MarketOrder`;
+
+  getMyOrders(tab: MyOrderTab, range: MyOrderRange, keyword: string, page: number)
+    : Observable<MyOrderListResult> {
+    let params = new HttpParams()
+      .set('tab', tab)
+      .set('range', range)
+      .set('page', page);
+    if (keyword.trim()) params = params.set('keyword', keyword.trim());
+
+    return this.http.get<MyOrderListResult>(`${this.baseUrl}/my`, { params, withCredentials: true });
+  }
+  rebuy(orderIds: number[]): Observable<RebuyResult> {
+    return this.http.post<RebuyResult>(`${this.baseUrl}/rebuy`, { orderIds }, { withCredentials: true });
+  }
+  cancelOrder(orderId: number): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(
+      `${this.baseUrl}/${orderId}/cancel`, {}, { withCredentials: true }
+    );
+  }
+
+  confirmReceipt(orderId: number): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(
+      `${this.baseUrl}/${orderId}/confirm-receipt`, {}, { withCredentials: true }
+    );
+  }
+
+  submitReviews(orderId: number, items: ReviewItemRequest[]): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(
+      `${this.baseUrl}/${orderId}/reviews`, { items }, { withCredentials: true }
+    );
+  }
+}

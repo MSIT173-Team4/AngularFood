@@ -52,7 +52,7 @@ export class Main implements OnInit {
     private http: HttpClient,
     private router: Router,
     private route: ActivatedRoute,
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -68,7 +68,7 @@ export class Main implements OnInit {
   }
   goToSellCenter() {
     this.router.navigate(['/sellcenter'], {
-    replaceUrl: true,
+      replaceUrl: true,
     });
   }
   checkSeller() {
@@ -102,8 +102,8 @@ export class Main implements OnInit {
       });
   }
   //讀取貼文,食譜
-  loadPost(id: number) {}
-  loadRecipe(id: number) {}
+  loadPost(id: number) { }
+  loadRecipe(id: number) { }
   loadPublicProfile(id: number): void {
     this.http
       .get<PublicUserProfileDTO>(`${this.baseURL}/Users/GetPublicUserProfile/${id}`, {
@@ -139,7 +139,7 @@ export class Main implements OnInit {
   }
   getImageUrl(image?: string): string {
     if (!image) {
-      return '/images/default.jpg';
+      return '/images/default-avatar.png';
     }
 
     if (/^https?:\/\//i.test(image)) {

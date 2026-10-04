@@ -1,0 +1,102 @@
+.ol-page { padding: 24px; }
+
+/* 標題 + 搜尋 */
+.ol-header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+.ol-title { margin: 0 0 4px; font-size: 24px; font-weight: 700; color: #1b2e24; }
+.ol-subtitle { margin: 0; font-size: 14px; color: #64748b; }
+
+.ol-search {
+  display: flex; align-items: center; gap: 8px;
+  width: 100%; max-width: 400px; padding: 8px 12px;
+  border: 1px solid #dbe5df; border-radius: 10px; background: #fff;
+}
+.ol-search > i { color: #94a3b8; }
+.ol-search input { flex: 1; border: none; outline: none; background: transparent; font-size: 14px; }
+.ol-search-clear { border: none; background: none; color: #94a3b8; cursor: pointer; }
+.ol-search-btn { padding: 4px 12px; border: none; border-radius: 6px; background: #e8f3ec; color: #2d6a4f; font-size: 13px; font-weight: 600; cursor: pointer; }
+
+/* 分頁 */
+.ol-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
+.ol-tab {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 16px; border: 1px solid #dbe5df; border-radius: 999px;
+  background: #fff; color: #475569; font-size: 14px; cursor: pointer;
+}
+.ol-tab:hover { background: #f1f7f3; }
+.ol-tab.active { border-color: #2d6a4f; background: #2d6a4f; color: #fff; font-weight: 600; }
+.ol-tab-count { padding: 0 7px; border-radius: 999px; background: #e8f3ec; color: #2d6a4f; font-size: 12px; font-weight: 700; }
+.ol-tab.active .ol-tab-count { background: rgba(255, 255, 255, 0.2); color: #fff; }
+
+/* 狀態區塊 */
+.ol-state {
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  padding: 56px 16px; border-radius: 12px; background: #fff; color: #94a3b8;
+}
+.ol-state i { font-size: 32px; }
+
+/* 卡片 */
+.ol-list { display: flex; flex-direction: column; gap: 16px; }
+.ol-card { border: 1px solid #e2ebe5; border-radius: 12px; background: #fff; overflow: hidden; }
+
+.ol-card-header {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 12px 20px; background: #f6faf7; border-bottom: 1px solid #e2ebe5;
+}
+.ol-card-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.ol-order-no { font-weight: 700; color: #1b2e24; }
+.ol-paid-at { font-size: 13px; color: #64748b; }
+
+.ol-status { padding: 3px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.ol-status--pending-ship { background: #fff4d6; color: #8a5a00; }
+.ol-status--shipping,
+.ol-status--delivered { background: #dbeafe; color: #1e40af; }
+.ol-status--completed { background: #e8f3ec; color: #2d6a4f; }
+.ol-status--other { background: #f1f5f9; color: #64748b; }
+
+.ol-card-body { display: grid; grid-template-columns: 1fr 320px; gap: 24px; padding: 16px 20px; }
+
+/* 品項 */
+.ol-items { display: flex; flex-direction: column; }
+.ol-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
+.ol-item:last-child { border-bottom: none; }
+.ol-item-img { width: 56px; height: 56px; border-radius: 8px; object-fit: cover; background: #f1f5f9; flex-shrink: 0; }
+.ol-item-info { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.ol-item-name { font-weight: 600; color: #1b2e24; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ol-item-unit { font-size: 13px; color: #64748b; }
+.ol-item-total { font-weight: 700; color: #1b2e24; white-space: nowrap; }
+
+/* 收件資訊 */
+.ol-shipping { padding: 14px 16px; border-radius: 10px; background: #f6faf7; }
+.ol-shipping-title { display: flex; align-items: center; gap: 6px; margin: 0 0 10px; font-size: 14px; color: #2d6a4f; }
+.ol-shipping-list { display: grid; grid-template-columns: 72px 1fr; gap: 6px 8px; margin: 0; font-size: 13px; }
+.ol-shipping-list dt { color: #64748b; }
+.ol-shipping-list dd { margin: 0; color: #1b2e24; font-weight: 500; word-break: break-all; }
+
+/* 底部 */
+.ol-card-footer {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 12px 20px; border-top: 1px solid #e2ebe5;
+}
+.ol-amount { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; }
+.ol-amount-detail { font-size: 13px; color: #64748b; }
+.ol-amount-label { font-size: 14px; color: #1b2e24; }
+.ol-amount-total { font-size: 18px; font-weight: 700; color: #2d6a4f; }
+
+/* 按鈕 */
+.ol-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 18px; border: 1px solid #dbe5df; border-radius: 8px;
+  background: #fff; color: #1b2e24; font-size: 14px; cursor: pointer;
+}
+.ol-btn:hover { background: #f1f7f3; }
+.ol-btn-primary { border-color: #2d6a4f; background: #2d6a4f; color: #fff; font-weight: 600; }
+.ol-btn-primary:hover { background: #24563f; }
+.ol-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* 分頁器 */
+.ol-pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 24px; }
+.ol-range-text { font-size: 13px; color: #64748b; }
+
+@media (max-width: 900px) {
+  .ol-card-body { grid-template-columns: 1fr; }
+}
