@@ -60,7 +60,7 @@ export class ProductListComponent implements OnInit, OnDestroy {
   totalCount = 0;
   currentPage = 1;
   readonly pageSize = 10;
-  loading = false;
+  loading = true;
   readonly LOW_STOCK_THRESHOLD = 10;
   // 庫存微調 dialog
   showStockDialog = false;
