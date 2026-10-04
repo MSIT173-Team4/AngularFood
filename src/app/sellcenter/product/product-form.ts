@@ -426,4 +426,52 @@ export class ProductFormComponent implements OnInit, OnDestroy {
   cancel(): void {
     this.router.navigate(['/sellcenter/products']);
   }
+
+  // ── Demo 快速填入 ─────────────────────────────────────
+  // 用名稱找食材與分類，不寫死 ID：組員本機的 DB 和正式環境的 ID 可能不同
+  private readonly DEMO_INGREDIENT_NAME = '洋蔥';   // ← 改成 tIngredient 裡的名稱
+  private readonly DEMO_CATEGORY_NO = 'F05';              // ← 改成要用的子分類編號
+
+  fillDemo(): void {
+    const top = this.topCategories.find(t =>
+      t.children.some(c => c.categoryNo === this.DEMO_CATEGORY_NO))
+      ?? this.topCategories[0];
+    const sub = top?.children.find(c => c.categoryNo === this.DEMO_CATEGORY_NO)
+      ?? top?.children[0];
+    const ingredient = this.ingredients.find(i => i.name === this.DEMO_INGREDIENT_NAME);
+
+    if (!top || !sub) {
+      this.messageService.add({ severity: 'warn', summary: '分類尚未載入，請稍後再試' });
+      return;
+    }
+    if (!ingredient) {
+      this.messageService.add({ severity: 'warn', summary: `找不到食材「${this.DEMO_INGREDIENT_NAME}」` });
+    }
+
+    const today = new Date();
+    const expire = new Date();
+    expire.setDate(today.getDate() + 30);
+
+    this.subCategories = top.children;
+    this.form = {
+      productName: '洋蔥',
+      parentCategoryId: top.categoryId,
+      productsCategoryNo: sub.categoryNo,
+      price: 80,
+      stock: 100,
+      brandOrOrigin: '屏東恆春',
+      manufacturingDate: this.toDateInput(today),
+      expirationDate: this.toDateInput(expire),
+      description: '屏東恆春洋蔥，外皮金黃完整、球體飽滿結實，切開層次分明。生食爽脆帶微辛，加熱後轉為自然清甜，是料理提味的萬用基底。適合爆香快炒、燉煮咖哩與湯品、做洋蔥圈或切絲涼拌，置於陰涼通風處可久放，廚房常備不可少。',
+      ingredientId: ingredient?.ingredientId ?? null,
+    };
+  }
+
+  // 轉成 <input type="date"> 要的 yyyy-MM-dd（用本地時間，toISOString 會轉成 UTC 而差一天）
+  private toDateInput(d: Date): string {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
 }

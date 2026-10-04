@@ -3,6 +3,10 @@
 <div class="form-page">
   <div class="form-header">
     <h1>{{ pageTitle }}</h1>
+    @if (!isEditMode) {
+    <button pButton type="button" label="Demo 快速填入" icon="pi pi-bolt"
+      class="p-button-outlined p-button-sm" (click)="fillDemo()"></button>
+  }
     <div class="form-divider"></div>
   </div>
 
