@@ -1,5 +1,5 @@
 import { ChatService } from './../../../services/chat-services';
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, effect } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
@@ -18,7 +18,7 @@ export class Chat implements OnInit {
   rooms: ChatRoomDTO[] = [];
 
   chatVisible = false;
-  chatListVisible = false;
+
   selectedRoom: ChatRoomDTO | null = null;
 
   messages: ChatMessage[] = [];
@@ -30,7 +30,15 @@ export class Chat implements OnInit {
     public chatService: ChatService,
     private authService: AuthService,
     private cdr: ChangeDetectorRef,
-  ) {}
+  ) {
+    effect(() => {
+      const visible = this.chatService.chatListVisible();
+
+      if (visible) {
+        this.getRooms();
+      }
+    });
+  }
 
   async ngOnInit() {
     this.getRooms();
@@ -55,6 +63,7 @@ export class Chat implements OnInit {
   get currentUserId(): number | null {
     return this.authService.currentUser()?.userId ?? null;
   }
+
   getRooms() {
     this.http
       .get<ChatRoomDTO[]>(`${environment.apiUrl}/Chat/GetRooms`, {
@@ -63,18 +72,16 @@ export class Chat implements OnInit {
       .subscribe({
         next: (res) => {
           this.rooms = res;
-          console.log('聊天室列表：', this.rooms);
         },
         error: (err) => {
-          console.error('取得聊天室失敗：', err);
+          console.error(err);
         },
       });
   }
 
   async openRoom(room: ChatRoomDTO) {
     this.selectedRoom = room;
-
-    this.chatListVisible = false;
+    this.chatService.closeChatList();
     this.chatVisible = true;
 
     this.messages = [];

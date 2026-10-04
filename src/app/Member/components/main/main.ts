@@ -13,7 +13,8 @@ import { AuthService } from '../../services/auth-services';
 import { UserPostDTO } from '../../interfaces/UserPostDTO';
 import { UserRecipeDTO } from '../../interfaces/UserRecipeDTO';
 import { UserPostStatDTO } from '../../interfaces/UserPostStatDTO';
-
+import { ChatService } from '../../services/chat-services';
+import { CommonModule } from '@angular/common';
 // PrimeNG
 import { AvatarModule } from 'primeng/avatar';
 import { TabsModule } from 'primeng/tabs';
@@ -23,26 +24,25 @@ import { ButtonModule } from 'primeng/button';
 @Component({
   selector: 'app-main',
   standalone: true,
-  imports: [AvatarModule, TabsModule, CardModule, ButtonModule, DialogModule, EditProfile, Apply],
+  imports: [
+    AvatarModule,
+    TabsModule,
+    CardModule,
+    ButtonModule,
+    DialogModule,
+    EditProfile,
+    Apply,
+    CommonModule,
+  ],
   templateUrl: './main.html',
   styleUrl: './main.css',
 })
 export class Main implements OnInit {
   baseURL: string = environment.apiUrl;
   isOwnProfile = true;
+  readonly chatService = inject(ChatService);
   private authService = inject(AuthService);
-  /*userInfo: UserProfileDTO = {
-    username: '',
-    email: '',
-    phone: '',
-    image: '',
-    address: '',
-    createTime: '',
-    idNum: '',
-    lastLogin: '',
-  };
-  publicUserInfo: PublicUserProfileDTO | null = null;
-*/
+  publicProfileId: number | null = null;
   isSeller = false;
   profile: BaseUserProfileDTO | null = null;
   userInfo: UserProfileDTO | null = null;
@@ -69,9 +69,14 @@ export class Main implements OnInit {
     console.log('public profile id:', id);
     if (id) {
       this.isOwnProfile = false;
-      this.loadPublicProfile(Number(id));
+      this.publicProfileId = Number(id);
+      this.getUserRecipes(this.publicProfileId);
+      this.getUserPosts(this.publicProfileId);
+      this.loadPublicProfile(this.publicProfileId);
     } else {
       this.isOwnProfile = true;
+      this.getMyRecipes();
+      this.getMyPosts();
       this.loadingProfile();
       this.checkSeller();
     }
@@ -96,6 +101,7 @@ export class Main implements OnInit {
         },
       });
   }
+
   loadingProfile(): void {
     this.http
       .get<UserProfileDTO>(`${this.baseURL}/Users/GetUserProfile`, {
@@ -112,8 +118,8 @@ export class Main implements OnInit {
       });
   }
   //讀取貼文,食譜
-  loadPost(id: number) {}
-  getMyPost() {
+
+  getMyPosts() {
     this.http
       .get<UserPostStatDTO>(`${environment.apiUrl}/Users/GetPost`, { withCredentials: true })
       .subscribe({
@@ -125,7 +131,7 @@ export class Main implements OnInit {
         },
       });
   }
-  getPost(userId: number) {
+  getUserPosts(userId: number) {
     this.http
       .get<UserPostStatDTO>(`${environment.apiUrl}/Users/GetUserPost/${userId}`, {
         withCredentials: true,
@@ -169,12 +175,35 @@ export class Main implements OnInit {
   }
   loadPublicProfile(id: number): void {
     this.http
-      .get<PublicUserProfileDTO>(`${this.baseURL}/Users/GetPublicUserProfile/${id}`, {
+      .get<PublicUserProfileDTO>(`${this.baseURL}/Users/GetUserProfile/${id}`, {
         withCredentials: true,
       })
       .subscribe({
         next: (res) => {
           this.profile = res;
+        },
+      });
+  }
+  startChat() {
+    if (!this.publicProfileId) {
+      return;
+    }
+    this.http
+      .post<any>(
+        `${this.baseURL}/Chat/GetOrCreateRoom/${this.publicProfileId}`,
+        {},
+        {
+          withCredentials: true,
+        },
+      )
+      .subscribe({
+        next: (res) => {
+          console.log('聊天室建立/取得成功', res);
+
+          this.chatService.openChatList();
+        },
+        error: (err) => {
+          console.error('建立聊天室失敗', err);
         },
       });
   }

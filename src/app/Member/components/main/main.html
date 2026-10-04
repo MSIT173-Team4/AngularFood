@@ -59,7 +59,7 @@
 
         <!-- 其他會員 -->
         @else {
-          <p-button label="追蹤" icon="pi pi-user-plus"> </p-button>
+          <p-button label="聊天" icon="pi pi-comments" (click)="startChat()"> </p-button>
         }
       </div>
       <p-dialog
@@ -179,11 +179,32 @@
             </div>
           }
 
-          @for (post of posts; track post.id) {
-            <p-card [header]="post.title" styleClass="post-card">
-              <p>
-                {{ post.content }}
-              </p>
+          @for (post of posts; track post.postId) {
+            <p-card styleClass="post-card">
+              <div class="post-card-content">
+                <div class="post-card-header">
+                  <h3 class="post-title">
+                    {{ post.title }}
+                  </h3>
+
+                  <div class="post-stats">
+                    <span>
+                      <i class="pi pi-eye"></i>
+                      {{ post.views }}
+                    </span>
+
+                    <span>
+                      <i class="pi pi-thumbs-up"></i>
+                      {{ post.likes }}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="post-date">
+                  <i class="pi pi-calendar"></i>
+                  {{ post.postDate | date: 'yyyy/MM/dd HH:mm' }}
+                </div>
+              </div>
             </p-card>
           }
         </p-tabpanel>
@@ -206,11 +227,43 @@
           }
 
           <div class="recipe-grid">
-            @for (recipe of recipes; track recipe.id) {
-              <p-card [header]="recipe.title" styleClass="recipe-card">
-                <p>
-                  {{ recipe.description }}
-                </p>
+            @for (recipe of recipes; track recipe.recipeId) {
+              <p-card styleClass="recipe-card">
+                <div class="recipe-card-content">
+                  <img
+                    [src]="getImageUrl(recipe.coverImageUrl)"
+                    [alt]="recipe.title"
+                    class="recipe-cover"
+                  />
+
+                  <div class="recipe-info">
+                    <h3 class="recipe-title">
+                      {{ recipe.title }}
+                    </h3>
+
+                    <div class="recipe-date">
+                      <i class="pi pi-calendar"></i>
+                      {{ recipe.createdAt | date: 'yyyy/MM/dd HH:mm' }}
+                    </div>
+
+                    <div class="recipe-stats">
+                      <span>
+                        <i class="pi pi-eye"></i>
+                        {{ recipe.views }}
+                      </span>
+
+                      <span>
+                        <i class="pi pi-heart"></i>
+                        {{ recipe.likes }}
+                      </span>
+
+                      <span>
+                        <i class="pi pi-bookmark"></i>
+                        {{ recipe.favorites }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </p-card>
             }
           </div>

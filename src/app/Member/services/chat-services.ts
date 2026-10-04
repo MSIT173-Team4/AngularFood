@@ -24,12 +24,15 @@ export class ChatService {
     await this.hubConnection.start();
   }
   chatListVisible = signal(false);
-
+  selectedRoomId = signal<number | null>(null);
   openChatList() {
     this.chatListVisible.set(true);
     console.log('chatListVisible:', this.chatListVisible());
   }
-
+  openChat(roomId: number) {
+    this.selectedRoomId.set(roomId);
+    this.chatListVisible.set(true);
+  }
   closeChatList() {
     this.chatListVisible.set(false);
   }
