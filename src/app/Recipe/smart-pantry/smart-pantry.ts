@@ -20,11 +20,11 @@ import {
   UpdatePantryItemPayload
 } from '../pantry/pantry.models';
 import { PantryService } from '../pantry/pantry.service';
-import { recipeDemoConfig } from '../api.config';
+import { RecipeImageFallbackDirective } from '../recipe-image-fallback.directive';
 import { PantryItem, PantryPageData, RecipeRecommendation } from '../recipe.models';
 import { RecipeService } from '../service/recipe.service';
 
-type PantryFormField = Exclude<keyof AddPantryItemPayload, 'userId'>;
+type PantryFormField = keyof AddPantryItemPayload;
 type ValidationErrors = Record<string, string>;
 
 @Component({
@@ -32,6 +32,7 @@ type ValidationErrors = Record<string, string>;
   imports: [
     FormsModule,
     RouterLink,
+    RecipeImageFallbackDirective,
     ButtonModule,
     DatePickerModule,
     DialogModule,
@@ -191,7 +192,6 @@ export class SmartPantry implements OnInit, OnDestroy {
   openEditDialog(item: PantryItem): void {
     this.editingPantryItem.set(item);
     this.editForm.set({
-      userId: recipeDemoConfig.userId,
       amount: item.amount,
       unit: item.unit,
       storageLocation: this.toStorageLocation(item.storageLocation),
@@ -376,7 +376,7 @@ export class SmartPantry implements OnInit, OnDestroy {
       return;
     }
 
-    this.pantryService.deleteItem(pantryId, recipeDemoConfig.userId).subscribe({
+    this.pantryService.deleteItem(pantryId).subscribe({
       next: (response) => {
         if (!response.success) {
           this.showError(response.message);
@@ -431,7 +431,6 @@ export class SmartPantry implements OnInit, OnDestroy {
       expirationDate.setDate(expirationDate.getDate() + diagnostic.estimatedDays);
 
       return {
-        userId: recipeDemoConfig.userId,
         ingredientName: diagnostic.ingredientName,
         amount: 1,
         unit: this.unitOptions.includes(diagnostic.suggestedUnit)
@@ -445,7 +444,7 @@ export class SmartPantry implements OnInit, OnDestroy {
   }
 
   private reloadPantryItems(): void {
-    this.pantryService.getItems(recipeDemoConfig.userId).subscribe({
+    this.pantryService.getItems().subscribe({
       next: (response) => {
         if (response.success && response.data) {
           this.pantryItems.set(response.data);
@@ -461,7 +460,7 @@ export class SmartPantry implements OnInit, OnDestroy {
 
   private loadRecommendations(): void {
     this.isLoadingRecommendations.set(true);
-    this.recipeService.getRecommendations(recipeDemoConfig.userId, 6).subscribe({
+    this.recipeService.getRecommendations(6).subscribe({
       next: (response) => {
         this.isLoadingRecommendations.set(false);
         this.recommendations.set(
@@ -588,7 +587,6 @@ export class SmartPantry implements OnInit, OnDestroy {
     defaultExpirationDate.setDate(defaultExpirationDate.getDate() + 7);
 
     return {
-      userId: recipeDemoConfig.userId,
       ingredientName: '',
       amount: 1,
       unit: '份',

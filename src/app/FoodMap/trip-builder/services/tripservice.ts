@@ -50,6 +50,18 @@ export class TripPlanningService {
     );
   }
 
+  // 採買模式：把清單裡的一個品項標成已買／未買
+  setItemPurchased(
+    itemId: number,
+    isPurchased: boolean
+  ): Observable<{ fShoppingListItemId: number; fIsPurchased: boolean }> {
+    return this.http.patch<{ fShoppingListItemId: number; fIsPurchased: boolean }>(
+      `${API_BASE_URL}/trips/shopping-items/${itemId}/purchased`,
+      { isPurchased },
+      withCredentials
+    );
+  }
+
   getTrip(tripId: number): Observable<TripDto> {
     return this.http.get<TripDto>(`${API_BASE_URL}/trips/${tripId}`, withCredentials);
   }

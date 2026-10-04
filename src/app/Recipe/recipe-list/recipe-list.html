@@ -104,7 +104,7 @@
       <p-card styleClass="recipe-card">
         <ng-template #header>
           <div class="cover-frame">
-            <img class="cover" [src]="recipe.coverImageUrl" [alt]="recipe.title" />
+            <img appRecipeImageFallback class="cover" [src]="recipe.coverImageUrl" [alt]="recipe.title" />
             @if (recipe.isAiGenerated) {
               <p-tag class="cover-tag" value="AI 協作" severity="info" [rounded]="true" />
             }

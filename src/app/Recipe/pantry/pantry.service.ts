@@ -14,9 +14,10 @@ import {
 export class PantryService {
   private readonly http = inject(HttpClient);
 
-  getItems(userId: number): Observable<ApiResponse<PantryItem[]>> {
+  getItems(): Observable<ApiResponse<PantryItem[]>> {
     return this.http.get<ApiResponse<PantryItem[]>>(
-      apiConfig.pantry.listByUser(userId)
+      apiConfig.pantry.list,
+      { withCredentials: true }
     );
   }
 
@@ -26,14 +27,16 @@ export class PantryService {
 
     return this.http.post<ApiResponse<PantryAiDiagnosticDto[]>>(
       apiConfig.pantry.diagnoseImage,
-      formData
+      formData,
+      { withCredentials: true }
     );
   }
 
   addPantryItem(payload: AddPantryItemPayload): Observable<ApiResponse<PantryItem>> {
     return this.http.post<ApiResponse<PantryItem>>(
       apiConfig.pantry.addItem,
-      payload
+      payload,
+      { withCredentials: true }
     );
   }
 
@@ -43,13 +46,15 @@ export class PantryService {
   ): Observable<ApiResponse<PantryItem>> {
     return this.http.put<ApiResponse<PantryItem>>(
       apiConfig.pantry.update(pantryId),
-      payload
+      payload,
+      { withCredentials: true }
     );
   }
 
-  deleteItem(pantryId: number, userId: number): Observable<ApiResponse<boolean>> {
+  deleteItem(pantryId: number): Observable<ApiResponse<boolean>> {
     return this.http.delete<ApiResponse<boolean>>(
-      `${apiConfig.pantry.delete(pantryId)}?userId=${userId}`
+      apiConfig.pantry.delete(pantryId),
+      { withCredentials: true }
     );
   }
 }

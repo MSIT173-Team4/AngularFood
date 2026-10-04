@@ -8,12 +8,11 @@ import {
   RecipeListPageData
 } from './recipe.models';
 import { RecipeService } from './service/recipe.service';
-import { recipeDemoConfig } from './api.config';
 
 export const recipeListResolver: ResolveFn<RecipeListPageData> = () => {
   const recipeService = inject(RecipeService);
 
-  return recipeService.getRecipes(recipeDemoConfig.userId).pipe(
+  return recipeService.getRecipes().pipe(
     map((response) => response.success && response.data?.length
       ? { recipes: response.data, source: 'api' as const, notice: response.message }
       : { recipes: MOCK_RECIPES, source: 'mock' as const, notice: 'API 無公開食譜，已載入測試資料。' }),
@@ -44,7 +43,7 @@ export const recipeDetailResolver: ResolveFn<RecipeDetailPageData> = (route: Act
 export const pantryResolver: ResolveFn<PantryPageData> = () => {
   const recipeService = inject(RecipeService);
 
-  return recipeService.getPantryItems(recipeDemoConfig.userId).pipe(
+  return recipeService.getPantryItems().pipe(
     map((response) => response.success
       ? {
           pantryItems: response.data ?? [],
