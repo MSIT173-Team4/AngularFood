@@ -325,4 +325,21 @@ export class CheckoutShippingComponent implements OnInit, OnDestroy {
     return Math.max(0,
       this.getItemsTotal() - this.sellerDiscountTotal - this.platformDiscount + this.getShippingTotal());
   }
+
+  // ── Demo：快速填入個別賣家的收件資料 ──────────────────
+  // 縣市、區從 taiwan-districts 資料找，名稱才會跟下拉選單一致
+  fillSellerDemo(sellerId: number): void {
+    const s = this.sellerShippingMap[sellerId];
+    if (!s) return;
+
+    const city = this.cities.find(c => c.name.includes('臺北')) ?? this.cities[0];
+    const district = city.districts[4];
+
+    s.recipientName = '資展國際';
+    s.phone = '0922678544';
+    s.city = city.name;
+    this.onSellerCityChange(sellerId);   // 產生該縣市的區清單（這裡會把 district 清空）
+    s.district = district.name;          // 所以要在它之後才設定區
+    s.streetAddress = '復興南路一段390號2樓';
+  }
 }
