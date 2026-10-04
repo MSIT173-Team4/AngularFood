@@ -1,19 +1,13 @@
 import { Component, DestroyRef, inject, signal, OnInit, HostListener } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import {
-  NavigationEnd,
-  Router,
-  RouterLink,
-  RouterLinkActive,
-  RouterOutlet
-} from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { filter } from 'rxjs';
-
+import { ChatService } from './Member/services/chat-services';
 import { MenuItem } from 'primeng/api';
 import { Menu } from 'primeng/menu';
 import { Button } from 'primeng/button';
-
+import { Chat } from './Member/components/main/chat/chat';
 import { AuthService } from './Member/services/auth-services';
 import { NotificationCenterService } from './layout/notification-center.service';
 import { SellerStateService } from './Market/Service/seller-state.service';
@@ -23,7 +17,7 @@ type HeaderPanel = 'recipe' | 'market' | 'search' | 'cart' | 'notifications' | '
 
 @Component({
   selector: 'app-root',
-  imports: [FormsModule, RouterOutlet, RouterLink, RouterLinkActive, Menu, Button],
+  imports: [FormsModule, RouterOutlet, RouterLink, RouterLinkActive, Menu, Button, Chat],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
@@ -35,7 +29,7 @@ export class App implements OnInit {
   readonly notificationCenter = inject(NotificationCenterService);
   readonly sellerState = inject(SellerStateService);
   readonly cartCount = inject(CartCountService);
-
+  readonly chatService = inject(ChatService);
   // ===== 畫面狀態（signals） =====
   readonly isMobileNavigationOpen = signal(false);
   readonly hideLayout = signal(false); // 控制 Header / Footer 是否隱藏
@@ -48,6 +42,7 @@ export class App implements OnInit {
   readonly notificationCount = this.notificationCenter.unreadCount;
 
   // ===== 使用者選單 =====
+  chatVisible = false;
   userMenuItems: MenuItem[] = [
     {
       label: '登出',
@@ -63,7 +58,7 @@ export class App implements OnInit {
     this.router.events
       .pipe(
         filter((event): event is NavigationEnd => event instanceof NavigationEnd),
-        takeUntilDestroyed(this.destroyRef)
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((event) => {
         const url = event.urlAfterRedirects;
@@ -127,7 +122,13 @@ export class App implements OnInit {
       queryParams: keyword ? { q: keyword } : {},
     });
   }
+  getUserImage(image?: string | null): string {
+    if (!image) {
+      return 'assets/default-avatar.png';
+    }
 
+    return `https://localhost:7164${image}`;
+  }
   // ===== 通知 =====
   markNotificationAsRead(notificationId: string): void {
     this.notificationCenter.markAsRead(notificationId);
@@ -147,11 +148,5 @@ export class App implements OnInit {
   @HostListener('document:keydown.escape')
   onEscape(): void {
     this.closePanel();
-  getUserImage(image?: string | null): string {
-    if (!image) {
-      return 'assets/default-avatar.png';
-    }
-
-    return `https://localhost:7164${image}`;
   }
 }

@@ -609,6 +609,7 @@ nav > a:hover,
   color: #fff;
   font-weight: 600;
   text-decoration: none;
+}
 .current-user {
   display: flex;
   align-items: center;
