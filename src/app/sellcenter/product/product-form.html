@@ -31,6 +31,14 @@
       </div>
     </div>
 
+    <div class="form-row full">
+  <label class="form-label">對應食材</label>
+  <p-select [(ngModel)]="form.ingredientId" [options]="ingredients"
+    optionLabel="name" optionValue="ingredientId"
+    [filter]="true" filterBy="name" [showClear]="true"
+    placeholder="選擇食材（用於推薦相關食譜，非必填）" styleClass="w-full" />
+</div>
+
     <div class="form-row half">
       <div class="form-field">
         <label class="form-label required">售價</label>
