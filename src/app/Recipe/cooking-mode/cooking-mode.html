@@ -41,7 +41,7 @@
           <h2>{{ step.instruction }}</h2>
 
           @if (step.imageUrl) {
-            <img [src]="step.imageUrl" [alt]="'料理步驟 ' + step.stepNumber + ' 示意圖'" />
+            <img appRecipeImageFallback [src]="step.imageUrl" [alt]="'料理步驟 ' + step.stepNumber + ' 示意圖'" />
           } @else {
             <div class="step-visual-placeholder">
               <i class="pi pi-list-check" aria-hidden="true"></i>

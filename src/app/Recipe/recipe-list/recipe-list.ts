@@ -10,6 +10,7 @@ import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { SelectModule } from 'primeng/select';
 import { TagModule } from 'primeng/tag';
 import { AdCheckout } from '../ad-checkout/ad-checkout';
+import { RecipeImageFallbackDirective } from '../recipe-image-fallback.directive';
 import { RecipeListPageData, RecipeSummary } from '../recipe.models';
 import { RecipeService } from '../service/recipe.service';
 
@@ -19,6 +20,7 @@ import { RecipeService } from '../service/recipe.service';
     FormsModule,
     RouterLink,
     AdCheckout,
+    RecipeImageFallbackDirective,
     ButtonModule,
     CardModule,
     DialogModule,

@@ -56,8 +56,8 @@ export class GetPublicProduct implements OnInit, OnDestroy {
 
   // ── 分頁狀態 ──────────────────────────────────────────
   currentPage = 1;          // 後端是 1-based
-  pageSize = 10;
-  totalRecords = 60;        // 3. 暫時寫死；後端之後要回傳 total count
+  pageSize = 12;
+  totalRecords = 0;        // 預設0後端要回傳 total count
 
   // ── 排序選項 ──────────────────────────────────────────
   sortOptions = [

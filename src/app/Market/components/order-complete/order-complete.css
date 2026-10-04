@@ -529,3 +529,13 @@
     grid-template-columns: 1fr;
   }
 }
+
+.oc-hero-card--cancelled {
+  background: #f3f0ee;
+}
+
+.oc-cancelled-icon {
+  background: #e3dcd8;
+  color: #6b5a52;
+}
+

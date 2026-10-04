@@ -9,6 +9,7 @@ import { MessageService } from 'primeng/api';
 
 import { MarketService } from '../../Service/market';
 import { CheckoutStepsComponent } from '../checkout-steps/checkout-steps';
+import { RebuyService } from '../../Service/rebuy.service';
 
 
 // ── DTO 介面（對應後端 OrderCompleteDto）────────────────────
@@ -36,6 +37,7 @@ export interface OrderGroupDto {
   shippingDiscount: number;
   orderAmount: number;
   items: OrderItemDto[];
+  orderStatus: number;   // 3 = 已取消
 }
 
 export interface OrderCompleteDto {
@@ -83,6 +85,11 @@ export class OrderCompleteComponent implements OnInit, OnDestroy {
   get isPaid(): boolean {
     return this.order?.paymentStatus === 1;
   }
+
+  // 批次付款狀態 4：逾期或買家取消（最終狀態，不會再改變）
+  get isCancelled(): boolean {
+    return this.order?.paymentStatus === 4;
+  }
   // ── 付款狀態輪詢 End──
 
   private destroy$ = new Subject<void>();
@@ -92,6 +99,7 @@ export class OrderCompleteComponent implements OnInit, OnDestroy {
     private router: Router,
     private marketService: MarketService,
     private messageService: MessageService,
+    private rebuyService: RebuyService,
   ) { }
 
   ngOnInit(): void {
@@ -140,7 +148,8 @@ export class OrderCompleteComponent implements OnInit, OnDestroy {
 
   // 未付款且還沒查滿次數 → 2 秒後再查一次；已付款或查滿 → 停止
   private checkPaymentStatus(): void {
-    if (this.isPaid || this.pollCount >= this.maxPollCount) {
+    // 已付款或已取消都是最終狀態，不需要再輪詢
+    if (this.isPaid || this.isCancelled || this.pollCount >= this.maxPollCount) {
       this.isCheckingPayment = false;
       return;
     }
@@ -164,8 +173,9 @@ export class OrderCompleteComponent implements OnInit, OnDestroy {
     return method === 'CVS' ? '超商取貨' : '宅配到府';
   }
 
-  /** 子訂單付款狀態中文 */
-  paymentStatusLabel(status: number): string {
+  /** 子訂單付款狀態中文；已取消的子訂單優先顯示「已取消」 */
+  paymentStatusLabel(status: number, orderStatus?: number): string {
+    if (orderStatus === 3) return '已取消';
     switch (status) {
       case 0: return '待付款';
       case 1: return '已付款';
@@ -182,18 +192,19 @@ export class OrderCompleteComponent implements OnInit, OnDestroy {
       .reduce((sum, item) => sum + item.quantity, 0) ?? 0;
   }
 
-  /** 導到訂單查詢頁（頁面還沒做，先預留路徑） */
+  /** 導到訂單查詢頁*/
   goToOrderTracking(): void {
-    // TODO：等訂單查詢頁完成後改成 this.router.navigate(['/orders'])
-    this.messageService.add({
-      severity: 'info',
-      summary: '功能開發中',
-      detail: '訂單查詢頁面即將上線',
-      life: 2500,
-    });
+    this.router.navigate(['/market/orders']);
   }
 
   goToMarket(): void {
-    this.router.navigate(['/market']);
+    this.router.navigate(['/market/products']);
+  }
+
+  // 再買一次：整個結帳批次（所有賣家）的商品都加回購物車
+  rebuyAll(): void {
+    if (!this.order) return;
+    const orderIds = this.order.orderGroups.map(g => g.orderId);
+    this.rebuyService.run(orderIds, this.messageService);
   }
 }

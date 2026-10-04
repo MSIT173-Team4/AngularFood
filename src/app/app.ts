@@ -110,7 +110,7 @@ export class App implements OnInit {
   // 已經是完整網址（Google 頭像、Cloudinary）就直接用。
   getUserImage(image?: string | null): string {
     if (!image) {
-      return 'assets/default-avatar.png';
+      return 'images/default-avatar.png';
     }
     if (/^https?:\/\//i.test(image)) {
       return image;
