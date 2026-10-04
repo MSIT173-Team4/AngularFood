@@ -114,8 +114,9 @@
       @if (candidates().length) {
         <h2>附近可採買的店家（{{ candidates().length }}）</h2>
         <div class="candidate-grid">
-          @for (c of candidates(); track c.fPlaceId) {
-            <article class="candidate" [class.selected]="isInItinerary(c.fPlaceId)">
+          @for (c of pagedCandidates(); track c.fPlaceId) {
+            <article class="candidate" [class.selected]="isInItinerary(c.fPlaceId)"
+              [class.recommended]="c.isRecommend">
               <button type="button" class="text-block" (click)="focusCandidate(c)">
                 <strong>
                   {{ c.fName }}
@@ -131,6 +132,32 @@
             </article>
           }
         </div>
+
+        @if (candidatePageCount() > 1) {
+          <nav class="pager" aria-label="候選店家分頁">
+            <button type="button" class="page-btn" aria-label="上一頁" [disabled]="candidatePage() === 1"
+              (click)="goToCandidatePage(candidatePage() - 1)">
+              <i class="pi pi-chevron-left"></i>
+            </button>
+            @for (page of candidatePageNumbers(); track $index) {
+              @if (page === null) {
+                <span class="page-gap">…</span>
+              } @else {
+                <button type="button" class="page-btn" [class.active]="page === candidatePage()"
+                  [attr.aria-current]="page === candidatePage() ? 'page' : null"
+                  (click)="goToCandidatePage(page)">
+                  {{ page }}
+                </button>
+              }
+            }
+            <button type="button" class="page-btn" aria-label="下一頁"
+              [disabled]="candidatePage() === candidatePageCount()"
+              (click)="goToCandidatePage(candidatePage() + 1)">
+              <i class="pi pi-chevron-right"></i>
+            </button>
+            <span class="page-info">第 {{ candidateRange().start }}–{{ candidateRange().end }} 家</span>
+          </nav>
+        }
       }
     </section>
 
@@ -198,9 +225,86 @@
                 ・全程 {{ formatDistance(trip.totalDistanceMeters) }}・約 {{ formatDuration(trip.totalDurationSeconds) }}
               }
             </p>
+            <p-button label="開始採買" icon="pi pi-check-square" severity="warn" [fluid]="true"
+              [disabled]="!canShare() || checklistTotal() === 0" (onClick)="shoppingMode.set(true)" />
+            <div class="share-row">
+              <p-button label="開啟導航" icon="pi pi-directions" size="small" [fluid]="true"
+                [disabled]="!canShare()" (onClick)="openNavigation()" />
+              <p-button label="複製行程" icon="pi pi-copy" size="small" severity="secondary" [outlined]="true"
+                [fluid]="true" [disabled]="!canShare()" (onClick)="copyTripText()" />
+            </div>
+            <small class="hint">「複製行程」會帶上每站要買的品項和導航連結，可以貼給朋友代買。</small>
           }
         }
       </div>
     </aside>
   </div>
+
+  <!-- 採買模式：照行程順序分組的待買清單，打勾會寫回採購清單 -->
+  <p-dialog header="採買清單" [visible]="shoppingMode()" (visibleChange)="shoppingMode.set($event)"
+    [modal]="true" [dismissableMask]="true" [draggable]="false" [style]="{ width: '30rem' }"
+    [breakpoints]="{ '640px': '96vw' }">
+    <div class="checklist-progress">
+      <div><span>已買</span><strong>{{ checklistDone() }} / {{ checklistTotal() }}</strong></div>
+      <p-progressbar [value]="checklistPercent()" [showValue]="false" />
+    </div>
+
+    @for (group of shoppingPlan(); track group.stop.placeId; let i = $index) {
+      <section class="checklist-group">
+        <header>
+          <span class="badge">{{ i + 1 }}</span>
+          <div class="checklist-stop">
+            <strong>{{ group.stop.name }}</strong>
+            <span>{{ group.stop.address }}</span>
+          </div>
+          <a [href]="stopNavigationUrl(group.stop)" target="_blank" rel="noopener" class="nav-link"
+            [attr.aria-label]="'導航到 ' + group.stop.name">
+            <i class="pi pi-directions"></i> 導航
+          </a>
+        </header>
+        @if (group.items.length) {
+          <ul>
+            @for (item of group.items; track item.fShoppingListItemId) {
+              <li>
+                <label [class.done]="isPurchased(item.fShoppingListItemId)">
+                  <input type="checkbox" [checked]="isPurchased(item.fShoppingListItemId)"
+                    (change)="togglePurchased(item, $any($event.target).checked)" />
+                  <span>{{ formatItem(item) }}</span>
+                </label>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="hint">這一站沒有清單裡的品項（要買的已排在前面的店家）。</p>
+        }
+      </section>
+    }
+
+    @if (unassignedItems().length) {
+      <section class="checklist-group">
+        <header>
+          <span class="badge muted">?</span>
+          <div class="checklist-stop">
+            <strong>行程裡的店家買不到</strong>
+            <span>在別的地方買到也可以打勾</span>
+          </div>
+        </header>
+        <ul>
+          @for (item of unassignedItems(); track item.fShoppingListItemId) {
+            <li>
+              <label [class.done]="isPurchased(item.fShoppingListItemId)">
+                <input type="checkbox" [checked]="isPurchased(item.fShoppingListItemId)"
+                  (change)="togglePurchased(item, $any($event.target).checked)" />
+                <span>{{ formatItem(item) }}</span>
+              </label>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+
+    @if (checklistTotal() > 0 && checklistDone() === checklistTotal()) {
+      <p class="saved checklist-finished"><i class="pi pi-check-circle"></i> 全部買齊了！</p>
+    }
+  </p-dialog>
 </main>
