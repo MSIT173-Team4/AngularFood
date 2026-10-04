@@ -8,6 +8,7 @@ import {
   SellcenterProductService,
   MarketCategory,
   ProductImage,
+  Ingredient,
 } from '../services/sellcenter-product';
 import { MessageService } from 'primeng/api';
 import { InputTextModule } from 'primeng/inputtext';
@@ -38,6 +39,7 @@ export interface ProductFormData {
   manufacturingDate: string;
   expirationDate: string;
   description: string;
+  ingredientId: number | null;
 }
 
 @Component({
@@ -77,7 +79,9 @@ export class ProductFormComponent implements OnInit, OnDestroy {
     manufacturingDate: '',
     expirationDate: '',
     description: '',
+    ingredientId: null,
   };
+  ingredients: Ingredient[] = [];
 
   topCategories: MarketCategory[] = [];
   subCategories: MarketCategory[] = [];
@@ -101,6 +105,7 @@ export class ProductFormComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadCategories();
+    this.loadIngredients();
 
     // 判斷是新增還是編輯
     const id = this.route.snapshot.paramMap.get('id');
@@ -109,6 +114,17 @@ export class ProductFormComponent implements OnInit, OnDestroy {
       this.editProductId = Number(id);
       this.loadProduct(this.editProductId);
     }
+  }
+
+  loadIngredients(): void {
+    this.productService.getIngredients()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: list => this.ingredients = list,
+        error: () => this.messageService.add({
+          severity: 'error', summary: '載入失敗', detail: '無法取得食材清單',
+        }),
+      });
   }
 
   ngOnDestroy(): void {
@@ -167,6 +183,7 @@ export class ProductFormComponent implements OnInit, OnDestroy {
             expirationDate: product.expirationDate
               ? product.expirationDate.substring(0, 10) : '',
             description: product.description ?? '',
+            ingredientId: product.ingredientId ?? null,
           };
 
           // 把舊圖轉成 DisplayImage
@@ -329,6 +346,7 @@ export class ProductFormComponent implements OnInit, OnDestroy {
     formData.append('stock', String(this.form.stock ?? 0));
     formData.append('brandOrOrigin', this.form.brandOrOrigin);
     formData.append('description', this.form.description);
+    formData.append('ingredientId', this.form.ingredientId != null ? String(this.form.ingredientId) : '');
     if (this.form.manufacturingDate)
       formData.append('manufacturingDate', this.form.manufacturingDate);
     if (this.form.expirationDate)
