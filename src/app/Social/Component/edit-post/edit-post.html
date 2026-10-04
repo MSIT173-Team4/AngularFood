@@ -1,0 +1,20 @@
+<div class="create-container">
+  <div class="form-field">
+    <label class="field-label">文章標題</label>
+    <input type="text" [(ngModel)]="title" placeholder="請輸入文章標題" class="input-title" />
+  </div>
+
+  <div class="form-field">
+    <label class="field-label">文章內容</label>
+    <quill-editor 
+      [(ngModel)]="htmlContent" 
+      [modules]="quillModules"
+      placeholder="請輸入內容..."
+      style="height: 300px; display: block;">
+    </quill-editor>
+  </div>
+
+  <div class="submit-row" style="margin-top: 60px;">
+    <button class="btn-publish" (click)="onSubmit()">發佈貼文</button>
+  </div>
+</div>

@@ -60,6 +60,7 @@ export class SocialService {
 
   constructor(private http: HttpClient) {}
 
+  //貼文列表
   getPosts(
     tab: string = 'latest',
     keyword: string = '',
@@ -75,49 +76,81 @@ export class SocialService {
       params = params.set('keyword', keyword.trim());
     }
 
-    return this.http.get<PagedResult<PostList>>(`${this.baseUrl}/post`, { params });
+    return this.http.get<PagedResult<PostList>>(`${this.baseUrl}/post`, { 
+      params,
+      withCredentials: true 
+    });
   }
 
+  //貼文詳細內容
   getPost(id: number): Observable<PostDetail> {
-    return this.http.get<PostDetail>(`${this.baseUrl}/post/${id}`);
+    return this.http.get<PostDetail>(`${this.baseUrl}/post/${id}`, {
+      withCredentials: true
+    });
   }
 
+  //新增貼文
   createPost(post: { title: string; sortId: number; blocks: PostBlock[] }): Observable<any> {
-    return this.http.post(`${this.baseUrl}/post`, post);
+    return this.http.post(`${this.baseUrl}/post`, post, {
+      withCredentials: true
+    });
   }
 
+  //修改貼文
   updatePost(id: number, post: { title: string; sortId: number; blocks: PostBlock[] }): Observable<any> {
-    return this.http.put(`${this.baseUrl}/post/${id}`, post);
+    return this.http.put(`${this.baseUrl}/post/${id}`, post, {
+      withCredentials: true
+    });
   }
 
+  //刪除貼文
   deletePost(id: number): Observable<any> {
-    return this.http.delete(`${this.baseUrl}/post/${id}`);
+    return this.http.delete(`${this.baseUrl}/post/${id}`, {
+      withCredentials: true
+    });
   }
 
+  //貼文按讚
   togglePostLike(id: number): Observable<any> {
-    return this.http.post(`${this.baseUrl}/post/${id}/like`, {});
+    return this.http.post(`${this.baseUrl}/post/${id}/like`, {}, {
+      withCredentials: true
+    });
   }
 
+  //貼文收藏
   toggleBookmark(postId: number): Observable<{ postId: number; isBookmarked: boolean }> {
     return this.http.post<{ postId: number; isBookmarked: boolean }>(
       `${this.baseUrl}/post/bookmark`,
-      { postId }
+      { postId },
+      { withCredentials: true }
     );
   }
 
+  //留言列表
   getComments(postId: number): Observable<Comment[]> {
-    return this.http.get<Comment[]>(`${this.baseUrl}/comments/post/${postId}`);
+    return this.http.get<Comment[]>(`${this.baseUrl}/comments/post/${postId}`, {
+      withCredentials: true
+    });
   }
 
+  //新增留言
   createComment(comment: { postId: number; replyMessageId?: number; messageContent: string }): Observable<any> {
-    return this.http.post(`${this.baseUrl}/comments`, comment);
+    return this.http.post(`${this.baseUrl}/comments`, comment, {
+      withCredentials: true
+    });
   }
 
+  //刪除留言
   deleteComment(id: number): Observable<any> {
-    return this.http.delete(`${this.baseUrl}/comments/${id}`);
+    return this.http.delete(`${this.baseUrl}/comments/${id}`, {
+      withCredentials: true
+    });
   }
 
+  //留言按讚
   toggleCommentLike(id: number): Observable<any> {
-    return this.http.post(`${this.baseUrl}/comments/${id}/like`, {});
+    return this.http.post(`${this.baseUrl}/comments/${id}/like`, {}, {
+      withCredentials: true
+    });
   }
 }
