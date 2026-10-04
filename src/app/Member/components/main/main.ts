@@ -1,3 +1,4 @@
+import { UserRecipeStatDTO } from './../../interfaces/UserRecipeStatDTO';
 import { Component, inject, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -9,6 +10,10 @@ import { DialogModule } from 'primeng/dialog';
 import { EditProfile } from './editprofile/editprofile';
 import { Apply } from './apply/apply';
 import { AuthService } from '../../services/auth-services';
+import { UserPostDTO } from '../../interfaces/UserPostDTO';
+import { UserRecipeDTO } from '../../interfaces/UserRecipeDTO';
+import { UserPostStatDTO } from '../../interfaces/UserPostStatDTO';
+
 // PrimeNG
 import { AvatarModule } from 'primeng/avatar';
 import { TabsModule } from 'primeng/tabs';
@@ -44,9 +49,14 @@ export class Main implements OnInit {
   editProfileVisible = false;
   sellerApplyVisible = false;
 
-  posts: any[] = [];
+  posts: UserPostDTO[] = [];
 
-  recipes: any[] = [];
+  postTotalLikes = 0;
+  postTotalViews = 0;
+
+  recipes: UserRecipeDTO[] = [];
+  recipeTotalLikes = 0;
+  recipeTotalViews = 0;
   dashboard: any[] = ['0'];
   constructor(
     private http: HttpClient,
@@ -68,7 +78,7 @@ export class Main implements OnInit {
   }
   goToSellCenter() {
     this.router.navigate(['/sellcenter'], {
-    replaceUrl: true,
+      replaceUrl: true,
     });
   }
   checkSeller() {
@@ -103,7 +113,60 @@ export class Main implements OnInit {
   }
   //讀取貼文,食譜
   loadPost(id: number) {}
-  loadRecipe(id: number) {}
+  getMyPost() {
+    this.http
+      .get<UserPostStatDTO>(`${environment.apiUrl}/Users/GetPost`, { withCredentials: true })
+      .subscribe({
+        next: (res) => {
+          ((this.posts = res.posts), (this.postTotalViews = res.totalViews));
+        },
+        error: (err) => {
+          console.log('取得貼文失敗', err);
+        },
+      });
+  }
+  getPost(userId: number) {
+    this.http
+      .get<UserPostStatDTO>(`${environment.apiUrl}/Users/GetUserPost/${userId}`, {
+        withCredentials: true,
+      })
+      .subscribe({
+        next: (res) => {
+          ((this.posts = res.posts), (this.postTotalViews = res.totalViews));
+        },
+        error: (err) => {
+          console.log('取得貼文失敗', err);
+        },
+      });
+  }
+  getMyRecipes() {
+    this.http
+      .get<UserRecipeStatDTO>(`${environment.apiUrl}/Users/GetRecipe`, { withCredentials: true })
+      .subscribe({
+        next: (res) => {
+          this.recipes = res.recipes;
+          this.recipeTotalViews = res.totalViews;
+        },
+        error: (err) => {
+          console.error('取得食譜失敗', err);
+        },
+      });
+  }
+  getUserRecipes(userId: number) {
+    this.http
+      .get<UserRecipeStatDTO>(`${environment.apiUrl}/Users/GetUserRecipes/${userId}`, {
+        withCredentials: true,
+      })
+      .subscribe({
+        next: (res) => {
+          this.recipes = res.recipes;
+          this.recipeTotalViews = res.totalViews;
+        },
+        error: (err) => {
+          console.error('取得食譜失敗', err);
+        },
+      });
+  }
   loadPublicProfile(id: number): void {
     this.http
       .get<PublicUserProfileDTO>(`${this.baseURL}/Users/GetPublicUserProfile/${id}`, {
