@@ -58,9 +58,9 @@ export class SocialService {
   
   private baseUrl = environment.apiUrl;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {} 
 
-  //貼文列表
+//貼文列表
   getPosts(
     tab: string = 'latest',
     keyword: string = '',

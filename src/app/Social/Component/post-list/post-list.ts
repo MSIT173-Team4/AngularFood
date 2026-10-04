@@ -3,7 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SocialService, PostList } from '../../service';
+import { UserProfileDTO } from '../../../Member/interfaces/UserProfileDTO';
+import { BaseUserProfileDTO } from '../../../Member/interfaces/BaseUserProfileDTO';
 import { TimeAgoPipe } from '../../Pipes/time-ago-pipe';
+import { environment } from '../../../../environments/environment';
+import { HttpClient } from '@angular/common/http';
+import { AuthService } from '../../../Member/services/auth-services';
 
 @Component({
   selector: 'app-post-list',
@@ -13,6 +18,9 @@ import { TimeAgoPipe } from '../../Pipes/time-ago-pipe';
   styleUrls: ['./post-list.css']
 })
 export class PostListComponent implements OnInit {
+    profile: BaseUserProfileDTO | null = null;
+    userInfo: UserProfileDTO | null = null;
+  baseURL: string = environment.apiUrl;
   posts: PostList[] = [];
   activeTab: string = 'latest';
   keyword: string = '';
@@ -26,7 +34,8 @@ export class PostListComponent implements OnInit {
 
   constructor(
     private socialService: SocialService,
-    private router: Router
+    private router: Router,
+    private http: HttpClient
   ) {}
 
   ngOnInit(): void {
@@ -63,9 +72,26 @@ export class PostListComponent implements OnInit {
     this.router.navigate(['/social/post', postId]);
   }
 
+  loadingProfile(): void {
+    this.http
+      .get<UserProfileDTO>(`${this.baseURL}/Users/GetUserProfile`, {
+        withCredentials: true,
+      })
+      .subscribe({
+        next: (res) => {
+          this.profile = res;
+          this.userInfo = res;
+        },
+        error: (res) => {
+          console.log(res);
+        },
+      });
+  }
+
   navigateToUser(userId: number): void {
     this.router.navigate(['/main', userId]);
   }
+
 
   toggleBookmark(event: Event, post: PostList): void {
     event.stopPropagation();
