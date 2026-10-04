@@ -184,7 +184,7 @@
     } @else if (selectedRecommendation(); as recommendation) {
       <div class="relative h-[270px] overflow-hidden bg-[#315331] md:h-[420px]">
         @if (recommendation.coverImageUrl) {
-          <img class="h-full w-full object-cover" [src]="recommendation.coverImageUrl" [alt]="recommendation.title + '食譜封面'" />
+          <img appRecipeImageFallback class="h-full w-full object-cover" [src]="recommendation.coverImageUrl" [alt]="recommendation.title + '食譜封面'" />
         } @else {
           <div class="grid h-full w-full place-items-center text-5xl text-[#d8ead4]">
             <i class="pi pi-image" aria-hidden="true"></i>

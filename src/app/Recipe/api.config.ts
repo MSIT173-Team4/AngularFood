@@ -11,8 +11,8 @@ export const apiConfig = {
     update: (recipeId: number) => `${friendlyFoodApiBaseUrl}/recipe/${recipeId}`,
     delete: (recipeId: number) => `${friendlyFoodApiBaseUrl}/recipe/${recipeId}`,
     completeCooking: `${friendlyFoodApiBaseUrl}/recipe/complete-cooking`,
-    recommendations: (userId: number, limit = 12) =>
-      `${friendlyFoodApiBaseUrl}/recipe/recommendations?userId=${userId}&limit=${limit}`,
+    recommendations: (limit = 12) =>
+      `${friendlyFoodApiBaseUrl}/recipe/recommendations?limit=${limit}`,
     trending: (limit = 8) => `${friendlyFoodApiBaseUrl}/recipe/trending?limit=${limit}`,
     view: (recipeId: number) => `${friendlyFoodApiBaseUrl}/recipe/${recipeId}/view`,
     like: (recipeId: number) => `${friendlyFoodApiBaseUrl}/recipe/${recipeId}/like`,
@@ -30,15 +30,11 @@ export const apiConfig = {
     }
   },
   pantry: {
-    listByUser: (userId: number) => `${friendlyFoodApiBaseUrl}/recipe/pantry/user/${userId}`,
+    list: `${friendlyFoodApiBaseUrl}/recipe/pantry`,
     diagnoseImage: `${friendlyFoodApiBaseUrl}/pantry/diagnose-image`,
     addItem: `${friendlyFoodApiBaseUrl}/pantry/add-item`,
     create: `${friendlyFoodApiBaseUrl}/recipe/pantry`,
     update: (pantryId: number) => `${friendlyFoodApiBaseUrl}/recipe/pantry/${pantryId}`,
     delete: (pantryId: number) => `${friendlyFoodApiBaseUrl}/recipe/pantry/${pantryId}`
   }
-} as const;
-
-export const recipeDemoConfig = {
-  userId: 2
 } as const;

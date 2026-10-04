@@ -21,7 +21,7 @@ import { SelectModule } from 'primeng/select';
 import { TextareaModule } from 'primeng/textarea';
 import { ToastModule } from 'primeng/toast';
 
-import { recipeDemoConfig } from '../api.config';
+import { AuthService } from '../../Member/services/auth-services';
 import {
   CreateRecipePayload,
   RecipeCategory,
@@ -74,8 +74,14 @@ interface RecipeEditorDraft {
   styleUrl: './create-recipe.css'
 })
 export class CreateRecipe implements OnInit, OnDestroy {
-  private static readonly DraftStorageKey = `friendlyfood.recipe-draft.${recipeDemoConfig.userId}`;
+  private static readonly MaximumImageSizeBytes = 5 * 1024 * 1024;
+  private static readonly AllowedImageTypes = new Set([
+    'image/jpeg',
+    'image/png',
+    'image/webp'
+  ]);
   private readonly recipeService = inject(RecipeService);
+  private readonly authService = inject(AuthService);
   private readonly messageService = inject(MessageService);
   private readonly router = inject(Router);
 
@@ -146,6 +152,12 @@ export class CreateRecipe implements OnInit, OnDestroy {
       return;
     }
 
+    const validationMessage = this.validateImageFile(file);
+    if (validationMessage) {
+      this.showError(validationMessage);
+      return;
+    }
+
     this.revokeLocalPreview();
     this.localPreviewUrl = URL.createObjectURL(file);
     this.coverPreviewUrl.set(this.localPreviewUrl);
@@ -176,6 +188,12 @@ export class CreateRecipe implements OnInit, OnDestroy {
     const file = input.files?.[0];
     input.value = '';
     if (!file) {
+      return;
+    }
+
+    const validationMessage = this.validateImageFile(file);
+    if (validationMessage) {
+      this.showError(validationMessage);
       return;
     }
 
@@ -330,7 +348,6 @@ export class CreateRecipe implements OnInit, OnDestroy {
     }
 
     const payload: CreateRecipePayload = {
-      userId: recipeDemoConfig.userId,
       categoryId,
       title: this.title().trim(),
       description: this.description().trim() || null,
@@ -356,7 +373,7 @@ export class CreateRecipe implements OnInit, OnDestroy {
         }
 
         this.createdRecipeId.set(response.data.recipeId);
-        localStorage.removeItem(CreateRecipe.DraftStorageKey);
+        localStorage.removeItem(this.draftStorageKey);
         this.statusMessage.set(`「${response.data.title}」已成功寫入 FriendlyFoodDb。`);
         this.messageService.add({
           severity: 'success',
@@ -423,7 +440,7 @@ export class CreateRecipe implements OnInit, OnDestroy {
       savedAt: new Date().toISOString()
     };
 
-    localStorage.setItem(CreateRecipe.DraftStorageKey, JSON.stringify(draft));
+    localStorage.setItem(this.draftStorageKey, JSON.stringify(draft));
     this.statusMessage.set('草稿已保存在此瀏覽器，下次回到本頁會自動載入。');
     this.messageService.add({
       severity: 'success',
@@ -469,7 +486,7 @@ export class CreateRecipe implements OnInit, OnDestroy {
   }
 
   private restoreDraft(): void {
-    const storedDraft = localStorage.getItem(CreateRecipe.DraftStorageKey);
+    const storedDraft = localStorage.getItem(this.draftStorageKey);
     if (!storedDraft) {
       return;
     }
@@ -492,8 +509,27 @@ export class CreateRecipe implements OnInit, OnDestroy {
       this.coverImageUrl.set(draft.coverImageUrl ?? null);
       this.statusMessage.set('已載入上次保存在此瀏覽器的食譜草稿。');
     } catch {
-      localStorage.removeItem(CreateRecipe.DraftStorageKey);
+      localStorage.removeItem(this.draftStorageKey);
     }
+  }
+
+  private get draftStorageKey(): string {
+    const signedInUserName = this.authService.currentUser()?.userName.trim();
+    const ownerKey = signedInUserName
+      ? encodeURIComponent(signedInUserName)
+      : 'authenticated-user';
+
+    return `friendlyfood.recipe-draft.${ownerKey}`;
+  }
+
+  private validateImageFile(file: File): string {
+    if (!CreateRecipe.AllowedImageTypes.has(file.type)) {
+      return '圖片僅支援 JPEG、PNG 或 WebP 格式。';
+    }
+
+    return file.size <= CreateRecipe.MaximumImageSizeBytes
+      ? ''
+      : '圖片不可超過 5 MB。';
   }
 
   private toSupportedUnit(unit: string): string {

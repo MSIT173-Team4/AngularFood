@@ -71,7 +71,7 @@
             <input type="checkbox" [(ngModel)]="checkedItems[item.cartItemId]" (ngModelChange)="onItemCheckChange(item)"
               class="item-check" />
 
-            <img [src]="item.imageUrl || 'assets/images/product-placeholder.png'" [alt]="item.productName"
+            <img [src]="item.imageUrl || '/images/market/product-placeholder.png'" [alt]="item.productName"
               class="item-image" [routerLink]="['/market/products', item.productId]" style="cursor: pointer;" />
 
             <div class="item-info">
