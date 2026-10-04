@@ -1,29 +1,25 @@
 <div class="detail-container">
-  <!-- 返回按鈕 -->
   <button class="btn-back" (click)="goBack()">
     <i class="fa-solid fa-arrow-left"></i> 返回列表
   </button>
 
   @if (post) {
-    <!-- 貼文標頭 (包含用戶頭像與名稱) -->
     <div class="post-header">
       <h1 class="post-title">{{ post.title }}</h1>
       <div class="author-row">
         <img 
-          [src]="post.userImage || 'assets/images/default-avatar.png'" 
+          [src]="post.userImage || '/images/default-avatar.png'"
           class="author-avatar clickable" 
           (click)="navigateToUser(post.userId)"
         />
-        <span class="author-name clickable" (click)="navigateToUser(post.userId)">{{ post.userName }}</span>
+        <span class="author-name" (click)="navigateToUser(post.userId)">{{ post.userName }}</span>
         <span class="post-date">{{ post.postDate | timeAgo }}</span>
       </div>
     </div>
 
-    <!-- 動態區塊內容 (Blocks) -->
     <div class="post-blocks">
       @for (block of post.blocks; track block.postBlockId || $index) {
         @if (block.blockType === 'text') {
-          <!-- 解析富文本 HTML -->
           <div class="text-content" [innerHTML]="block.content"></div>
         } @else if (block.blockType === 'image') {
           <img [src]="block.mediaUrl" class="media-content" alt="Post media" />
@@ -33,10 +29,8 @@
       }
     </div>
 
-    <!-- 貼文互動列 -->
     <div class="post-actions">
       <div class="metrics">
-        <!-- 點讚按鈕：使用 fa-thumbs-up 與 post-list 一致 -->
         <span class="metric-item interactable" (click)="togglePostLike()">
           <i class="fa-thumbs-up" 
              [class.fa-solid]="post.isLikedByCurrentUser" 
@@ -45,18 +39,19 @@
           {{ post.likes }}
         </span>
 
-        <!-- 收藏按鈕：使用 fa-bookmark 實心/空心切換 -->
-        <button class="bookmark-btn" (click)="toggleBookmark($event, post)" title="收藏文章">
-          <i [class]="post.isBookmarkedByCurrentUser ? 'fas fa-bookmark bookmarked' : 'far fa-bookmark'"></i>
-        </button>
+        <span class="metric-item interactable" (click)="toggleBookmark()">
+          <i class="fa-bookmark" 
+             [class.fa-solid]="post.isBookmarkedByCurrentUser" 
+             [class.fa-regular]="!post.isBookmarkedByCurrentUser" 
+             [class.bookmarked]="post.isBookmarkedByCurrentUser"></i>
+             收藏
+        </span>
 
-        <!-- 瀏覽數 -->
         <span class="metric-item">
           <i class="fa-regular fa-eye"></i> {{ post.views }}
         </span>
       </div>
 
-      <!-- 僅當貼文作者是當前登入使用者時才顯示編輯/刪除按鈕 -->
       @if (isPostOwner) {
         <div class="owner-actions">
           <button type="button" class="btn-outline btn-edit" (click)="onEditPost()">編輯</button>
@@ -65,22 +60,21 @@
       }
     </div>
 
-    <!-- 留言區塊 -->
     <div class="comments-section">
       <h3>留言 ({{ comments.length }})</h3>
 
       @if (comments.length === 0) {
-        <div class="no-comments">目前還沒有留言，快來搶沙發吧！</div>
+        <div class="no-comments">尚無留言</div>
       } @else {
         @for (comment of comments; track comment.messageId) {
           <div class="comment-item">
             <div class="comment-header">
               <img 
-                [src]="comment.userImage || 'assets/images/default-avatar.png'" 
+                [src]="post.userImage || '/images/default-avatar.png'"
                 class="comment-avatar clickable" 
                 (click)="navigateToUser(comment.userId)"
               />
-              <span class="comment-user clickable" (click)="navigateToUser(comment.userId)">{{ comment.userName }}</span>
+              <span class="comment-user" (click)="navigateToUser(comment.userId)">{{ comment.userName }}</span>
               <span class="comment-date">{{ comment.messageDate | timeAgo }}</span>
             </div>
             
@@ -101,16 +95,14 @@
               </span>
               <button class="btn-reply" (click)="setReplyTarget(comment)">回覆</button>
 
-              <!-- 如果使用方案 1 (比對 userName) -->
-            @if (comment.userName === currentUserName || isPostOwner) {
+             @if (comment.userName === currentUserName || isPostOwner) {
               <button class="btn-delete-link" (click)="onDeleteComment(comment.messageId)">刪除</button>
-            }
+             }
             </div>
           </div>
         }
       }
 
-      <!-- 留言輸入區 -->
       <div class="comment-input-area">
         @if (replyToComment) {
           <div class="reply-banner">
@@ -122,7 +114,7 @@
           <input 
             type="text" 
             [(ngModel)]="newCommentContent" 
-            placeholder="撰寫留言..." 
+            placeholder="留言..." 
             (keyup.enter)="sendComment()" 
           />
           <button class="btn-send" (click)="sendComment()">發送</button>

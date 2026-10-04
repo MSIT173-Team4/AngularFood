@@ -89,7 +89,7 @@ export class PostListComponent implements OnInit {
   }
 
   navigateToUser(userId: number): void {
-    this.router.navigate(['/main', userId]);
+    this.router.navigate(['/main']);
   }
 
 

@@ -28,11 +28,10 @@
   color: #b03a12;
 }
 
-/* 貼文標頭：問題1 的分隔線修復 */
 .post-header {
   margin-bottom: 24px;
   padding-bottom: 16px;
-  border-bottom: 1px solid #e0e0e0; /* 💡 貼文使用者資料與內容之間的分隔線 */
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .post-title {
@@ -79,7 +78,6 @@
   text-decoration: underline;
 }
 
-/* 動態區塊 (Blocks) */
 .post-blocks {
   margin-bottom: 30px;
   min-height: 100px;
@@ -106,7 +104,6 @@
   display: block;
 }
 
-/* 貼文互動列 */
 .post-actions {
   display: flex;
   justify-content: space-between;
@@ -140,12 +137,10 @@
   color: #b03a12;
 }
 
-/* 問題 2 & 3: 按讚與收藏高亮顏色 (主題橘紅色) */
 .liked, .bookmarked {
   color: #b03a12 !important;
 }
 
-/* 問題 5: 編輯與刪除按鈕樣式修復 (避免變形) */
 .owner-actions {
   display: flex;
   align-items: center;
@@ -154,7 +149,7 @@
 
 .btn-outline {
   background-color: transparent;
-  padding: 0 16px;
+  padding: 6px 16px;
   border-radius: 6px;
   font-size: 0.85rem;
   font-weight: 500;
@@ -164,7 +159,7 @@
   box-sizing: border-box;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  justify-content: justify;
   height: 32px;
 }
 
@@ -188,7 +183,6 @@
   color: #ffffff;
 }
 
-/* 留言區塊 */
 .comments-section h3 {
   font-size: 1.1rem;
   font-weight: 700;
@@ -268,7 +262,7 @@
   color: #b03a12;
 }
 
-.btn-reply, .btn-delete-link {
+.btn-reply, .btn-edit-link, .btn-delete-link {
   background: none;
   border: none;
   color: #777777;
@@ -280,7 +274,14 @@
 
 .btn-reply:hover {
   color: #b03a12;
-  text-decoration: underline;
+}
+
+.btn-edit-link {
+  color: #b03a12;
+}
+
+.btn-edit-link:hover {
+  color: #8e2e0e;
 }
 
 .btn-delete-link {
@@ -289,10 +290,8 @@
 
 .btn-delete-link:hover {
   color: #a71d2a;
-  text-decoration: underline;
 }
 
-/* 留言輸入區 */
 .comment-input-area {
   margin-top: 25px;
 }

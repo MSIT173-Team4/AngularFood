@@ -45,12 +45,18 @@ export interface Comment {
   userId: number;
   userName: string;
   userImage?: string;
-  replyMessageId?: number;
-  replyToUserName?: string;
+  replyMessageId?: number | null;
+  replyToUserName?: string | null;
   messageContent: string;
   likes: number;
   messageDate: string;
   isLikedByCurrentUser: boolean;
+}
+
+export interface CreateOrUpdateCommentPayload {
+  postId: number;
+  replyMessageId?: number | null;
+  messageContent: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -134,8 +140,13 @@ export class SocialService {
   }
 
   //新增留言
-  createComment(comment: { postId: number; replyMessageId?: number; messageContent: string }): Observable<any> {
-    return this.http.post(`${this.baseUrl}/comments`, comment, {
+  createComment(comment: { postId: number; replyMessageId?: number | null; messageContent: string }): Observable<any> {
+  return this.http.post(`${this.baseUrl}/comments`, comment, {
+    withCredentials: true
+  });
+}
+  updateComment(commentId: number, payload: CreateOrUpdateCommentPayload): Observable<void> {
+    return this.http.put<void>(`${this.baseUrl}/Comments/${commentId}`, payload, {
       withCredentials: true
     });
   }
