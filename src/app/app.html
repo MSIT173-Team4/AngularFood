@@ -184,7 +184,7 @@
   <div class="current-user">
     <!-- 頭像 + Username -->
     <a class="user-profile-link" [routerLink]="['/main']">
-      <img [src]="user.userImage" class="user-avatar" />
+      <img [src]="getUserImage(user.userImage)" (error)="onAvatarError($event)" class="user-avatar" />
 
       <span class="user-name">
         {{ user.userName }}

@@ -3,30 +3,7 @@ import {
   RecipeDetail,
   RecipeSummary
 } from './recipe.models';
-
-const image = (title: string): string =>
-  `https://placehold.co/900x600/f1ded5/5b382c?text=${encodeURIComponent(title)}`;
-
-const recipeCoverFileNames: Record<number, string> = {
-  1: '01-pan-seared-salmon.jpg',
-  2: '02-lemon-butter-sea-bass.jpg',
-  3: '03-margherita-pizza.jpg',
-  4: '04-truffle-mushroom-risotto.jpg',
-  5: '05-acai-berry-bowl.jpg',
-  6: '06-spinach-tofu-soup.jpg',
-  7: '07-mushroom-vegetable-stir-fry.jpg',
-  8: '08-miso-tofu-hot-pot.jpg',
-  9: '09-herb-chicken-quinoa-bowl.jpg',
-  10: '10-black-bean-barley-pork-rib-soup.jpg',
-  11: '11-broccoli-potato-puree.jpg',
-  12: '12-pumpkin-chicken-dog-meal.jpg',
-  13: '13-taiwanese-pork-fried-noodles.jpg',
-  14: '14-japanese-pork-curry.jpg',
-  15: '15-bonito-onion-salad.jpg',
-  16: '16-winter-melon-clam-soup.jpg',
-  17: '17-braised-tofu.jpg',
-  18: '18-baby-vegetable-soft-rice.jpg'
-};
+import { resolveRecipeImageUrl } from './recipe-image-url';
 
 export const MOCK_RECIPES: RecipeSummary[] = [
   createRecipeSummary(1, '香煎鮭魚佐蘆筍', '外酥內嫩的鮭魚搭配嫩綠蘆筍與清爽柑橘油醋。', 25, 480, 326, true, '異國料理'),
@@ -64,9 +41,7 @@ function createRecipeSummary(
     recipeId,
     title,
     description,
-    coverImageUrl: recipeCoverFileNames[recipeId]
-      ? `/images/recipes/${recipeCoverFileNames[recipeId]}`
-      : image(title),
+    coverImageUrl: resolveRecipeImageUrl(title, null),
     cookingMinutes,
     totalCalories,
     defaultServings: recipeId === 5 ? 1 : 2,
@@ -171,7 +146,7 @@ export const MOCK_RECIPE_DETAILS: RecipeDetail[] = MOCK_RECIPES.map((recipe) => 
   steps: mockDetailContent[recipe.recipeId].steps.map((instruction, index) => ({
     stepNumber: index + 1,
     instruction,
-    imageUrl: image(`${recipe.title}步驟${index + 1}`),
+    imageUrl: recipe.coverImageUrl,
     timerSeconds: [300, 480, 180][index] ?? 180
   }))
 }));
