@@ -22,7 +22,6 @@ import { InputTextModule } from 'primeng/inputtext';
 import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
 
-import { recipeDemoConfig } from '../api.config';
 import {
   RecipeAvailability,
   RecipeDetail as RecipeDetailModel,
@@ -296,7 +295,7 @@ export class RecipeDetail implements OnInit, AfterViewInit, OnDestroy {
     }
 
     this.isSavingShoppingList.set(true);
-    this.recipeService.saveShoppingList(recipeDemoConfig.userId, {
+    this.recipeService.saveShoppingList({
       listName: this.shoppingList()?.listName || '我的料理採購清單',
       items: items.map((item) => ({
         ingredientId: item.ingredientId,
@@ -362,7 +361,6 @@ export class RecipeDetail implements OnInit, AfterViewInit, OnDestroy {
     this.isLoadingAvailability.set(true);
     this.recipeService.getAvailability(
       recipe.recipeId,
-      recipeDemoConfig.userId,
       this.servings()
     ).subscribe({
       next: (response) => {
@@ -377,7 +375,7 @@ export class RecipeDetail implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private loadShoppingList(): void {
-    this.recipeService.getShoppingList(recipeDemoConfig.userId).subscribe({
+    this.recipeService.getShoppingList().subscribe({
       next: (response) => {
         if (response.success && response.data) {
           this.shoppingList.set(response.data);
@@ -394,8 +392,8 @@ export class RecipeDetail implements OnInit, AfterViewInit, OnDestroy {
 
     this.isUpdatingEngagement.set(true);
     const request = action === 'like'
-      ? this.recipeService.toggleLike(recipe.recipeId, recipeDemoConfig.userId)
-      : this.recipeService.toggleFavorite(recipe.recipeId, recipeDemoConfig.userId);
+      ? this.recipeService.toggleLike(recipe.recipeId)
+      : this.recipeService.toggleFavorite(recipe.recipeId);
 
     request.subscribe({
       next: (response) => {

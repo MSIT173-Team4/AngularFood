@@ -50,7 +50,13 @@ export interface SellerProductDetail {
   expirationDate: string | null;
   productStatus: number;
   productsCategoryNo: string;
+  ingredientId: number | null;
   images: ProductImage[];
+}
+
+export interface Ingredient {
+  ingredientId: number;
+  name: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -94,5 +100,9 @@ export class SellcenterProductService {
     return this.http.patch<{ message: string; stock: number; productStatus: number }>(
       `${this.base}/seller/${productId}/stock`, { stock }, this.withCred
     );
+  }
+
+  getIngredients(): Observable<Ingredient[]> {
+    return this.http.get<Ingredient[]>(`${this.base}/ingredients`, this.withCred);
   }
 }

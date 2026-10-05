@@ -17,6 +17,7 @@ import { ShoppingCartComponent } from './Market/components/shopping-cart/shoppin
 import { CheckoutShippingComponent } from './Market/components/checkout-shipping/checkout-shipping';
 import { OrderCompleteComponent } from './Market/components/order-complete/order-complete';
 import { sellerGuard } from './Market/guard/seller-guard';
+import { MyOrdersComponent } from './Market/components/my-orders/my-orders';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'login' },
@@ -94,12 +95,36 @@ export const routes: Routes = [
       import('./Recipe/shopping-list/shopping-list').then((module) => module.ShoppingList),
   },
   {
-    path: 'forum',
+    path: 'social',
     title: '討論區｜友料美食生活平台',
     loadComponent: () =>
-      import('./Forum/forum-placeholder/forum-placeholder').then(
-        (module) => module.ForumPlaceholder,
+      import('./Social/Component/post-list/post-list').then(
+        (module) => module.PostListComponent
+      )
+  },
+  {
+    path: 'social/create',
+    title: '發佈文章｜友料美食生活平台',
+    loadComponent: () =>
+      import('./Social/Component/create-post/create-post').then(
+        (module) => module.CreatePostComponent
+      )
+  },
+  {
+    path: 'social/edit-post/:id',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./Social/Component/edit-post/edit-post').then(
+        (module) => module.EditPostComponent
       ),
+  },
+  {
+    path: 'social/post/:id',
+    title: '討論區｜友料美食生活平台',
+    loadComponent: () =>
+      import('./Social/Component/post-detail/post-detail').then(
+        (module) => module.PostDetailComponent
+      )
   },
   {
     path: 'trip-builder',
@@ -114,5 +139,6 @@ export const routes: Routes = [
   { path: 'market/checkout/shipping', canActivate: [authGuard], component: CheckoutShippingComponent },
   { path: 'checkout/complete/:batchId', canActivate: [authGuard], component: OrderCompleteComponent },
   { path: 'sellcenter', canActivate: [sellerGuard], loadChildren: () => import('./sellcenter/sellcenter.routes').then(r => r.SELLCENTER_ROUTES), },
+  { path: 'market/orders', canActivate: [authGuard], component: MyOrdersComponent },
   { path: '**', redirectTo: 'recipes' }
 ];

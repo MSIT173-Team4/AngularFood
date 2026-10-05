@@ -1,36 +1,35 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { SocialService, PostBlock } from '../../service';
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { QuillEditorComponent } from 'ngx-quill';
+import { SocialService } from '../../service';
 
 @Component({
   selector: 'app-create-post',
-  templateUrl: './create-post.html',
-  styleUrls: ['./create-post.css'],
   standalone: true,
-  imports: [CommonModule, FormsModule]
+  imports: [FormsModule, QuillEditorComponent],
+  templateUrl: './create-post.html',
+  styleUrls: ['./create-post.css']
 })
 export class CreatePostComponent {
   title: string = '';
-  sortId: number = 1;
-  blocks: PostBlock[] = [{ blockType: 'text', content: '' }];
+  htmlContent: string = '';
 
-  constructor(private socialService: SocialService, private router: Router) {}
+  quillModules = {
+    toolbar: [
+      ['bold', 'italic', 'underline', 'strike'],
+      ['blockquote', 'code-block'],
+      [{ 'header': 1 }, { 'header': 2 }],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'color': [] }, { 'background': [] }],
+      ['link', 'image', 'video']
+    ]
+  };
 
-  addBlock(type: 'text' | 'image' | 'video'): void {
-    this.blocks.push({
-      blockType: type,
-      content: type === 'text' ? '' : undefined,
-      mediaUrl: type !== 'text' ? '' : undefined
-    });
-  }
-
-  removeBlock(index: number): void {
-    if (this.blocks.length > 1) {
-      this.blocks.splice(index, 1);
-    }
-  }
+  constructor(
+    private socialService: SocialService,
+    private router: Router
+  ) {}
 
   onSubmit(): void {
     if (!this.title.trim()) {
@@ -38,12 +37,33 @@ export class CreatePostComponent {
       return;
     }
 
-    this.socialService.createPost({
+    if (!this.htmlContent.trim()) {
+      alert('請輸入文章內容');
+      return;
+    }
+
+    const payload = {
       title: this.title,
-      sortId: this.sortId,
-      blocks: this.blocks
-    }).subscribe(() => {
-      this.router.navigate(['/posts']);
+      sortId: 1,
+      blocks: [
+        {
+          blockType: 'text' as const,
+          content: this.htmlContent,
+          sortOrder: 1
+        }
+      ]
+    };
+
+    this.socialService.createPost(payload).subscribe({
+      next: () => {
+        this.router.navigate(['/social']);
+      },
+      error: (err) => {
+        console.error('錯誤物件：', err);
+        console.error('後端回傳狀態碼：', err.status);
+        console.error('後端回傳錯誤訊息：', err.error);
+        alert(`發佈失敗，請稍後再試。`);
+      }
     });
   }
 }

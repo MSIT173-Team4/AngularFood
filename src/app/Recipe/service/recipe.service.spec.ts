@@ -24,19 +24,19 @@ describe('RecipeService', () => {
 
   afterEach(() => httpController.verify());
 
-  it('requests zero-waste recommendations for the selected user', () => {
-    service.getRecommendations(2, 6).subscribe();
+  it('requests zero-waste recommendations for the authenticated user', () => {
+    service.getRecommendations(6).subscribe();
 
     const request = httpController.expectOne(
-      apiConfig.recipes.recommendations(2, 6)
+      apiConfig.recipes.recommendations(6)
     );
     expect(request.request.method).toBe('GET');
+    expect(request.request.withCredentials).toBe(true);
     request.flush(createEnvelope([]));
   });
 
   it('posts the complete recipe payload to the Web API', () => {
     const payload: CreateRecipePayload = {
-      userId: 2,
       categoryId: 1,
       title: '測試食譜',
       description: '測試資料',
@@ -70,6 +70,7 @@ describe('RecipeService', () => {
     const request = httpController.expectOne(apiConfig.recipes.create);
     expect(request.request.method).toBe('POST');
     expect(request.request.body).toEqual(payload);
+    expect(request.request.withCredentials).toBe(true);
     request.flush(createEnvelope<RecipeDetail>(null));
   });
 
@@ -79,6 +80,31 @@ describe('RecipeService', () => {
     const request = httpController.expectOne(apiConfig.recipes.ai.parseRecipe);
     expect(request.request.method).toBe('POST');
     expect(request.request.body).toEqual({ content: '番茄炒蛋' });
+    expect(request.request.withCredentials).toBe(true);
+    request.flush(createEnvelope(null));
+  });
+
+  it('loads the authenticated member shopping list with the login cookie', () => {
+    service.getShoppingList().subscribe();
+
+    const request = httpController.expectOne(apiConfig.recipes.shoppingList);
+    expect(request.request.method).toBe('GET');
+    expect(request.request.withCredentials).toBe(true);
+    request.flush(createEnvelope(null));
+  });
+
+  it('saves the authenticated member shopping list without a client user id', () => {
+    const payload = {
+      listName: '本週採購',
+      items: []
+    };
+
+    service.saveShoppingList(payload).subscribe();
+
+    const request = httpController.expectOne(apiConfig.recipes.shoppingList);
+    expect(request.request.method).toBe('PUT');
+    expect(request.request.body).toEqual(payload);
+    expect(request.request.withCredentials).toBe(true);
     request.flush(createEnvelope(null));
   });
 });

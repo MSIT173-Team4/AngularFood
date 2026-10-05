@@ -1,7 +1,12 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { Observable, map } from 'rxjs';
 import { apiConfig } from '../api.config';
+import {
+  resolveRecipeDetailImages,
+  resolveRecipeRecommendationImages,
+  resolveRecipeSummaryImages
+} from '../recipe-image-url';
 import {
   ApiResponse,
   ChefRecommendation,
@@ -29,102 +34,130 @@ import {
 export class RecipeService {
   private readonly http = inject(HttpClient);
 
-  getRecipes(userId?: number): Observable<ApiResponse<RecipeSummary[]>> {
-    const params = userId
-      ? new HttpParams().set('userId', userId)
-      : undefined;
-
+  getRecipes(): Observable<ApiResponse<RecipeSummary[]>> {
     return this.http.get<ApiResponse<RecipeSummary[]>>(
       apiConfig.recipes.list,
-      { params }
-    );
+      { withCredentials: true }
+    ).pipe(map((response) => ({
+      ...response,
+      data: response.data?.map(resolveRecipeSummaryImages) ?? null
+    })));
   }
 
   getRecipeById(id: number): Observable<ApiResponse<RecipeDetail>> {
-    return this.http.get<ApiResponse<RecipeDetail>>(apiConfig.recipes.detail(id));
+    return this.http.get<ApiResponse<RecipeDetail>>(
+      apiConfig.recipes.detail(id),
+      { withCredentials: true }
+    ).pipe(map((response) => ({
+      ...response,
+      data: response.data ? resolveRecipeDetailImages(response.data) : null
+    })));
   }
 
   getMetadata(): Observable<ApiResponse<RecipeMetadata>> {
-    return this.http.get<ApiResponse<RecipeMetadata>>(apiConfig.recipes.metadata);
+    return this.http.get<ApiResponse<RecipeMetadata>>(
+      apiConfig.recipes.metadata,
+      { withCredentials: true }
+    );
   }
 
   getRecommendations(
-    userId: number,
     limit = 12
   ): Observable<ApiResponse<RecipeRecommendation[]>> {
     return this.http.get<ApiResponse<RecipeRecommendation[]>>(
-      apiConfig.recipes.recommendations(userId, limit)
-    );
+      apiConfig.recipes.recommendations(limit),
+      { withCredentials: true }
+    ).pipe(map((response) => ({
+      ...response,
+      data: response.data?.map(resolveRecipeRecommendationImages) ?? null
+    })));
   }
 
   getTrendingRecipes(limit = 8): Observable<ApiResponse<TrendingRecipe[]>> {
     return this.http.get<ApiResponse<TrendingRecipe[]>>(
-      apiConfig.recipes.trending(limit)
-    );
+      apiConfig.recipes.trending(limit),
+      { withCredentials: true }
+    ).pipe(map((response) => ({
+      ...response,
+      data: response.data?.map((item) => ({
+        ...item,
+        recipe: resolveRecipeSummaryImages(item.recipe)
+      })) ?? null
+    })));
   }
 
-  getPantryItems(userId: number): Observable<ApiResponse<PantryItem[]>> {
+  getPantryItems(): Observable<ApiResponse<PantryItem[]>> {
     return this.http.get<ApiResponse<PantryItem[]>>(
-      apiConfig.pantry.listByUser(userId)
+      apiConfig.pantry.list,
+      { withCredentials: true }
     );
   }
 
   completeCooking(payload: CompleteCookingRequest): Observable<ApiResponse<CookingDeductionResult[]>> {
     return this.http.post<ApiResponse<CookingDeductionResult[]>>(
       apiConfig.recipes.completeCooking,
-      payload
+      payload,
+      { withCredentials: true }
     );
   }
 
   recordView(recipeId: number): Observable<ApiResponse<RecipeView>> {
     return this.http.post<ApiResponse<RecipeView>>(
       apiConfig.recipes.view(recipeId),
-      {}
+      {},
+      { withCredentials: true }
     );
   }
 
-  toggleLike(recipeId: number, userId: number): Observable<ApiResponse<RecipeEngagement>> {
+  toggleLike(recipeId: number): Observable<ApiResponse<RecipeEngagement>> {
     return this.http.post<ApiResponse<RecipeEngagement>>(
       apiConfig.recipes.like(recipeId),
-      { userId }
+      {},
+      { withCredentials: true }
     );
   }
 
-  toggleFavorite(recipeId: number, userId: number): Observable<ApiResponse<RecipeEngagement>> {
+  toggleFavorite(recipeId: number): Observable<ApiResponse<RecipeEngagement>> {
     return this.http.post<ApiResponse<RecipeEngagement>>(
       apiConfig.recipes.favorite(recipeId),
-      { userId }
+      {},
+      { withCredentials: true }
     );
   }
 
   getAvailability(
     recipeId: number,
-    userId: number,
     targetServings: number
   ): Observable<ApiResponse<RecipeAvailability>> {
     return this.http.get<ApiResponse<RecipeAvailability>>(
-      apiConfig.recipes.availability(recipeId, userId, targetServings)
+      apiConfig.recipes.availability(recipeId, targetServings),
+      { withCredentials: true }
     );
   }
 
-  getShoppingList(userId: number): Observable<ApiResponse<RecipeShoppingList>> {
+  getShoppingList(): Observable<ApiResponse<RecipeShoppingList>> {
     return this.http.get<ApiResponse<RecipeShoppingList>>(
-      apiConfig.recipes.shoppingList(userId)
+      apiConfig.recipes.shoppingList,
+      { withCredentials: true }
     );
   }
 
   saveShoppingList(
-    userId: number,
     payload: SaveRecipeShoppingListPayload
   ): Observable<ApiResponse<RecipeShoppingList>> {
     return this.http.put<ApiResponse<RecipeShoppingList>>(
-      apiConfig.recipes.shoppingList(userId),
-      payload
+      apiConfig.recipes.shoppingList,
+      payload,
+      { withCredentials: true }
     );
   }
 
   createRecipe(payload: CreateRecipePayload): Observable<ApiResponse<RecipeDetail>> {
-    return this.http.post<ApiResponse<RecipeDetail>>(apiConfig.recipes.create, payload);
+    return this.http.post<ApiResponse<RecipeDetail>>(
+      apiConfig.recipes.create,
+      payload,
+      { withCredentials: true }
+    );
   }
 
   uploadCover(file: File): Observable<ApiResponse<RecipeAsset>> {
@@ -133,7 +166,8 @@ export class RecipeService {
 
     return this.http.post<ApiResponse<RecipeAsset>>(
       apiConfig.recipes.uploadCover,
-      formData
+      formData,
+      { withCredentials: true }
     );
   }
 
@@ -143,7 +177,8 @@ export class RecipeService {
 
     return this.http.post<ApiResponse<RecipeAsset>>(
       apiConfig.recipes.uploadStepImage,
-      formData
+      formData,
+      { withCredentials: true }
     );
   }
 
@@ -154,7 +189,8 @@ export class RecipeService {
   ): Observable<ApiResponse<IngredientNormalization>> {
     return this.http.post<ApiResponse<IngredientNormalization>>(
       apiConfig.recipes.normalizeIngredient,
-      { ingredientName, amount, unit }
+      { ingredientName, amount, unit },
+      { withCredentials: true }
     );
   }
 
@@ -163,14 +199,16 @@ export class RecipeService {
   ): Observable<ApiResponse<IngredientLocalization>> {
     return this.http.post<ApiResponse<IngredientLocalization>>(
       apiConfig.recipes.ai.localizeIngredient,
-      { ingredientName }
+      { ingredientName },
+      { withCredentials: true }
     );
   }
 
   parseRecipe(content: string): Observable<ApiResponse<ParsedRecipe>> {
     return this.http.post<ApiResponse<ParsedRecipe>>(
       apiConfig.recipes.ai.parseRecipe,
-      { content }
+      { content },
+      { withCredentials: true }
     );
   }
 
@@ -179,7 +217,8 @@ export class RecipeService {
   ): Observable<ApiResponse<ChefRecommendation>> {
     return this.http.post<ApiResponse<ChefRecommendation>>(
       apiConfig.recipes.ai.chefRecommend,
-      { ingredientNames }
+      { ingredientNames },
+      { withCredentials: true }
     );
   }
 }

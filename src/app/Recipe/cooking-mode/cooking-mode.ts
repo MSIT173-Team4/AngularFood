@@ -13,12 +13,12 @@ import { ButtonModule } from 'primeng/button';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { ToastModule } from 'primeng/toast';
 
-import { recipeDemoConfig } from '../api.config';
 import {
   RecipeDetail,
   RecipeDetailPageData,
   RecipeStep
 } from '../recipe.models';
+import { RecipeImageFallbackDirective } from '../recipe-image-fallback.directive';
 import { RecipeService } from '../service/recipe.service';
 
 interface BrowserSpeechRecognitionEvent extends Event {
@@ -53,7 +53,13 @@ type SpeechRecognitionWindow = Window & {
 
 @Component({
   selector: 'app-cooking-mode',
-  imports: [RouterLink, ButtonModule, ProgressBarModule, ToastModule],
+  imports: [
+    RouterLink,
+    RecipeImageFallbackDirective,
+    ButtonModule,
+    ProgressBarModule,
+    ToastModule
+  ],
   providers: [MessageService],
   templateUrl: './cooking-mode.html',
   styleUrl: './cooking-mode.css'
@@ -204,7 +210,6 @@ export class CookingMode implements OnInit, OnDestroy {
 
     this.isDeducting.set(true);
     this.recipeService.completeCooking({
-      userId: recipeDemoConfig.userId,
       recipeId: this.recipeId,
       targetServings: this.targetServings()
     }).subscribe({

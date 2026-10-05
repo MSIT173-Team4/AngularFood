@@ -1,55 +1,140 @@
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SocialService, PostList } from '../../service';
-import { CommonModule, DatePipe } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { UserProfileDTO } from '../../../Member/interfaces/UserProfileDTO';
+import { BaseUserProfileDTO } from '../../../Member/interfaces/BaseUserProfileDTO';
+import { TimeAgoPipe } from '../../Pipes/time-ago-pipe';
+import { environment } from '../../../../environments/environment';
+import { HttpClient } from '@angular/common/http';
+import { AuthService } from '../../../Member/services/auth-services';
 
 @Component({
   selector: 'app-post-list',
-  templateUrl: './post-list.html',
-  styleUrls: ['./post-list.css'],
   standalone: true,
-  imports: [CommonModule, FormsModule, DatePipe]
+  imports: [CommonModule, FormsModule, TimeAgoPipe],
+  templateUrl: './post-list.html',
+  styleUrls: ['./post-list.css']
 })
 export class PostListComponent implements OnInit {
+    profile: BaseUserProfileDTO | null = null;
+    userInfo: UserProfileDTO | null = null;
+  baseURL: string = environment.apiUrl;
   posts: PostList[] = [];
-  sortBy: string = 'latest';
+  activeTab: string = 'latest';
   keyword: string = '';
-  currentUserId = 1;
+  
+  currentPage: number = 1;
+  pageSize: number = 5;
+  totalPages: number = 1;
+  pagesArray: number[] = [];
+  
+  currentUserId: number = 0;
 
-  constructor(private socialService: SocialService, private router: Router) {}
+  constructor(
+    private socialService: SocialService,
+    private router: Router,
+    private http: HttpClient
+  ) {}
 
   ngOnInit(): void {
     this.loadPosts();
   }
 
   loadPosts(): void {
-    this.socialService.getPosts(this.sortBy, this.keyword).subscribe(data => {
-      this.posts = data;
+    this.socialService.getPosts(this.activeTab, this.keyword, this.currentPage, this.pageSize).subscribe({
+      next: (res) => {
+        this.posts = res.items;
+        this.totalPages = res.totalPages;
+        this.pagesArray = Array.from({ length: this.totalPages }, (_, i) => i + 1);
+      },
+      error: (err) => console.error('載入失敗', err)
     });
   }
-
-  onSortChange(): void {
+ 
+  switchTab(tab: string): void {
+    this.activeTab = tab;
+    this.currentPage = 1;
     this.loadPosts();
   }
 
   onSearch(): void {
+    this.currentPage = 1;
     this.loadPosts();
+  }
+
+  goToCreate(): void {
+    this.router.navigate(['/social/create']);
+  }
+
+  viewPost(postId: number): void {
+    this.router.navigate(['/social/post', postId]);
+  }
+
+  loadingProfile(): void {
+    this.http
+      .get<UserProfileDTO>(`${this.baseURL}/Users/GetUserProfile`, {
+        withCredentials: true,
+      })
+      .subscribe({
+        next: (res) => {
+          this.profile = res;
+          this.userInfo = res;
+        },
+        error: (res) => {
+          console.log(res);
+        },
+      });
+  }
+
+  navigateToUser(userId: number): void {
+    this.router.navigate(['/main']);
+  }
+
+
+  toggleBookmark(event: Event, post: PostList): void {
+    event.stopPropagation();
+    this.socialService.toggleBookmark(post.postId).subscribe({
+      next: (res) => {
+        post.isBookmarkedByCurrentUser = res.isBookmarked;
+      },
+      error: (err) => console.error('操作失敗', err)
+    });
   }
 
   toggleLike(event: Event, post: PostList): void {
     event.stopPropagation();
-    this.socialService.togglePostLike(post.postId).subscribe(() => {
-      post.isLikedByCurrentUser = !post.isLikedByCurrentUser;
-      post.likes += post.isLikedByCurrentUser ? 1 : -1;
+    this.socialService.togglePostLike(post.postId).subscribe({
+      next: () => {
+        post.isLikedByCurrentUser = !post.isLikedByCurrentUser;
+        post.likes += post.isLikedByCurrentUser ? 1 : -1;
+      },
+      error: (err) => console.error('操作失敗', err)
     });
   }
 
-  viewPost(id: number): void {
-    this.router.navigate(['/post', id]);
+  onEditPost(postId: number): void {
+    this.router.navigate(['/social/edit-post', postId]);
   }
 
-  goToCreate(): void {
-    this.router.navigate(['/create-post']);
+  onDeletePost(postId: number): void {
+    if (confirm('確定要刪除這篇貼文嗎？')) {
+      this.socialService.deletePost(postId).subscribe({
+        next: () => {
+          this.posts = this.posts.filter(p => p.postId !== postId);
+        },
+        error: (err) => {
+          console.error('刪除失敗', err);
+          alert('刪除失敗，請稍後再試。');
+        }
+      });
+    }
+  }
+
+  changePage(page: number): void {
+    if (page < 1 || page > this.totalPages) return;
+    this.currentPage = page;
+    this.loadPosts();
   }
 }
