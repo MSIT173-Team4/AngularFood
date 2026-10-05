@@ -146,7 +146,78 @@
   margin-top: 0.2rem;
   font-size: 1.5rem;
 }
+.post-card {
+  margin-bottom: 16px;
+  cursor: pointer;
+}
 
+.post-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.post-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.post-date {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  font-size: 14px;
+  color: #777;
+}
+.recipe-card {
+  margin-bottom: 16px;
+}
+
+.recipe-card-content {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.recipe-cover {
+  width: 140px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.recipe-info {
+  flex: 1;
+}
+
+.recipe-title {
+  margin: 0 0 10px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.recipe-date {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #777;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.recipe-stats {
+  display: flex;
+  gap: 16px;
+  color: #666;
+}
+
+.recipe-stats span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
 /* 平板 */
 @media (max-width: 900px) {
   .dashboard-grid {

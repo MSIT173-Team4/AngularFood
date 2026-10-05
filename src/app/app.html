@@ -1,4 +1,4 @@
-@if (!isSellerCenter()&&!hideLayout()) {
+@if (!isSellerCenter() && !hideLayout()) {
 <header class="topbar">
   <a class="brand" routerLink="/recipes" aria-label="友料美食生活平台首頁">
     <span class="brand-mark" aria-hidden="true">
@@ -178,10 +178,13 @@
     <i class="pi" [class.pi-bars]="!isMobileNavigationOpen()" [class.pi-times]="isMobileNavigationOpen()"></i>
   </button>
   @if (authService.currentUser(); as user) {
+  <button type="button" class="icon-button" aria-label="開啟聊天" (click)="chatService.openChatList()">
+    <i class="pi pi-comments"></i>
+  </button>
   <div class="current-user">
     <!-- 頭像 + Username -->
     <a class="user-profile-link" [routerLink]="['/main']">
-      <img [src]="getUserImage(user.userImage)" class="user-avatar" />
+      <img [src]="user.userImage" class="user-avatar" />
 
       <span class="user-name">
         {{ user.userName }}
@@ -200,6 +203,7 @@
 
 <main [class]="isSellerCenter() ? '' : 'app-content'">
   <router-outlet />
+  <app-chat></app-chat>
 </main>
 
 @if (!isSellerCenter() && !hideLayout()) {
