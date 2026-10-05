@@ -111,6 +111,14 @@ export const routes: Routes = [
       )
   },
   {
+    path: 'social/edit-post/:id',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./Social/Component/edit-post/edit-post').then(
+        (module) => module.EditPostComponent
+      ),
+  },
+  {
     path: 'social/post/:id',
     title: '討論區｜友料美食生活平台',
     loadComponent: () =>

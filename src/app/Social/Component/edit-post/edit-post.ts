@@ -1,17 +1,18 @@
-import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { QuillEditorComponent } from 'ngx-quill';
 import { SocialService } from '../../service';
 
 @Component({
-  selector: 'app-create-post',
+  selector: 'app-edit-post',
   standalone: true,
   imports: [FormsModule, QuillEditorComponent],
-  templateUrl: './create-post.html',
-  styleUrls: ['./create-post.css']
+  templateUrl: './edit-post.html',
+  styleUrls: ['./edit-post.css']
 })
-export class CreatePostComponent {
+export class EditPostComponent implements OnInit {
+  postId!: number;
   title: string = '';
   htmlContent: string = '';
 
@@ -27,16 +28,32 @@ export class CreatePostComponent {
   };
 
   constructor(
+    private route: ActivatedRoute,
     private socialService: SocialService,
     private router: Router
   ) {}
+
+  ngOnInit(): void {
+    this.postId = Number(this.route.snapshot.paramMap.get('id'));
+    if (this.postId) {
+      this.socialService.getPost(this.postId).subscribe({
+        next: (post) => {
+          this.title = post.title;
+          this.htmlContent = post.blocks?.find(b => b.blockType === 'text')?.content || '';
+        },
+        error: (err) => {
+          alert('讀取失敗');
+          this.router.navigate(['/social']);
+        }
+      });
+    }
+  }
 
   onSubmit(): void {
     if (!this.title.trim()) {
       alert('請輸入文章標題');
       return;
     }
-
     if (!this.htmlContent.trim()) {
       alert('請輸入文章內容');
       return;
@@ -54,15 +71,13 @@ export class CreatePostComponent {
       ]
     };
 
-    this.socialService.createPost(payload).subscribe({
+    this.socialService.updatePost(this.postId, payload).subscribe({
       next: () => {
-        this.router.navigate(['/social']);
+        this.router.navigate(['/social/post', this.postId]);
       },
       error: (err) => {
-        console.error('錯誤物件：', err);
-        console.error('後端回傳狀態碼：', err.status);
-        console.error('後端回傳錯誤訊息：', err.error);
-        alert(`發佈失敗，請稍後再試。`);
+        console.error('更新失敗：', err);
+        alert('更新失敗，請稍後再試。');
       }
     });
   }

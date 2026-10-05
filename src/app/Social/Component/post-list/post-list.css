@@ -214,6 +214,56 @@
   color: #333333;
 }
 
+.clickable {
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.clickable:hover {
+  color: #b03a12;
+  text-decoration: underline;
+}
+
+.owner-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.btn-outline {
+  background-color: transparent;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-outline.btn-edit {
+  border: 1px solid #b03a12;
+  color: #b03a12;
+}
+
+.btn-outline.btn-edit:hover,
+.btn-outline.btn-edit:active {
+  background-color: #8e2e0e;
+  color: #ffffff;
+  border-color: #8e2e0e;
+}
+
+.btn-outline.btn-delete {
+  border: 1px solid #dc3545;
+  color: #dc3545;
+}
+
+.btn-outline.btn-delete:hover,
+.btn-outline.btn-delete:active {
+  background-color: #a71d2a;
+  color: #ffffff;
+  border-color: #a71d2a;
+}
+
 .card-footer {
   display: flex;
   justify-content: space-between;
