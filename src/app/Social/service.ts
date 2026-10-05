@@ -141,12 +141,13 @@ export class SocialService {
 
   //新增留言
   createComment(comment: { postId: number; replyMessageId?: number | null; messageContent: string }): Observable<any> {
-  return this.http.post(`${this.baseUrl}/comments`, comment, {
-    withCredentials: true
-  });
-}
+    return this.http.post(`${this.baseUrl}/comments`, comment, {
+      withCredentials: true
+    });
+  }
+  //修改留言
   updateComment(commentId: number, payload: CreateOrUpdateCommentPayload): Observable<void> {
-    return this.http.put<void>(`${this.baseUrl}/Comments/${commentId}`, payload, {
+    return this.http.put<void>(`${this.baseUrl}/comments/${commentId}`, payload, {
       withCredentials: true
     });
   }

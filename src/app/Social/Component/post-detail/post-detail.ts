@@ -19,6 +19,7 @@ export class PostDetailComponent implements OnInit {
   comments: Comment[] = [];
   newCommentContent: string = '';
   replyToComment: Comment | null = null;
+  editingComment: Comment | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -136,33 +137,75 @@ export class PostDetailComponent implements OnInit {
     }
   }
 
-  //發送留言
   sendComment(): void {
-    if (!this.newCommentContent.trim()) return;
+  if (!this.newCommentContent.trim()) return;
 
+  // 編輯留言
+  if (this.editingComment) {
     const payload = {
       postId: this.postId,
-      replyMessageId: this.replyToComment ? this.replyToComment.messageId : undefined,
+      replyMessageId: this.editingComment.replyMessageId,
       messageContent: this.newCommentContent.trim()
     };
 
-    this.socialService.createComment(payload).subscribe({
+    const editingCommentId = this.editingComment.messageId;
+
+    this.socialService.updateComment(editingCommentId, payload).subscribe({
       next: () => {
         this.newCommentContent = '';
+        this.editingComment = null;
         this.replyToComment = null;
         this.loadComments();
-        if (this.post) this.post.commentCount++;
       },
-      error: (err) => console.error('操作失敗', err)
+      error: (err) => {
+        console.error('編輯留言失敗', err);
+      }
     });
+
+    return;
   }
+
+  // 新增 / 回覆留言
+  const payload = {
+    postId: this.postId,
+    replyMessageId: this.replyToComment
+      ? this.replyToComment.messageId
+      : undefined,
+    messageContent: this.newCommentContent.trim()
+  };
+
+  this.socialService.createComment(payload).subscribe({
+    next: () => {
+      this.newCommentContent = '';
+      this.replyToComment = null;
+      this.loadComments();
+
+      if (this.post) this.post.commentCount++;
+    },
+    error: (err) => console.error('操作失敗', err)
+  });
+}
 
   setReplyTarget(comment: Comment): void {
-    this.replyToComment = comment;
-  }
+  // 回覆留言時取消編輯狀態
+  this.editingComment = null;
+  this.newCommentContent = '';
 
+  this.replyToComment = comment;
+  }
+  setEditTarget(comment: Comment): void {
+  // 開始編輯時取消回覆狀態
+  this.replyToComment = null;
+
+  this.editingComment = comment;
+  this.newCommentContent = comment.messageContent;
+  }
   cancelReply(): void {
     this.replyToComment = null;
+  }
+  cancelEdit(): void {
+  this.editingComment = null;
+  this.newCommentContent = '';
   }
 
   //留言按讚
@@ -182,17 +225,30 @@ export class PostDetailComponent implements OnInit {
 
   //刪除留言
   onDeleteComment(commentId: number): void {
-    if (confirm('確定要刪除留言嗎？')) {
-      this.socialService.deleteComment(commentId).subscribe({
-        next: () => {
-          this.comments = this.comments.filter(c => c.messageId !== commentId);
-          if (this.post && this.post.commentCount > 0) {
-            this.post.commentCount--;
-          }
-        },
-        error: (err) => console.error('刪除失敗:', err)
-      });
-    }
+  if (confirm('確定要刪除留言嗎？')) {
+    this.socialService.deleteComment(commentId).subscribe({
+      next: () => {
+        this.comments = this.comments.filter(c => c.messageId !== commentId);
+
+        // 如果刪除的正好是正在編輯的留言
+        if (this.editingComment?.messageId === commentId) {
+          this.editingComment = null;
+          this.newCommentContent = '';
+        }
+
+        // 如果刪除的是正在回覆的留言
+        if (this.replyToComment?.messageId === commentId) {
+          this.replyToComment = null;
+          this.newCommentContent = '';
+        }
+
+        if (this.post && this.post.commentCount > 0) {
+          this.post.commentCount--;
+        }
+      },
+      error: (err) => console.error('刪除失敗:', err)
+    });
+  }
   }
 
   //資訊頁面
