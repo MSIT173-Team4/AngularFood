@@ -105,7 +105,7 @@ export class App implements OnInit {
   // 已經是完整網址（Google 頭像、Cloudinary）就直接用。
   getUserImage(image?: string | null): string {
     if (!image) {
-      return 'images/default-avatar.png';
+      return '/images/default-avatar.png';
     }
     if (/^https?:\/\//i.test(image)) {
       return image;
@@ -157,5 +157,13 @@ export class App implements OnInit {
   onEscape(): void {
     this.closePanel();
 
+  }
+
+  onAvatarError(event: Event) {
+    const img = event.target as HTMLImageElement;
+    const fallback = '/images/default-avatar.png';
+    if (!img.src.endsWith(fallback)) {
+      img.src = fallback;
+    }
   }
 }
