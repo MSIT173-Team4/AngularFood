@@ -86,30 +86,42 @@
             </div>
 
             <div class="comment-footer">
-              <span class="like-btn" (click)="toggleCommentLike(comment)">
-                <i class="fa-thumbs-up" 
-                   [class.fa-solid]="comment.isLikedByCurrentUser" 
-                   [class.fa-regular]="!comment.isLikedByCurrentUser" 
-                   [class.liked]="comment.isLikedByCurrentUser"></i>
-                {{ comment.likes }}
-              </span>
-              <button class="btn-reply" (click)="setReplyTarget(comment)">回覆</button>
+            <span class="like-btn" (click)="toggleCommentLike(comment)">
+              <i class="fa-thumbs-up" 
+                [class.fa-solid]="comment.isLikedByCurrentUser" 
+                [class.fa-regular]="!comment.isLikedByCurrentUser" 
+                [class.liked]="comment.isLikedByCurrentUser"></i>
+              {{ comment.likes }}
+            </span>
 
-             @if (comment.userName === currentUserName || isPostOwner) {
+            <button class="btn-reply" (click)="setReplyTarget(comment)">回覆</button>
+
+            @if (comment.userName === currentUserName || isPostOwner) {
+              <button class="btn-edit-link" (click)="setEditTarget(comment)">編輯</button>
               <button class="btn-delete-link" (click)="onDeleteComment(comment.messageId)">刪除</button>
-             }
-            </div>
+            }
+          </div>
           </div>
         }
       }
 
       <div class="comment-input-area">
-        @if (replyToComment) {
+        @if (editingComment) {
+          <div class="reply-banner">
+            <span>正在編輯留言</span>
+            <span class="cancel-reply" (click)="cancelEdit()">
+              <i class="fa-solid fa-xmark"></i> 取消
+            </span>
+          </div>
+        } @else if (replyToComment) {
           <div class="reply-banner">
             <span>正在回覆 @{{ replyToComment.userName }}</span>
-            <span class="cancel-reply" (click)="cancelReply()"><i class="fa-solid fa-xmark"></i> 取消</span>
+            <span class="cancel-reply" (click)="cancelReply()">
+              <i class="fa-solid fa-xmark"></i> 取消
+            </span>
           </div>
         }
+
         <div class="input-wrapper">
           <input 
             type="text" 
@@ -117,7 +129,10 @@
             placeholder="留言..." 
             (keyup.enter)="sendComment()" 
           />
-          <button class="btn-send" (click)="sendComment()">發送</button>
+
+          <button class="btn-send" (click)="sendComment()">
+            {{ editingComment ? '儲存' : '發送' }}
+          </button>
         </div>
       </div>
     </div>
