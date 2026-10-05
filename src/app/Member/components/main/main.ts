@@ -252,4 +252,11 @@ export class Main implements OnInit {
     this.loadingProfile();
     this.authService.getCurrentUser().subscribe();
   }
+  onAvatarError(event: Event) {
+    const img = event.target as HTMLImageElement;
+    const fallback = '/images/default-avatar.png';
+    if (!img.src.endsWith(fallback)) {
+      img.src = fallback;
+    }
+  }
 }
