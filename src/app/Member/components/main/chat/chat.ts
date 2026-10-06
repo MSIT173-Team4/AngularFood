@@ -3,7 +3,7 @@ import { Component, OnInit, ChangeDetectorRef, effect } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
-import { environment } from '../../../../../environments/environment.development';
+import { environment } from '../../../../../environments/environment';
 import { ChatRoomDTO } from '../../../interfaces/ChatRoomDTO';
 import { ChatMessage } from '../../../interfaces/ChatMessage';
 import { AuthService } from '../../../services/auth-services';
@@ -104,7 +104,7 @@ export class Chat implements OnInit {
     this.messages = [];
   }
   getChatImageUrl(url: string) {
-    return `${environment.url}${url}`;
+    return `${environment.apiUrl}${url}`;
   }
   getMessages(roomId: number) {
     this.http

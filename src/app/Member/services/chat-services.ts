@@ -1,6 +1,6 @@
 import { Injectable, ChangeDetectorRef, signal } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
-import { environment } from '../../../environments/environment.development';
+import { environment } from '../../../environments/environment';
 import { ChatRoomDTO } from '../interfaces/ChatRoomDTO';
 import { ChatMessage } from '../interfaces/ChatMessage';
 @Injectable({
