@@ -160,6 +160,20 @@ export class RecipeService {
     );
   }
 
+  updateRecipe(
+    recipeId: number,
+    payload: CreateRecipePayload
+  ): Observable<ApiResponse<RecipeDetail>> {
+    return this.http.put<ApiResponse<RecipeDetail>>(
+      apiConfig.recipes.update(recipeId),
+      payload,
+      { withCredentials: true }
+    ).pipe(map((response) => ({
+      ...response,
+      data: response.data ? resolveRecipeDetailImages(response.data) : null
+    })));
+  }
+
   uploadCover(file: File): Observable<ApiResponse<RecipeAsset>> {
     const formData = new FormData();
     formData.append('file', file, file.name);

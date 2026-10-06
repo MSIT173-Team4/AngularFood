@@ -7,7 +7,7 @@
     <div class="profile-header">
       <!-- 頭像 -->
       <p-avatar
-        [image]="getImageUrl(userInfo?.image)"
+        [image]="getImageUrl(profile.image)"
         (onImageError)="onAvatarError($event)"
         size="xlarge"
         shape="circle"
@@ -235,7 +235,11 @@
           <div class="recipe-grid">
             @for (recipe of recipes; track recipe.recipeId) {
               <p-card styleClass="recipe-card">
-                <div class="recipe-card-content">
+                <a
+                  class="recipe-card-content recipe-card-link"
+                  [routerLink]="['/recipes', recipe.recipeId]"
+                  [attr.aria-label]="'查看食譜：' + recipe.title"
+                >
                   <img
                     [src]="getImageUrl(recipe.coverImageUrl)"
                     [alt]="recipe.title"
@@ -269,6 +273,25 @@
                       </span>
                     </div>
                   </div>
+                </a>
+                <div class="recipe-card-actions">
+                  <p-button
+                    label="查看食譜"
+                    icon="pi pi-eye"
+                    severity="secondary"
+                    [outlined]="true"
+                    size="small"
+                    (onClick)="viewRecipe(recipe.recipeId)"
+                  />
+                  @if (isOwnProfile) {
+                    <p-button
+                      label="編輯食譜"
+                      icon="pi pi-pencil"
+                      severity="success"
+                      size="small"
+                      (onClick)="editRecipe(recipe.recipeId)"
+                    />
+                  }
                 </div>
               </p-card>
             }

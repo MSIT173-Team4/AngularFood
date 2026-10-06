@@ -1,7 +1,7 @@
 import { UserRecipeStatDTO } from './../../interfaces/UserRecipeStatDTO';
 import { Component, inject, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { environment } from '../../../../environments/environment';
 import { UserProfileDTO } from '../../interfaces/UserProfileDTO';
 import { PublicUserProfileDTO } from '../../interfaces/PublicUserProfileDTO';
@@ -33,6 +33,7 @@ import { ButtonModule } from 'primeng/button';
     EditProfile,
     Apply,
     CommonModule,
+    RouterLink,
   ],
   templateUrl: './main.html',
   styleUrl: './main.css',
@@ -65,21 +66,44 @@ export class Main implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id');
-    console.log('public profile id:', id);
-    if (id) {
-      this.isOwnProfile = false;
-      this.publicProfileId = Number(id);
-      this.getUserRecipes(this.publicProfileId);
-      this.getUserPosts(this.publicProfileId);
-      this.loadPublicProfile(this.publicProfileId);
-    } else {
-      this.isOwnProfile = true;
-      this.getMyRecipes();
-      this.getMyPosts();
-      this.loadingProfile();
-      this.checkSeller();
+    const requestedProfileId = Number(this.route.snapshot.paramMap.get('id'));
+    if (Number.isInteger(requestedProfileId) && requestedProfileId > 0) {
+      const signedInUserId = this.authService.currentUser()?.userId;
+      if (signedInUserId) {
+        this.loadRequestedProfile(requestedProfileId, signedInUserId);
+        return;
+      }
+
+      this.authService.getCurrentUser().subscribe({
+        next: (currentUser) => this.loadRequestedProfile(requestedProfileId, currentUser.userId),
+        error: () => this.loadRequestedProfile(requestedProfileId, null),
+      });
+      return;
     }
+
+    this.loadOwnProfile();
+  }
+
+  private loadRequestedProfile(requestedProfileId: number, signedInUserId: number | null): void {
+    if (requestedProfileId === signedInUserId) {
+      this.loadOwnProfile();
+      return;
+    }
+
+    this.isOwnProfile = false;
+    this.publicProfileId = requestedProfileId;
+    this.getUserRecipes(requestedProfileId);
+    this.getUserPosts(requestedProfileId);
+    this.loadPublicProfile(requestedProfileId);
+  }
+
+  private loadOwnProfile(): void {
+    this.isOwnProfile = true;
+    this.publicProfileId = null;
+    this.getMyRecipes();
+    this.getMyPosts();
+    this.loadingProfile();
+    this.checkSeller();
   }
   goToSellCenter() {
     this.router.navigate(['/sellcenter'], {
@@ -117,9 +141,7 @@ export class Main implements OnInit {
         },
       });
   }
-  //讀取貼文,食譜
-  loadPost(id: number) { }
-  loadRecipe(id: number) { }
+  // Keep content-card navigation declarative through RouterLink.
 
   getMyPosts() {
     this.http
@@ -242,6 +264,18 @@ export class Main implements OnInit {
     // 本機開發接上 https://localhost:7164；正式環境 apiUrl 是 /api，前綴為空，交給 nginx 轉發
     const backendOrigin = environment.apiUrl.replace(/\/api\/?$/, '');
     return `${backendOrigin}${image.startsWith('/') ? '' : '/'}${image}`;
+  }
+
+  viewRecipe(recipeId: number): void {
+    void this.router.navigate(['/recipes', recipeId]);
+  }
+
+  editRecipe(recipeId: number): void {
+    if (!this.isOwnProfile) {
+      return;
+    }
+
+    void this.router.navigate(['/recipes', recipeId, 'edit']);
   }
   onApplySuccess() {
     this.sellerApplyVisible = false;
