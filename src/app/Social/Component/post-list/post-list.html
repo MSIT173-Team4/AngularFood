@@ -42,45 +42,41 @@
       <p class="post-summary" [innerHTML]="post.summaryText"></p>
 
       <div class="author-info">
-        <div class="profile-header">
-          <!-- 頭像 -->
-          <p-avatar [image]="getImageUrl(userInfo?.image)|| '/images/default-avatar.png'"
-            (onimageerror)="onAvatarError($event)" size="xlarge" shape="circle" class="author-avatar clickable"
-            (click)="$event.stopPropagation(); navigateToUser(post.userId)">
-          </p-avatar>
-          <!-- <img [src]="post.userImage || '/images/default-avatar.png'" alt="用戶頭像" class="author-avatar clickable"
-            (click)="$event.stopPropagation(); navigateToUser(post.userId)" /> -->
-          <div class="author-details">
-            <span class="author-name" (click)="$event.stopPropagation(); navigateToUser(post.userId)">
-              {{ post.userName }}
-            </span>
-          </div>
-
-          @if (post.userId === currentUserId) {
-          <div class="owner-actions" (click)="$event.stopPropagation()">
-            <button class="btn-outline btn-edit" (click)="onEditPost(post.postId)">編輯</button>
-            <button class="btn-outline btn-delete" (click)="onDeletePost(post.postId)">刪除</button>
-          </div>
-          }
+        <!-- 發佈該貼文的用戶頭像 -->
+        <p-avatar [image]="getImageUrl(userProfiles[post.userId]?.image)" (onimageerror)="onAvatarError($event)"
+          size="xlarge" shape="circle" class="author-avatar clickable"
+          (click)="$event.stopPropagation(); navigateToUser(post.userId)">
+        </p-avatar>
+        <div class="author-details">
+          <span class="author-name" (click)="$event.stopPropagation(); navigateToUser(post.userId)">
+            {{ post.userName }}
+          </span>
         </div>
 
-        <div class="card-footer">
-          <div class="metrics-group">
-            <span class="metric-item interactable" (click)="toggleLike($event, post)">
-              <i [class]="post.isLikedByCurrentUser ? 'fas fa-thumbs-up liked' : 'far fa-thumbs-up'"></i>
-              <span class="count">{{ post.likes }}</span>
-            </span>
-            <span class="metric-item">
-              <i class="far fa-eye"></i> 瀏覽量 {{ post.views }}
-            </span>
-            <span class="metric-item">
-              <i class="far fa-comment-alt"></i> {{ post.commentCount }} 則回覆
-            </span>
-          </div>
+        @if (post.userId === currentUserId) {
+        <div class="owner-actions" (click)="$event.stopPropagation()">
+          <button class="btn-outline btn-edit" (click)="onEditPost(post.postId)">編輯</button>
+          <button class="btn-outline btn-delete" (click)="onDeletePost(post.postId)">刪除</button>
+        </div>
+        }
+      </div>
 
-          <div class="post-date">
-            <i class="far fa-calendar-alt"></i> {{ post.postDate | timeAgo }}
-          </div>
+      <div class="card-footer">
+        <div class="metrics-group">
+          <span class="metric-item interactable" (click)="toggleLike($event, post)">
+            <i [class]="post.isLikedByCurrentUser ? 'fas fa-thumbs-up liked' : 'far fa-thumbs-up'"></i>
+            <span class="count">{{ post.likes }}</span>
+          </span>
+          <span class="metric-item">
+            <i class="far fa-eye"></i> 瀏覽量 {{ post.views }}
+          </span>
+          <span class="metric-item">
+            <i class="far fa-comment-alt"></i> {{ post.commentCount }} 則回覆
+          </span>
+        </div>
+
+        <div class="post-date">
+          <i class="far fa-calendar-alt"></i> {{ post.postDate | timeAgo }}
         </div>
       </div>
     </div>

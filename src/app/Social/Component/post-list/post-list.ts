@@ -8,7 +8,6 @@ import { BaseUserProfileDTO } from '../../../Member/interfaces/BaseUserProfileDT
 import { TimeAgoPipe } from '../../Pipes/time-ago-pipe';
 import { environment } from '../../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
-import { AuthService } from '../../../Member/services/auth-services';
 import { AvatarModule } from 'primeng/avatar';
 
 @Component({
@@ -21,6 +20,7 @@ import { AvatarModule } from 'primeng/avatar';
 export class PostListComponent implements OnInit {
   profile: BaseUserProfileDTO | null = null;
   userInfo: UserProfileDTO | null = null;
+  userProfiles: { [userId: number]: UserProfileDTO } = {};
   baseURL: string = environment.apiUrl;
   posts: PostList[] = [];
   activeTab: string = 'latest';
@@ -44,14 +44,29 @@ export class PostListComponent implements OnInit {
   }
 
   loadPosts(): void {
-    this.socialService.getPosts(this.activeTab, this.keyword, this.currentPage, this.pageSize).subscribe({
-      next: (res) => {
-        this.posts = res.items;
-        this.totalPages = res.totalPages;
-        this.pagesArray = Array.from({ length: this.totalPages }, (_, i) => i + 1);
-      },
-      error: (err) => console.error('載入失敗', err)
-    });
+    this.socialService
+      .getPosts(
+        this.activeTab,
+        this.keyword,
+        this.currentPage,
+        this.pageSize
+      )
+      .subscribe({
+        next: (res) => {
+          this.posts = res.items;
+          this.totalPages = res.totalPages;
+          this.pagesArray = Array.from(
+            { length: this.totalPages },
+            (_, i) => i + 1
+          );
+
+          // 取得每篇貼文作者的 Profile
+          this.posts.forEach(post => {
+            this.loadingProfile(post.userId);
+          });
+        },
+        error: (err) => console.error('載入失敗', err)
+      });
   }
 
   switchTab(tab: string): void {
@@ -73,18 +88,25 @@ export class PostListComponent implements OnInit {
     this.router.navigate(['/social/post', postId]);
   }
 
-  loadingProfile(): void {
+  loadingProfile(userId: number): void {
+    // 已經載入過就不用再呼叫 API
+    if (this.userProfiles[userId]) {
+      return;
+    }
+
     this.http
-      .get<UserProfileDTO>(`${this.baseURL}/Users/GetUserProfile`, {
-        withCredentials: true,
-      })
+      .get<UserProfileDTO>(
+        `${this.baseURL}/Users/GetUserProfile/${userId}`,
+        {
+          withCredentials: true,
+        }
+      )
       .subscribe({
         next: (res) => {
-          this.profile = res;
-          this.userInfo = res;
+          this.userProfiles[userId] = res;
         },
-        error: (res) => {
-          console.log(res);
+        error: (err) => {
+          console.log(`取得 User ${userId} 資料失敗`, err);
         },
       });
   }
