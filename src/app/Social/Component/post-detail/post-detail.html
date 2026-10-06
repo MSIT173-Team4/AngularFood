@@ -4,137 +4,126 @@
   </button>
 
   @if (post) {
-    <div class="post-header">
-      <h1 class="post-title">{{ post.title }}</h1>
-      <div class="author-row">
-        <img 
-          [src]="post.userImage || '/images/default-avatar.png'"
-          class="author-avatar clickable" 
-          (click)="navigateToUser(post.userId)"
-        />
-        <span class="author-name" (click)="navigateToUser(post.userId)">{{ post.userName }}</span>
-        <span class="post-date">{{ post.postDate | timeAgo }}</span>
+  <div class="post-header">
+    <h1 class="post-title">{{ post.title }}</h1>
+    <div class="author-row">
+      <!-- 發佈該貼文的用戶頭像 -->
+      <p-avatar [image]="getImageUrl(userProfiles[post.userId]?.image)" (onimageerror)="onAvatarError($event)"
+        size="xlarge" shape="circle" class="author-avatar clickable"
+        (click)="$event.stopPropagation(); navigateToUser(post.userId)">
+      </p-avatar>
+      <span class="author-name" (click)="navigateToUser(post.userId)">{{ post.userName }}</span>
+      <span class="post-date">{{ post.postDate | timeAgo }}</span>
+    </div>
+  </div>
+
+  <div class="post-blocks">
+    @for (block of post.blocks; track block.postBlockId || $index) {
+    @if (block.blockType === 'text') {
+    <div class="text-content" [innerHTML]="block.content"></div>
+    } @else if (block.blockType === 'image') {
+    <img [src]="block.mediaUrl" class="media-content" alt="Post media" />
+    } @else if (block.blockType === 'video') {
+    <video [src]="block.mediaUrl" controls class="media-content"></video>
+    }
+    }
+  </div>
+
+  <div class="post-actions">
+    <div class="metrics">
+      <span class="metric-item interactable" (click)="togglePostLike()">
+        <i class="fa-thumbs-up" [class.fa-solid]="post.isLikedByCurrentUser"
+          [class.fa-regular]="!post.isLikedByCurrentUser" [class.liked]="post.isLikedByCurrentUser"></i>
+        {{ post.likes }}
+      </span>
+
+      <span class="metric-item interactable" (click)="toggleBookmark()">
+        <i class="fa-bookmark" [class.fa-solid]="post.isBookmarkedByCurrentUser"
+          [class.fa-regular]="!post.isBookmarkedByCurrentUser" [class.bookmarked]="post.isBookmarkedByCurrentUser"></i>
+        收藏
+      </span>
+
+      <span class="metric-item">
+        <i class="fa-regular fa-eye"></i> {{ post.views }}
+      </span>
+    </div>
+
+    @if (isPostOwner) {
+    <div class="owner-actions">
+      <button type="button" class="btn-outline btn-edit" (click)="onEditPost()">編輯</button>
+      <button type="button" class="btn-outline btn-delete" (click)="onDeletePost()">刪除</button>
+    </div>
+    }
+  </div>
+
+  <div class="comments-section">
+    <h3>留言 ({{ comments.length }})</h3>
+
+    @if (comments.length === 0) {
+    <div class="no-comments">尚無留言</div>
+    } @else {
+    @for (comment of comments; track comment.messageId) {
+    <div class="comment-item">
+      <div class="comment-header">
+        <!-- 發佈該留言的用戶頭像 -->
+        <img [src]="getImageUrl(userProfiles[comment.userId]?.image)" class="comment-avatar clickable"
+          (error)="onAvatarError($event)" (click)="navigateToUser(comment.userId)" />
+        <span class="comment-user" (click)="navigateToUser(comment.userId)">{{ comment.userName }}</span>
+        <span class="comment-date">{{ comment.messageDate | timeAgo }}</span>
       </div>
-    </div>
 
-    <div class="post-blocks">
-      @for (block of post.blocks; track block.postBlockId || $index) {
-        @if (block.blockType === 'text') {
-          <div class="text-content" [innerHTML]="block.content"></div>
-        } @else if (block.blockType === 'image') {
-          <img [src]="block.mediaUrl" class="media-content" alt="Post media" />
-        } @else if (block.blockType === 'video') {
-          <video [src]="block.mediaUrl" controls class="media-content"></video>
+      <div class="comment-body">
+        @if (comment.replyToUserName) {
+        <span class="reply-tag">@{{ comment.replyToUserName }} </span>
         }
-      }
-    </div>
+        {{ comment.messageContent }}
+      </div>
 
-    <div class="post-actions">
-      <div class="metrics">
-        <span class="metric-item interactable" (click)="togglePostLike()">
-          <i class="fa-thumbs-up" 
-             [class.fa-solid]="post.isLikedByCurrentUser" 
-             [class.fa-regular]="!post.isLikedByCurrentUser" 
-             [class.liked]="post.isLikedByCurrentUser"></i>
-          {{ post.likes }}
+      <div class="comment-footer">
+        <span class="like-btn" (click)="toggleCommentLike(comment)">
+          <i class="fa-thumbs-up" [class.fa-solid]="comment.isLikedByCurrentUser"
+            [class.fa-regular]="!comment.isLikedByCurrentUser" [class.liked]="comment.isLikedByCurrentUser"></i>
+          {{ comment.likes }}
         </span>
 
-        <span class="metric-item interactable" (click)="toggleBookmark()">
-          <i class="fa-bookmark" 
-             [class.fa-solid]="post.isBookmarkedByCurrentUser" 
-             [class.fa-regular]="!post.isBookmarkedByCurrentUser" 
-             [class.bookmarked]="post.isBookmarkedByCurrentUser"></i>
-             收藏
-        </span>
+        <button class="btn-reply" (click)="setReplyTarget(comment)">回覆</button>
 
-        <span class="metric-item">
-          <i class="fa-regular fa-eye"></i> {{ post.views }}
-        </span>
-      </div>
-
-      @if (isPostOwner) {
-        <div class="owner-actions">
-          <button type="button" class="btn-outline btn-edit" (click)="onEditPost()">編輯</button>
-          <button type="button" class="btn-outline btn-delete" (click)="onDeletePost()">刪除</button>
-        </div>
-      }
-    </div>
-
-    <div class="comments-section">
-      <h3>留言 ({{ comments.length }})</h3>
-
-      @if (comments.length === 0) {
-        <div class="no-comments">尚無留言</div>
-      } @else {
-        @for (comment of comments; track comment.messageId) {
-          <div class="comment-item">
-            <div class="comment-header">
-              <img 
-                [src]="post.userImage || '/images/default-avatar.png'"
-                class="comment-avatar clickable" 
-                (click)="navigateToUser(comment.userId)"
-              />
-              <span class="comment-user" (click)="navigateToUser(comment.userId)">{{ comment.userName }}</span>
-              <span class="comment-date">{{ comment.messageDate | timeAgo }}</span>
-            </div>
-            
-            <div class="comment-body">
-              @if (comment.replyToUserName) {
-                <span class="reply-tag">@{{ comment.replyToUserName }} </span>
-              }
-              {{ comment.messageContent }}
-            </div>
-
-            <div class="comment-footer">
-            <span class="like-btn" (click)="toggleCommentLike(comment)">
-              <i class="fa-thumbs-up" 
-                [class.fa-solid]="comment.isLikedByCurrentUser" 
-                [class.fa-regular]="!comment.isLikedByCurrentUser" 
-                [class.liked]="comment.isLikedByCurrentUser"></i>
-              {{ comment.likes }}
-            </span>
-
-            <button class="btn-reply" (click)="setReplyTarget(comment)">回覆</button>
-
-            @if (comment.userName === currentUserName || isPostOwner) {
-              <button class="btn-edit-link" (click)="setEditTarget(comment)">編輯</button>
-              <button class="btn-delete-link" (click)="onDeleteComment(comment.messageId)">刪除</button>
-            }
-          </div>
-          </div>
+        @if (comment.userName === currentUserName) {
+        <button class="btn-edit-link" (click)="setEditTarget(comment)">編輯</button>
         }
-      }
-
-      <div class="comment-input-area">
-        @if (editingComment) {
-          <div class="reply-banner">
-            <span>正在編輯留言</span>
-            <span class="cancel-reply" (click)="cancelEdit()">
-              <i class="fa-solid fa-xmark"></i> 取消
-            </span>
-          </div>
-        } @else if (replyToComment) {
-          <div class="reply-banner">
-            <span>正在回覆 @{{ replyToComment.userName }}</span>
-            <span class="cancel-reply" (click)="cancelReply()">
-              <i class="fa-solid fa-xmark"></i> 取消
-            </span>
-          </div>
+        @if (comment.userName === currentUserName || isPostOwner) {
+        <button class="btn-delete-link" (click)="onDeleteComment(comment.messageId)">刪除</button>
         }
-
-        <div class="input-wrapper">
-          <input 
-            type="text" 
-            [(ngModel)]="newCommentContent" 
-            placeholder="留言..." 
-            (keyup.enter)="sendComment()" 
-          />
-
-          <button class="btn-send" (click)="sendComment()">
-            {{ editingComment ? '儲存' : '發送' }}
-          </button>
-        </div>
       </div>
     </div>
+    }
+    }
+
+    <div class="comment-input-area">
+      @if (editingComment) {
+      <div class="reply-banner">
+        <span>正在編輯留言</span>
+        <span class="cancel-reply" (click)="cancelEdit()">
+          <i class="fa-solid fa-xmark"></i> 取消
+        </span>
+      </div>
+      } @else if (replyToComment) {
+      <div class="reply-banner">
+        <span>正在回覆 @{{ replyToComment.userName }}</span>
+        <span class="cancel-reply" (click)="cancelReply()">
+          <i class="fa-solid fa-xmark"></i> 取消
+        </span>
+      </div>
+      }
+
+      <div class="input-wrapper">
+        <input type="text" [(ngModel)]="newCommentContent" placeholder="留言..." (keyup.enter)="sendComment()" />
+
+        <button class="btn-send" (click)="sendComment()">
+          {{ editingComment ? '儲存' : '發送' }}
+        </button>
+      </div>
+    </div>
+  </div>
   }
 </div>

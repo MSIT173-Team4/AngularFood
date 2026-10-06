@@ -8,51 +8,67 @@ import { BaseUserProfileDTO } from '../../../Member/interfaces/BaseUserProfileDT
 import { TimeAgoPipe } from '../../Pipes/time-ago-pipe';
 import { environment } from '../../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
-import { AuthService } from '../../../Member/services/auth-services';
+import { AvatarModule } from 'primeng/avatar';
 
 @Component({
   selector: 'app-post-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, TimeAgoPipe],
+  imports: [AvatarModule, CommonModule, FormsModule, TimeAgoPipe],
   templateUrl: './post-list.html',
   styleUrls: ['./post-list.css']
 })
 export class PostListComponent implements OnInit {
-    profile: BaseUserProfileDTO | null = null;
-    userInfo: UserProfileDTO | null = null;
+  profile: BaseUserProfileDTO | null = null;
+  userInfo: UserProfileDTO | null = null;
+  userProfiles: { [userId: number]: UserProfileDTO } = {};
   baseURL: string = environment.apiUrl;
   posts: PostList[] = [];
   activeTab: string = 'latest';
   keyword: string = '';
-  
+
   currentPage: number = 1;
   pageSize: number = 5;
   totalPages: number = 1;
   pagesArray: number[] = [];
-  
+
   currentUserId: number = 0;
 
   constructor(
     private socialService: SocialService,
     private router: Router,
     private http: HttpClient
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadPosts();
   }
 
   loadPosts(): void {
-    this.socialService.getPosts(this.activeTab, this.keyword, this.currentPage, this.pageSize).subscribe({
-      next: (res) => {
-        this.posts = res.items;
-        this.totalPages = res.totalPages;
-        this.pagesArray = Array.from({ length: this.totalPages }, (_, i) => i + 1);
-      },
-      error: (err) => console.error('載入失敗', err)
-    });
+    this.socialService
+      .getPosts(
+        this.activeTab,
+        this.keyword,
+        this.currentPage,
+        this.pageSize
+      )
+      .subscribe({
+        next: (res) => {
+          this.posts = res.items;
+          this.totalPages = res.totalPages;
+          this.pagesArray = Array.from(
+            { length: this.totalPages },
+            (_, i) => i + 1
+          );
+
+          // 取得每篇貼文作者的 Profile
+          this.posts.forEach(post => {
+            this.loadingProfile(post.userId);
+          });
+        },
+        error: (err) => console.error('載入失敗', err)
+      });
   }
- 
+
   switchTab(tab: string): void {
     this.activeTab = tab;
     this.currentPage = 1;
@@ -72,24 +88,52 @@ export class PostListComponent implements OnInit {
     this.router.navigate(['/social/post', postId]);
   }
 
-  loadingProfile(): void {
+  loadingProfile(userId: number): void {
+    // 已經載入過就不用再呼叫 API
+    if (this.userProfiles[userId]) {
+      return;
+    }
+
     this.http
-      .get<UserProfileDTO>(`${this.baseURL}/Users/GetUserProfile`, {
-        withCredentials: true,
-      })
+      .get<UserProfileDTO>(
+        `${this.baseURL}/Users/GetUserProfile/${userId}`,
+        {
+          withCredentials: true,
+        }
+      )
       .subscribe({
         next: (res) => {
-          this.profile = res;
-          this.userInfo = res;
+          this.userProfiles[userId] = res;
         },
-        error: (res) => {
-          console.log(res);
+        error: (err) => {
+          console.log(`取得 User ${userId} 資料失敗`, err);
         },
       });
   }
 
+  getImageUrl(image?: string): string {
+    if (!image) {
+      return '/images/default-avatar.png';
+    }
+
+    if (/^https?:\/\//i.test(image)) {
+      return image; // 已經是完整網址（Cloudinary、Google 頭像）
+    }
+    // 本機開發接上 https://localhost:7164；正式環境 apiUrl 是 /api，前綴為空，交給 nginx 轉發
+    const backendOrigin = environment.apiUrl.replace(/\/api\/?$/, '');
+    return `${backendOrigin}${image.startsWith('/') ? '' : '/'}${image}`;
+  }
+
+  onAvatarError(event: Event) {
+    const img = event.target as HTMLImageElement;
+    const fallback = '/images/default-avatar.png';
+    if (!img.src.endsWith(fallback)) {
+      img.src = fallback;
+    }
+  }
+
   navigateToUser(userId: number): void {
-    this.router.navigate(['/main']);
+    this.router.navigate(['/main', userId]);
   }
 
 

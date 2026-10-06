@@ -5,11 +5,15 @@ import { FormsModule } from '@angular/forms';
 import { SocialService, PostDetail, Comment } from '../../service';
 import { AuthService } from '../../../Member/services/auth-services';
 import { TimeAgoPipe } from '../../Pipes/time-ago-pipe';
+import { HttpClient } from '@angular/common/http';
+import { AvatarModule } from 'primeng/avatar';
+import { UserProfileDTO } from '../../../Member/interfaces/UserProfileDTO';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-post-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, TimeAgoPipe],
+  imports: [CommonModule, FormsModule, TimeAgoPipe, AvatarModule],
   templateUrl: './post-detail.html',
   styleUrls: ['./post-detail.css']
 })
@@ -20,13 +24,16 @@ export class PostDetailComponent implements OnInit {
   newCommentContent: string = '';
   replyToComment: Comment | null = null;
   editingComment: Comment | null = null;
+  userProfiles: { [userId: number]: UserProfileDTO } = {};
+  baseURL: string = environment.apiUrl;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private socialService: SocialService,
-    public authService: AuthService
-  ) {}
+    public authService: AuthService,
+    private http: HttpClient
+  ) { }
 
   ngOnInit(): void {
     if (!this.authService.currentUser()) {
@@ -45,24 +52,47 @@ export class PostDetailComponent implements OnInit {
     });
   }
 
-    get currentUserName(): string | null {
-      const user = this.authService.currentUser();
-      return user ? user.userName : null;
+  get currentUserName(): string | null {
+    const user = this.authService.currentUser();
+    return user ? user.userName : null;
+  }
+
+  get isPostOwner(): boolean {
+    return !!(
+      this.post &&
+      this.currentUserName &&
+      this.post.userName === this.currentUserName
+    );
+  }
+  loadingProfile(userId: number): void {
+    // 已經取得過這個使用者的資料，就不要重複呼叫 API
+    if (this.userProfiles[userId]) {
+      return;
     }
 
-    get isPostOwner(): boolean {
-      return !!(
-        this.post && 
-        this.currentUserName && 
-        this.post.userName === this.currentUserName
-      );
-    }
+    this.http
+      .get<UserProfileDTO>(
+        `${this.baseURL}/Users/GetUserProfile/${userId}`,
+        {
+          withCredentials: true
+        }
+      )
+      .subscribe({
+        next: (res) => {
+          this.userProfiles[userId] = res;
+        },
+        error: (err) => {
+          console.error(`取得 User ${userId} 資料失敗`, err);
+        }
+      });
+  }
 
   //貼文內容
   loadPostDetail(): void {
     this.socialService.getPost(this.postId).subscribe({
       next: (res) => {
         this.post = res;
+        this.loadingProfile(res.userId);
       },
       error: (err) => console.error('載入失敗:', err)
     });
@@ -73,6 +103,10 @@ export class PostDetailComponent implements OnInit {
     this.socialService.getComments(this.postId).subscribe({
       next: (res) => {
         this.comments = res;
+        //載入留言作者Profile
+        this.comments.forEach(comment => {
+          this.loadingProfile(comment.userId);
+        });
       },
       error: (err) => console.error('載入失敗:', err)
     });
@@ -81,7 +115,7 @@ export class PostDetailComponent implements OnInit {
   //貼文按讚
   togglePostLike(): void {
     if (!this.post) return;
-    
+
     const previousState = this.post.isLikedByCurrentUser;
     this.post.isLikedByCurrentUser = !previousState;
     this.post.likes += this.post.isLikedByCurrentUser ? 1 : -1;
@@ -138,74 +172,74 @@ export class PostDetailComponent implements OnInit {
   }
 
   sendComment(): void {
-  if (!this.newCommentContent.trim()) return;
+    if (!this.newCommentContent.trim()) return;
 
-  // 編輯留言
-  if (this.editingComment) {
+    // 編輯留言
+    if (this.editingComment) {
+      const payload = {
+        postId: this.postId,
+        replyMessageId: this.editingComment.replyMessageId,
+        messageContent: this.newCommentContent.trim()
+      };
+
+      const editingCommentId = this.editingComment.messageId;
+
+      this.socialService.updateComment(editingCommentId, payload).subscribe({
+        next: () => {
+          this.newCommentContent = '';
+          this.editingComment = null;
+          this.replyToComment = null;
+          this.loadComments();
+        },
+        error: (err) => {
+          console.error('編輯留言失敗', err);
+        }
+      });
+
+      return;
+    }
+
+    // 新增 / 回覆留言
     const payload = {
       postId: this.postId,
-      replyMessageId: this.editingComment.replyMessageId,
+      replyMessageId: this.replyToComment
+        ? this.replyToComment.messageId
+        : undefined,
       messageContent: this.newCommentContent.trim()
     };
 
-    const editingCommentId = this.editingComment.messageId;
-
-    this.socialService.updateComment(editingCommentId, payload).subscribe({
+    this.socialService.createComment(payload).subscribe({
       next: () => {
         this.newCommentContent = '';
-        this.editingComment = null;
         this.replyToComment = null;
         this.loadComments();
+
+        if (this.post) this.post.commentCount++;
       },
-      error: (err) => {
-        console.error('編輯留言失敗', err);
-      }
+      error: (err) => console.error('操作失敗', err)
     });
-
-    return;
   }
-
-  // 新增 / 回覆留言
-  const payload = {
-    postId: this.postId,
-    replyMessageId: this.replyToComment
-      ? this.replyToComment.messageId
-      : undefined,
-    messageContent: this.newCommentContent.trim()
-  };
-
-  this.socialService.createComment(payload).subscribe({
-    next: () => {
-      this.newCommentContent = '';
-      this.replyToComment = null;
-      this.loadComments();
-
-      if (this.post) this.post.commentCount++;
-    },
-    error: (err) => console.error('操作失敗', err)
-  });
-}
 
   setReplyTarget(comment: Comment): void {
-  // 回覆留言時取消編輯狀態
-  this.editingComment = null;
-  this.newCommentContent = '';
+    // 回覆留言時取消編輯狀態
+    this.editingComment = null;
+    this.newCommentContent = '';
 
-  this.replyToComment = comment;
+    this.replyToComment = comment;
   }
   setEditTarget(comment: Comment): void {
-  // 開始編輯時取消回覆狀態
-  this.replyToComment = null;
+    // 開始編輯時取消回覆狀態
+    this.replyToComment = null;
 
-  this.editingComment = comment;
-  this.newCommentContent = comment.messageContent;
+    this.editingComment = comment;
+    this.newCommentContent = comment.messageContent;
   }
   cancelReply(): void {
     this.replyToComment = null;
   }
   cancelEdit(): void {
-  this.editingComment = null;
-  this.newCommentContent = '';
+    this.editingComment = null;
+    this.newCommentContent = '';
   }
 
   //留言按讚
@@ -225,36 +259,58 @@ export class PostDetailComponent implements OnInit {
 
   //刪除留言
   onDeleteComment(commentId: number): void {
-  if (confirm('確定要刪除留言嗎？')) {
-    this.socialService.deleteComment(commentId).subscribe({
-      next: () => {
-        this.comments = this.comments.filter(c => c.messageId !== commentId);
+    if (confirm('確定要刪除留言嗎？')) {
+      this.socialService.deleteComment(commentId).subscribe({
+        next: () => {
+          this.comments = this.comments.filter(c => c.messageId !== commentId);
 
-        // 如果刪除的正好是正在編輯的留言
-        if (this.editingComment?.messageId === commentId) {
-          this.editingComment = null;
-          this.newCommentContent = '';
-        }
+          // 如果刪除的正好是正在編輯的留言
+          if (this.editingComment?.messageId === commentId) {
+            this.editingComment = null;
+            this.newCommentContent = '';
+          }
 
-        // 如果刪除的是正在回覆的留言
-        if (this.replyToComment?.messageId === commentId) {
-          this.replyToComment = null;
-          this.newCommentContent = '';
-        }
+          // 如果刪除的是正在回覆的留言
+          if (this.replyToComment?.messageId === commentId) {
+            this.replyToComment = null;
+            this.newCommentContent = '';
+          }
 
-        if (this.post && this.post.commentCount > 0) {
-          this.post.commentCount--;
-        }
-      },
-      error: (err) => console.error('刪除失敗:', err)
-    });
+          if (this.post && this.post.commentCount > 0) {
+            this.post.commentCount--;
+          }
+        },
+        error: (err) => console.error('刪除失敗:', err)
+      });
+    }
   }
-  }
 
-  //資訊頁面
+  //資訊頁面及用戶頭像
   navigateToUser(userId: number): void {
     if (userId) {
-      this.router.navigate(['/main']);
+      this.router.navigate(['/main', userId]);
+    }
+  }
+  getImageUrl(image?: string): string {
+    if (!image) {
+      return '/images/default-avatar.png';
+    }
+
+    if (/^https?:\/\//i.test(image)) {
+      return image;
+    }
+
+    const backendOrigin = environment.apiUrl.replace(/\/api\/?$/, '');
+
+    return `${backendOrigin}${image.startsWith('/') ? '' : '/'}${image}`;
+  }
+
+  onAvatarError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    const fallback = '/images/default-avatar.png';
+
+    if (!img.src.endsWith(fallback)) {
+      img.src = fallback;
     }
   }
 
