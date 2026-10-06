@@ -133,4 +133,40 @@ export class Chat implements OnInit {
       console.error('傳送訊息失敗', err);
     }
   }
+
+  async sendImage(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) {
+      return;
+    }
+
+    if (!this.selectedRoom) {
+      return;
+    }
+
+    const formData = new FormData();
+    const file = input.files[0];
+    formData.append('image', file);
+    this.http
+      .post<{ imageUrl: string }>(`${environment.apiUrl}/Chat/UploadChatImage`, formData, {
+        withCredentials: true,
+      })
+      .subscribe({
+        next: (res) => {
+          try {
+            this.chatService.sendImage(this.selectedRoom!.roomId, res.imageUrl);
+
+            console.log('圖片訊息傳送成功');
+          } catch (err) {
+            console.error('SignalR 傳送圖片失敗', err);
+          }
+          input.value = '';
+        },
+        error: (err) => {
+          console.error('圖片上傳失敗', err);
+          input.value = '';
+        },
+      });
+  }
+
 }
