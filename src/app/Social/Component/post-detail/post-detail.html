@@ -88,8 +88,10 @@
 
         <button class="btn-reply" (click)="setReplyTarget(comment)">回覆</button>
 
-        @if (comment.userName === currentUserName || isPostOwner) {
+        @if (comment.userName === currentUserName) {
         <button class="btn-edit-link" (click)="setEditTarget(comment)">編輯</button>
+        }
+        @if (comment.userName === currentUserName || isPostOwner) {
         <button class="btn-delete-link" (click)="onDeleteComment(comment.messageId)">刪除</button>
         }
       </div>
