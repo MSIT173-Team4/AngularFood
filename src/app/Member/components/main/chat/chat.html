@@ -60,7 +60,11 @@
               [class.my-message]="msg.senderId === currentUserId"
               [class.other-message]="msg.senderId !== currentUserId"
             >
-              {{ msg.content }}
+              @if (msg.messageType === 2 && msg.imageUrl) {
+                <img [src]="getChatImageUrl(msg.imageUrl)" class="chat-image" alt="聊天圖片" />
+              } @else {
+                {{ msg.content }}
+              }
             </div>
           </div>
         }
@@ -68,6 +72,11 @@
 
       <div class="input-area">
         <input type="text" [(ngModel)]="message" placeholder="輸入訊息..." (keyup.enter)="send()" />
+        <input #imageInput type="file" accept="image/jpeg" hidden (change)="sendImage($event)" />
+
+        <button type="button" (click)="imageInput.click()">
+          <i class="pi pi-image"></i>
+        </button>
 
         <button type="button" (click)="send()">傳送</button>
       </div>
