@@ -77,7 +77,7 @@ server {
   }
 
   location ^~ /api/images/ {
-  proxy_pass ${API_UPSTREAM};
+  proxy_pass ${API_UPSTREAM}/images/;
   proxy_set_header Host ${API_HOST};
   proxy_ssl_server_name on;
 }
