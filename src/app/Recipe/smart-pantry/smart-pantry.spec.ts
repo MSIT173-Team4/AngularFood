@@ -37,4 +37,13 @@ describe('SmartPantry', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should open a blank manual pantry entry without requiring a photo', () => {
+    component.openManualEntryDialog();
+
+    expect(component.dialogVisible()).toBe(true);
+    expect(component.isManualEntry()).toBe(true);
+    expect(component.pantryForms()).toHaveLength(1);
+    expect(component.pantryForms()[0].ingredientName).toBe('');
+  });
 });

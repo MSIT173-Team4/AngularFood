@@ -7,10 +7,26 @@
   </a>
 
   <header>
+    @if (!isEditMode()) {
+      <button
+        type="button"
+        class="demo-fill-trigger"
+        aria-label="Demo 一鍵快速填入食譜資料"
+        title="Demo 快速填入"
+        (click)="fillDemoRecipe()"
+      >
+        <i class="pi pi-bolt" aria-hidden="true"></i>
+        <span>Demo</span>
+      </button>
+    }
     <div>
       <span class="eyebrow"><i class="pi pi-sparkles"></i> AI 協作食譜編輯器</span>
-      <h1>建立分享食譜</h1>
-      <p>依區塊完成料理資訊；可先儲存草稿，確認內容後再公開發布。</p>
+      <h1>{{ isEditMode() ? '編輯分享食譜' : '建立分享食譜' }}</h1>
+      <p>
+        {{ isEditMode()
+          ? '更新你曾發布的食譜；可先儲存本機草稿，確認後再套用變更。'
+          : '依區塊完成料理資訊；可先儲存草稿，確認內容後再公開發布。' }}
+      </p>
     </div>
     <div class="header-actions">
       @if (createdRecipeId()) {
@@ -30,11 +46,11 @@
         (onClick)="saveDraft()"
       />
       <p-button
-        label="確認發布"
+        [label]="isEditMode() ? '儲存變更' : '確認發布'"
         icon="pi pi-send"
         severity="danger"
         [loading]="isSaving()"
-        [disabled]="!canSubmit()"
+        [disabled]="!canSubmit() || isLoadingRecipe()"
         (onClick)="submitRecipe()"
       />
     </div>
@@ -240,7 +256,7 @@
               <span class="step-number">{{ index + 1 }}</span>
               <div class="step-image-content">
                 <p>{{ instruction }}</p>
-                @if (stepPreviewUrls()[index]; as previewUrl) {
+                @if (stepPreviewUrls()[index] || stepImageUrls()[index]; as previewUrl) {
                   <img [src]="previewUrl" [alt]="'步驟 ' + (index + 1) + ' 圖片預覽'" />
                 }
               </div>
