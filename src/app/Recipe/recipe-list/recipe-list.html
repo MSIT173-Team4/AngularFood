@@ -115,7 +115,11 @@
         </ng-template>
         <ng-template #title>{{ recipe.title }}</ng-template>
         <p class="description">{{ recipe.description }}</p>
-        <div class="recipe-author">
+        <a
+          class="recipe-author"
+          [routerLink]="['/main', recipe.authorId ?? 0]"
+          [attr.aria-label]="'查看 ' + recipe.authorName + ' 的會員頁與歷史食譜'"
+        >
           @if (recipe.authorImageUrl) {
             <img [src]="recipe.authorImageUrl" [alt]="recipe.authorName + ' 的會員頭像'" />
           } @else {
@@ -125,7 +129,7 @@
             <b>{{ recipe.authorName }}</b>
             <small>{{ recipe.authorRecipeCount ?? 0 }} 道公開食譜</small>
           </div>
-        </div>
+        </a>
         <div class="recipe-tags">
           @for (tag of recipe.tags.slice(0, 3); track tag) {
             <span>{{ tag }}</span>

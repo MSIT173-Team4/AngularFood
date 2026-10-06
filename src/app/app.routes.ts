@@ -57,6 +57,13 @@ export const routes: Routes = [
       import('./Recipe/recipe-list/recipe-list').then((module) => module.RecipeList),
   },
   {
+    path: 'recipes/:id/edit',
+    title: '編輯食譜｜友料美食生活平台',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./Recipe/create-recipe/create-recipe').then((module) => module.CreateRecipe),
+  },
+  {
     path: 'recipes/:id',
     title: '食譜詳情｜友料美食生活平台',
     resolve: { pageData: recipeDetailResolver },

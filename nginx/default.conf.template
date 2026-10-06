@@ -49,6 +49,8 @@ server {
     add_header Cache-Control "no-cache";   # index.html 不快取，才拿得到新版
   }
 
+   # ---------- SignalR 聊天：轉給後端，並支援 WebSocket ----------
+  # 前端連 /chatHub 時
   location /chatHub {
     proxy_pass ${API_UPSTREAM};
     proxy_set_header Host ${API_HOST};
@@ -56,7 +58,28 @@ server {
     proxy_http_version 1.1;
     proxy_set_header Upgrade $http_upgrade;
     proxy_set_header Connection "upgrade";
+    proxy_set_header X-Forwarded-Proto https;
     proxy_read_timeout 3600s;
+    proxy_send_timeout 3600s;
   }
+
+  # 前端連 /api/chatHub 時：把開頭的 /api 拿掉再轉給後端的 /chatHub
+  location /api/chatHub {
+    proxy_pass ${API_UPSTREAM}/chatHub;
+    proxy_set_header Host ${API_HOST};
+    proxy_ssl_server_name on;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+    proxy_set_header X-Forwarded-Proto https;
+    proxy_read_timeout 3600s;
+    proxy_send_timeout 3600s;
+  }
+
+  location ^~ /images/ {
+  proxy_pass ${API_UPSTREAM};
+  proxy_set_header Host ${API_HOST};
+  proxy_ssl_server_name on;
+}
 }
 

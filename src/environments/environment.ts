@@ -3,6 +3,6 @@
 export const environment = {
   production: true,
   apiUrl: '/api',
-  url: 'https://friendlyfood-api-7tsmeq4eta-de.a.run.app',
+  url: '',
   googleClientId: '954621879714-ci6coktvamahv9c7di808l510v1rn9is.apps.googleusercontent.com',
 };

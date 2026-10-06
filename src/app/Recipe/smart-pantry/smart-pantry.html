@@ -35,14 +35,25 @@
     <article>
       <div class="section-heading">
         <h2><i class="pi pi-box" aria-hidden="true"></i> 虛擬冰箱庫存</h2>
-        <p-button
-          label="拍照新增"
-          icon="pi pi-camera"
-          size="small"
-          severity="warn"
-          [rounded]="true"
-          (onClick)="openCameraDialog()"
-        />
+        <div class="pantry-entry-actions">
+          <p-button
+            label="手動新增"
+            icon="pi pi-pencil"
+            size="small"
+            severity="secondary"
+            [outlined]="true"
+            [rounded]="true"
+            (onClick)="openManualEntryDialog()"
+          />
+          <p-button
+            label="拍照新增"
+            icon="pi pi-camera"
+            size="small"
+            severity="warn"
+            [rounded]="true"
+            (onClick)="openCameraDialog()"
+          />
+        </div>
       </div>
 
       @for (item of pantryItems(); track item.pantryId) {
@@ -80,13 +91,23 @@
           <i class="pi pi-box" aria-hidden="true"></i>
           <strong>冰箱目前沒有食材</strong>
           <span>每位使用者的庫存會分開保存，從拍照或手動新增第一項食材開始。</span>
-          <p-button
-            label="新增第一項食材"
-            icon="pi pi-camera"
-            severity="warn"
-            [rounded]="true"
-            (onClick)="openCameraDialog()"
-          />
+          <div class="pantry-entry-actions">
+            <p-button
+              label="手動新增第一項"
+              icon="pi pi-pencil"
+              severity="secondary"
+              [outlined]="true"
+              [rounded]="true"
+              (onClick)="openManualEntryDialog()"
+            />
+            <p-button
+              label="拍照新增"
+              icon="pi pi-camera"
+              severity="warn"
+              [rounded]="true"
+              (onClick)="openCameraDialog()"
+            />
+          </div>
         </div>
       }
     </article>
@@ -321,7 +342,7 @@
 </p-dialog>
 
 <p-dialog
-  header="拍照新增食材"
+  [header]="isManualEntry() ? '手動新增食材' : '拍照新增食材'"
   [modal]="true"
   [draggable]="false"
   [resizable]="false"
@@ -331,11 +352,13 @@
   (onHide)="closeCameraDialog()"
 >
   <div class="diagnostic-dialog">
-    <div class="shooting-reminder">
-      <i class="pi pi-lightbulb" aria-hidden="true"></i>
-      <span>可拍攝一種或多種食材，請分開擺放並保留完整外觀；診斷後仍可逐項修改。</span>
-      <button type="button" (click)="openGuideDialog()">查看圖解</button>
-    </div>
+    @if (!isManualEntry()) {
+      <div class="shooting-reminder">
+        <i class="pi pi-lightbulb" aria-hidden="true"></i>
+        <span>可拍攝一種或多種食材，請分開擺放並保留完整外觀；診斷後仍可逐項修改。</span>
+        <button type="button" (click)="openGuideDialog()">查看圖解</button>
+      </div>
+    }
     <input
       #imageInput
       class="visually-hidden"
@@ -345,7 +368,8 @@
       (change)="onFileSelected($event)"
     />
 
-    <div class="photo-panel">
+    @if (!isManualEntry()) {
+      <div class="photo-panel">
       @if (previewUrl(); as imageUrl) {
         <img [src]="imageUrl" alt="待診斷的食材照片預覽" />
       } @else {
@@ -362,7 +386,8 @@
         [outlined]="true"
         (onClick)="imageInput.click()"
       />
-    </div>
+      </div>
+    }
 
     @if (isAnalyzing()) {
       <div class="analysis-state" role="status" aria-live="polite">

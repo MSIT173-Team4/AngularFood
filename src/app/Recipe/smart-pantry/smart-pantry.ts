@@ -137,6 +137,12 @@ export class SmartPantry implements OnInit, OnDestroy {
     this.dialogVisible.set(true);
   }
 
+  openManualEntryDialog(): void {
+    this.resetDiagnosticForm();
+    this.dialogVisible.set(true);
+    this.useManualEntry();
+  }
+
   openGuideDialog(): void {
     this.guideVisible.set(true);
   }
