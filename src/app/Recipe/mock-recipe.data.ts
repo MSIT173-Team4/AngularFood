@@ -132,6 +132,8 @@ export const MOCK_RECIPE_DETAILS: RecipeDetail[] = MOCK_RECIPES.map((recipe) => 
   ...recipe,
   userId: 1,
   categoryId: null,
+  isLiked: false,
+  isFavorite: false,
   youTubeVideoId: mockDetailContent[recipe.recipeId].youTubeVideoId ?? null,
   aiPrepTips: mockDetailContent[recipe.recipeId].tip,
   ingredients: mockDetailContent[recipe.recipeId].ingredients.map((ingredient, index) => ({

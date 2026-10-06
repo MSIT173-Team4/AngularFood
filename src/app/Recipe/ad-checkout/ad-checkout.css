@@ -159,8 +159,56 @@
 }
 
 .card-payment {
+  position: relative;
   display: grid;
   gap: 1rem;
+}
+
+.payment-demo-fill-trigger {
+  position: absolute;
+  top: 3rem;
+  right: 0;
+  z-index: 2;
+  display: inline-flex;
+  width: 2.5rem;
+  height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  gap: .35rem;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: #e8edf5;
+  background: transparent;
+  opacity: .025;
+  cursor: pointer;
+  transition: width .2s ease, padding .2s ease, opacity .2s ease, border-color .2s ease, background .2s ease;
+}
+
+.payment-demo-fill-trigger span {
+  width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.payment-demo-fill-trigger:hover,
+.payment-demo-fill-trigger:focus-visible {
+  width: 7rem;
+  padding: 0 .85rem;
+  border-color: #9fb1c9;
+  background: #243952;
+  opacity: 1;
+}
+
+.payment-demo-fill-trigger:hover span,
+.payment-demo-fill-trigger:focus-visible span {
+  width: auto;
+}
+
+.payment-demo-fill-trigger:focus-visible {
+  outline: 3px solid rgba(36, 57, 82, .24);
+  outline-offset: .2rem;
 }
 
 .payment-heading > div {

@@ -39,6 +39,8 @@ export interface RecipeDetail {
   views: number;
   likes: number;
   favorites: number;
+  isLiked: boolean;
+  isFavorite: boolean;
   categoryName: string | null;
   authorId?: number;
   authorName: string;
@@ -245,6 +247,7 @@ export interface ParsedRecipeStep {
 
 export interface ParsedRecipe {
   recipeTitle: string;
+  estimatedTotalCalories: number;
   ingredients: ParsedRecipeIngredient[];
   steps: ParsedRecipeStep[];
 }

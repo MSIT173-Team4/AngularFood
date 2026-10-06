@@ -41,6 +41,18 @@
       </section>
     } @else if (checkoutStage() === 'card-entry') {
       <section class="card-payment">
+        @if (demoEnabled) {
+          <button
+            type="button"
+            class="payment-demo-fill-trigger"
+            aria-label="Demo 一鍵快速填入測試付款卡資料"
+            title="Demo 快速填入"
+            (click)="fillDemoPaymentCard()"
+          >
+            <i class="pi pi-bolt" aria-hidden="true"></i>
+            <span>Demo</span>
+          </button>
+        }
         @if (currentOrder(); as order) {
           <div class="payment-heading">
             <div>
