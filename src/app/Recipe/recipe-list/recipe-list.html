@@ -137,7 +137,7 @@
         </div>
         <div class="metadata">
           <span><i class="pi pi-clock"></i> {{ recipe.cookingMinutes }} 分鐘</span>
-          <span><i class="pi pi-heart"></i> {{ recipe.likes }}</span>
+          <span><i class="pi pi-thumbs-up"></i> {{ recipe.likes }}</span>
           <span><i class="pi pi-bolt"></i> {{ recipe.totalCalories }} kcal</span>
         </div>
         <ng-template #footer>
@@ -190,6 +190,18 @@
   (visibleChange)="adApplicationVisible.set($event)"
 >
   <div class="ad-application-form">
+    @if (canUseAdDemoFill()) {
+      <button
+        type="button"
+        class="ad-demo-fill-trigger"
+        aria-label="Demo 一鍵快速填入廣告申請資料"
+        title="Demo 快速填入"
+        (click)="fillDemoAdApplication()"
+      >
+        <i class="pi pi-bolt" aria-hidden="true"></i>
+        <span>Demo</span>
+      </button>
+    }
     <div class="ad-specification">
       <i class="pi pi-image" aria-hidden="true"></i>
       <div>
@@ -224,6 +236,7 @@
   [rentalDays]="rentalDays()"
   [totalPrice]="estimatedAdPrice()"
   [contactEmail]="contactEmail()"
+  [demoEnabled]="canUseAdDemoFill()"
   (visibleChange)="paymentDialogVisible.set($event)"
   (returnToApplication)="returnToAdApplication()"
 />

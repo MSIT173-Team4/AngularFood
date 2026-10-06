@@ -7,7 +7,7 @@
   </a>
 
   <header>
-    @if (!isEditMode()) {
+    @if (canUseDemoFill()) {
       <button
         type="button"
         class="demo-fill-trigger"
@@ -100,15 +100,28 @@
           <label>
             <span>特色標籤</span>
             <p-multiselect
+              styleClass="tag-multiselect"
               [options]="tags()"
               optionLabel="name"
               optionValue="tagId"
-              display="chip"
               placeholder="可複選"
-              [maxSelectedLabels]="2"
+              [filter]="true"
+              filterPlaceHolder="搜尋特色標籤"
               [ngModel]="selectedTagIds()"
               (ngModelChange)="selectedTagIds.set($event)"
-            />
+            >
+              <ng-template #selecteditems let-selectedTags>
+                @if (selectedTags?.length) {
+                  <div class="selected-tag-scroll" aria-label="已選特色標籤，可左右捲動">
+                    @for (tag of selectedTags; track tag.tagId) {
+                      <span>{{ tag.name }}</span>
+                    }
+                  </div>
+                } @else {
+                  <span class="tag-placeholder">可複選</span>
+                }
+              </ng-template>
+            </p-multiselect>
           </label>
         </div>
         <div class="recipe-metrics">
@@ -121,15 +134,24 @@
             <p-inputnumber [ngModel]="cookingMinutes()" (ngModelChange)="cookingMinutes.set($event ?? 0)" [min]="0" [max]="1440" suffix=" 分鐘" />
           </label>
           <label>
-            <span>總熱量</span>
-            <p-inputnumber
-              [ngModel]="totalCalories()"
-              (ngModelChange)="totalCalories.set($event ?? 0)"
-              [min]="0"
-              [max]="100000"
-              placeholder="例如：420"
-              suffix=" kcal"
-            />
+            <span>AI 估算總熱量</span>
+            <div class="calorie-estimate-control">
+              <p-inputnumber
+                [ngModel]="totalCalories()"
+                [readonly]="true"
+                placeholder="請先輸入食材"
+                suffix=" kcal"
+              />
+              <p-button
+                label="AI 估算"
+                icon="pi pi-sparkles"
+                severity="success"
+                [outlined]="true"
+                [loading]="isEstimatingCalories()"
+                (onClick)="estimateCaloriesWithAi()"
+              />
+            </div>
+            <small class="field-note">系統依食材、用量與基準份量估算整份熱量；發布前請確認食材已完整填寫。</small>
           </label>
         </div>
       </div>
@@ -259,6 +281,17 @@
                 @if (stepPreviewUrls()[index] || stepImageUrls()[index]; as previewUrl) {
                   <img [src]="previewUrl" [alt]="'步驟 ' + (index + 1) + ' 圖片預覽'" />
                 }
+                <label class="step-timer-field">
+                  <span>步驟計時（選填）</span>
+                  <p-inputnumber
+                    [ngModel]="getStepTimerSeconds(index)"
+                    (ngModelChange)="updateStepTimer(index, $event ?? 0)"
+                    [min]="0"
+                    [max]="86400"
+                    suffix=" 秒"
+                  />
+                  <small>填入 0 代表此步驟不顯示倒數計時。</small>
+                </label>
               </div>
               <input
                 #stepImageInput

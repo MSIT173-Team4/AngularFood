@@ -17,6 +17,9 @@ input, textarea { width: 100%; }
 .two-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
 .recipe-metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
 .calorie-field { grid-column: 1 / -1; }
+.calorie-estimate-control { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: .65rem; }
+.calorie-estimate-control p-button { align-self: start; }
+.field-note { color: #806b62; font-size: .72rem; font-weight: 400; line-height: 1.5; }
 .upload-placeholder { display: grid; width: 100%; place-items: center; gap: .7rem; min-height: 220px; padding: 1.5rem; overflow: hidden; border: 2px dashed #dbc5bc; border-radius: 1rem; color: #6d5a51; text-align: center; background: #fffaf7; cursor: pointer; }
 .upload-placeholder > i { color: #ab3500; font-size: 2rem; }
 .upload-placeholder span, .helper { color: #806b62; font-size: .8rem; font-weight: 400; }
@@ -38,11 +41,17 @@ input, textarea { width: 100%; }
 .step-number { display: grid; width: 1.75rem; height: 1.75rem; place-items: center; border-radius: 50%; color: #fff; background: #ab3500; font-size: .75rem; font-weight: 800; }
 .step-image-content p { margin: .25rem 0 .65rem; color: #4c3932; font-size: .82rem; line-height: 1.55; }
 .step-image-content img { width: min(100%, 280px); max-height: 160px; border-radius: .65rem; object-fit: cover; }
+.step-timer-field { max-width: 220px; margin-top: .65rem; }
+.step-timer-field small { color: #806b62; font-size: .7rem; font-weight: 400; }
 .step-image-actions { display: flex; flex-direction: column; gap: .35rem; }
+:host ::ng-deep .tag-multiselect .p-multiselect-label { min-width: 0; overflow: hidden; }
+.selected-tag-scroll { display: flex; max-width: 100%; gap: .4rem; overflow-x: auto; overscroll-behavior-inline: contain; scrollbar-width: thin; }
+.selected-tag-scroll span { flex: 0 0 auto; padding: .25rem .55rem; border-radius: 999px; color: #365936; background: #eaf5e7; font-size: .76rem; font-weight: 700; }
+.tag-placeholder { color: #6b7280; font-weight: 400; }
 :host ::ng-deep .step-image-actions .p-button { margin-top: 0; }
 :host ::ng-deep .p-card { height: 100%; border: 1px solid #eadbd4; box-shadow: 0 8px 24px rgba(58, 36, 28, .06); }
 :host ::ng-deep .p-inputnumber { width: 100%; min-width: 0; }
 :host ::ng-deep .p-inputnumber-input { width: 100%; min-width: 0; }
 :host ::ng-deep .p-select, :host ::ng-deep .p-multiselect { width: 100%; }
 :host ::ng-deep .p-button { margin-top: 1rem; }
-@media (max-width: 760px) { header { align-items: flex-start; flex-direction: column; }.demo-fill-trigger { top: -.5rem; }.editor-grid, .two-columns, .recipe-metrics { grid-template-columns: 1fr; }.calorie-field { grid-column: auto; }.header-actions { width: 100%; }.step-image-item { grid-template-columns: auto 1fr; }.step-image-actions { grid-column: 2; flex-direction: row; flex-wrap: wrap; }.step-image-heading { align-items: flex-start; flex-direction: column; }.ingredient-editor-heading { display: none; }.ingredient-row { grid-template-columns: minmax(0, 1fr) minmax(86px, .55fr) auto; }.ingredient-row > input { grid-column: 1 / -1; }.ingredient-row > p-select { grid-column: 1; }.ingredient-row > p-button { grid-column: 3; grid-row: 2; }.ingredient-actions { align-items: stretch; flex-direction: column; } }
+@media (max-width: 760px) { header { align-items: flex-start; flex-direction: column; }.demo-fill-trigger { top: -.5rem; }.editor-grid, .two-columns, .recipe-metrics { grid-template-columns: 1fr; }.calorie-field { grid-column: auto; }.calorie-estimate-control { grid-template-columns: 1fr; }.header-actions { width: 100%; }.step-image-item { grid-template-columns: auto 1fr; }.step-image-actions { grid-column: 2; flex-direction: row; flex-wrap: wrap; }.step-image-heading { align-items: flex-start; flex-direction: column; }.ingredient-editor-heading { display: none; }.ingredient-row { grid-template-columns: minmax(0, 1fr) minmax(86px, .55fr) auto; }.ingredient-row > input { grid-column: 1 / -1; }.ingredient-row > p-select { grid-column: 1; }.ingredient-row > p-button { grid-column: 3; grid-row: 2; }.ingredient-actions { align-items: stretch; flex-direction: column; } }

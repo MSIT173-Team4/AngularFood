@@ -190,6 +190,8 @@ export class RecipeDetail implements OnInit, AfterViewInit, OnDestroy {
     this.servings.set(pageData.recipe.defaultServings);
     this.likeCount.set(pageData.recipe.likes);
     this.favoriteCount.set(pageData.recipe.favorites);
+    this.isLiked.set(pageData.recipe.isLiked);
+    this.isFavorite.set(pageData.recipe.isFavorite);
     this.dataNotice.set(pageData.notice);
     this.isUsingMockData.set(pageData.source === 'mock');
 

@@ -71,6 +71,7 @@ export class CookingMode implements OnInit, OnDestroy {
   private readonly ngZone = inject(NgZone);
 
   private timerId: ReturnType<typeof setInterval> | undefined;
+  private speechRestartTimer: ReturnType<typeof setTimeout> | undefined;
   private recognition: BrowserSpeechRecognition | undefined;
   private shouldKeepListening = false;
   private recipeId = 1;
@@ -135,6 +136,7 @@ export class CookingMode implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.shouldKeepListening = false;
+    this.clearSpeechRestartTimer();
     this.stopTimer();
     this.recognition?.stop();
   }
@@ -295,7 +297,7 @@ export class CookingMode implements OnInit, OnDestroy {
     this.isSpeechSupported.set(true);
     this.recognition = new RecognitionConstructor();
     this.recognition.lang = 'zh-TW';
-    this.recognition.continuous = false;
+    this.recognition.continuous = true;
     this.recognition.interimResults = false;
     this.recognition.onstart = () => {
       this.ngZone.run(() => {
@@ -306,9 +308,7 @@ export class CookingMode implements OnInit, OnDestroy {
     this.recognition.onresult = (event) => {
       const latestResult = event.results[event.results.length - 1];
       this.ngZone.run(() => {
-        this.shouldKeepListening = false;
         this.handleVoiceCommand(latestResult[0].transcript);
-        this.recognition?.stop();
       });
     };
     this.recognition.onerror = (event) => {
@@ -318,9 +318,9 @@ export class CookingMode implements OnInit, OnDestroy {
       this.ngZone.run(() => {
         this.isListening.set(false);
         if (this.shouldKeepListening) {
-          this.speechStatus.set('沒有收到完整口令，請點擊按鈕後再說一次。');
+          this.speechStatus.set('語音功能保持啟用，正在重新連接麥克風……');
+          this.scheduleSpeechRecognitionRestart();
         }
-        this.shouldKeepListening = false;
       });
     };
   }
@@ -332,6 +332,10 @@ export class CookingMode implements OnInit, OnDestroy {
   }
 
   private tryStartSpeechRecognition(): void {
+    if (!this.shouldKeepListening) {
+      return;
+    }
+
     try {
       this.recognition?.start();
     } catch (error) {
@@ -371,6 +375,7 @@ export class CookingMode implements OnInit, OnDestroy {
 
   private stopSpeechRecognition(): void {
     this.shouldKeepListening = false;
+    this.clearSpeechRestartTimer();
     this.isListening.set(false);
     this.speechStatus.set('語音辨識已停止。');
     this.recognition?.stop();
@@ -394,6 +399,21 @@ export class CookingMode implements OnInit, OnDestroy {
     this.speechStatus.set(
       errorMessages[errorCode] ?? `語音辨識失敗（${errorCode}），請稍後重試。`
     );
+  }
+
+  private scheduleSpeechRecognitionRestart(): void {
+    this.clearSpeechRestartTimer();
+    this.speechRestartTimer = setTimeout(() => {
+      this.speechRestartTimer = undefined;
+      this.tryStartSpeechRecognition();
+    }, 350);
+  }
+
+  private clearSpeechRestartTimer(): void {
+    if (this.speechRestartTimer) {
+      clearTimeout(this.speechRestartTimer);
+      this.speechRestartTimer = undefined;
+    }
   }
 
   private matchesCommand(command: string, keywords: string[]): boolean {

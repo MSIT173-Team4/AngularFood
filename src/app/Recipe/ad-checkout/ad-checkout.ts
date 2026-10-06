@@ -45,6 +45,7 @@ export class AdCheckout implements OnChanges, OnDestroy {
   @Input() rentalDays = 7;
   @Input() totalPrice = 0;
   @Input() contactEmail = '';
+  @Input() demoEnabled = false;
   @Output() readonly visibleChange = new EventEmitter<boolean>();
   @Output() readonly returnToApplication = new EventEmitter<void>();
 
@@ -166,6 +167,19 @@ export class AdCheckout implements OnChanges, OnDestroy {
   updateOtp(value: string): void {
     this.otpInput.set(value.replace(/\D/g, '').slice(0, 6));
     this.otpError.set('');
+  }
+
+  fillDemoPaymentCard(): void {
+    if (!this.demoEnabled || this.checkoutStage() !== 'card-entry') {
+      return;
+    }
+
+    this.cardholderName.set('HAPPIER DEMON');
+    this.updateCardNumber('4000000000000002');
+    this.updateExpirationMonth('08');
+    this.updateExpirationYear('29');
+    this.updateSecurityCode('123');
+    this.submitAttempted.set(false);
   }
 
   verifyOtp(): void {
