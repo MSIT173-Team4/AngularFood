@@ -1,6 +1,6 @@
 import { Injectable, ChangeDetectorRef, signal } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
-import { environment } from '../../../environments/environment.development';
+import { environment } from '../../../environments/environment';
 import { ChatRoomDTO } from '../interfaces/ChatRoomDTO';
 import { ChatMessage } from '../interfaces/ChatMessage';
 @Injectable({
@@ -15,7 +15,7 @@ export class ChatService {
     }
 
     this.hubConnection = new signalR.HubConnectionBuilder()
-      .withUrl(`${environment.url}/chatHub`, {
+      .withUrl(`${environment.apiUrl}/chatHub`, {
         withCredentials: true,
       })
       .withAutomaticReconnect()
@@ -43,9 +43,7 @@ export class ChatService {
   sendMessage(roomId: number, message: string) {
     return this.hubConnection.invoke('SendMessage', roomId, message);
   }
-  sendImage(roomId: number, imageUrl: string) {
-    return this.hubConnection.invoke('SendImage', roomId, imageUrl);
-  }
+
   onReceiveMessage(callback: (message: ChatMessage) => void) {
     this.hubConnection.on('ReceiveMessage', callback);
   }
