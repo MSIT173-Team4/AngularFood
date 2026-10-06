@@ -150,7 +150,7 @@
 </div>
 
 <!-- 庫存微調 Dialog -->
-<p-dialog [(visible)]="showStockDialog" [modal]="true" [style]="{ width: '400px' }" [header]="stockDialogTitle" [draggable]="false" (onHide)="closeStockDialog()">
+<p-dialog styleClass="stock-dialog" [(visible)]="showStockDialog" [modal]="true" [style]="{ width: '400px' }" [header]="stockDialogTitle" [draggable]="false" (onHide)="closeStockDialog()">
   @if (stockEditProduct) {
   <div class="stock-dialog-content">
     <p class="stock-product-name">{{ stockEditProduct.productName }}</p>

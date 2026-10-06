@@ -11,7 +11,7 @@ export class AuthService {
   private baseURL = environment.apiUrl;
 
   currentUser = signal<CurrentUserDTO | null>(null);
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   checkAuth() {
     return this.http.get(`${this.baseURL}/Users/CheckAuth`, {

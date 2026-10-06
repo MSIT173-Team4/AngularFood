@@ -65,7 +65,7 @@ export class MyOrdersComponent implements OnInit, OnDestroy {
   readonly pageSize = 10;
 
   // 查詢條件
-  activeTab: MyOrderTab = 'all';
+  activeTab: MyOrderTab = 'pending-ship';
   range: MyOrderRange = '6m';
   keyword = '';
   currentPage = 1;
