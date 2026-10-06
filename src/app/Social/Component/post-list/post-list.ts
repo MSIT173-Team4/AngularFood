@@ -9,34 +9,35 @@ import { TimeAgoPipe } from '../../Pipes/time-ago-pipe';
 import { environment } from '../../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../Member/services/auth-services';
+import { AvatarModule } from 'primeng/avatar';
 
 @Component({
   selector: 'app-post-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, TimeAgoPipe],
+  imports: [AvatarModule, CommonModule, FormsModule, TimeAgoPipe],
   templateUrl: './post-list.html',
   styleUrls: ['./post-list.css']
 })
 export class PostListComponent implements OnInit {
-    profile: BaseUserProfileDTO | null = null;
-    userInfo: UserProfileDTO | null = null;
+  profile: BaseUserProfileDTO | null = null;
+  userInfo: UserProfileDTO | null = null;
   baseURL: string = environment.apiUrl;
   posts: PostList[] = [];
   activeTab: string = 'latest';
   keyword: string = '';
-  
+
   currentPage: number = 1;
   pageSize: number = 5;
   totalPages: number = 1;
   pagesArray: number[] = [];
-  
+
   currentUserId: number = 0;
 
   constructor(
     private socialService: SocialService,
     private router: Router,
     private http: HttpClient
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadPosts();
@@ -52,7 +53,7 @@ export class PostListComponent implements OnInit {
       error: (err) => console.error('載入失敗', err)
     });
   }
- 
+
   switchTab(tab: string): void {
     this.activeTab = tab;
     this.currentPage = 1;
@@ -88,8 +89,29 @@ export class PostListComponent implements OnInit {
       });
   }
 
+  getImageUrl(image?: string): string {
+    if (!image) {
+      return '/images/default-avatar.png';
+    }
+
+    if (/^https?:\/\//i.test(image)) {
+      return image; // 已經是完整網址（Cloudinary、Google 頭像）
+    }
+    // 本機開發接上 https://localhost:7164；正式環境 apiUrl 是 /api，前綴為空，交給 nginx 轉發
+    const backendOrigin = environment.apiUrl.replace(/\/api\/?$/, '');
+    return `${backendOrigin}${image.startsWith('/') ? '' : '/'}${image}`;
+  }
+
+  onAvatarError(event: Event) {
+    const img = event.target as HTMLImageElement;
+    const fallback = '/images/default-avatar.png';
+    if (!img.src.endsWith(fallback)) {
+      img.src = fallback;
+    }
+  }
+
   navigateToUser(userId: number): void {
-    this.router.navigate(['/main']);
+    this.router.navigate(['/main', userId]);
   }
 
 
