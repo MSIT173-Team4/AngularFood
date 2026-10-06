@@ -27,91 +27,81 @@
 
     <div class="search-box">
       <i class="fas fa-search search-icon"></i>
-      <input
-        type="text"
-        [(ngModel)]="keyword"
-        (keyup.enter)="onSearch()"
-        placeholder="搜尋關鍵字或用戶名..." />
+      <input type="text" [(ngModel)]="keyword" (keyup.enter)="onSearch()" placeholder="搜尋關鍵字或用戶名..." />
     </div>
   </div>
 
   <div class="post-list">
     @for (post of posts; track post.postId) {
-      <div class="post-card" (click)="viewPost(post.postId)">
-        <button class="bookmark-btn" (click)="toggleBookmark($event, post)" title="收藏文章">
-          <i [class]="post.isBookmarkedByCurrentUser ? 'fas fa-bookmark bookmarked' : 'far fa-bookmark'"></i>
-        </button>
+    <div class="post-card" (click)="viewPost(post.postId)">
+      <button class="bookmark-btn" (click)="toggleBookmark($event, post)" title="收藏文章">
+        <i [class]="post.isBookmarkedByCurrentUser ? 'fas fa-bookmark bookmarked' : 'far fa-bookmark'"></i>
+      </button>
 
-        <h2 class="post-title">{{ post.title }}</h2>
-        <p class="post-summary" [innerHTML]="post.summaryText"></p>
+      <h2 class="post-title">{{ post.title }}</h2>
+      <p class="post-summary" [innerHTML]="post.summaryText"></p>
 
-        <div class="author-info">
-
-          <img
-            [src]="post.userImage || '/images/default-avatar.png'"
-            alt="用戶頭像"
-            class="author-avatar clickable"
-            (click)="$event.stopPropagation(); navigateToUser(post.userId)" />
-          <div class="author-details">
-            <span 
-              class="author-name" 
-              (click)="$event.stopPropagation(); navigateToUser(post.userId)">
-              {{ post.userName }}
-            </span>
-          </div>
-
-          @if (post.userId === currentUserId) {
-            <div class="owner-actions" (click)="$event.stopPropagation()">
-              <button class="btn-outline btn-edit" (click)="onEditPost(post.postId)">編輯</button>
-              <button class="btn-outline btn-delete" (click)="onDeletePost(post.postId)">刪除</button>
-            </div>
-          }
+      <div class="author-info">
+        <!-- 發佈該貼文的用戶頭像 -->
+        <p-avatar [image]="getImageUrl(userProfiles[post.userId]?.image)" (onimageerror)="onAvatarError($event)"
+          size="xlarge" shape="circle" class="author-avatar clickable"
+          (click)="$event.stopPropagation(); navigateToUser(post.userId)">
+        </p-avatar>
+        <div class="author-details">
+          <span class="author-name" (click)="$event.stopPropagation(); navigateToUser(post.userId)">
+            {{ post.userName }}
+          </span>
         </div>
 
-        <div class="card-footer">
-          <div class="metrics-group">
-            <span class="metric-item interactable" (click)="toggleLike($event, post)">
-              <i [class]="post.isLikedByCurrentUser ? 'fas fa-thumbs-up liked' : 'far fa-thumbs-up'"></i>
-              <span class="count">{{ post.likes }}</span>
-            </span>
-            <span class="metric-item">
-              <i class="far fa-eye"></i> 瀏覽量 {{ post.views }}
-            </span>
-            <span class="metric-item">
-              <i class="far fa-comment-alt"></i> {{ post.commentCount }} 則回覆
-            </span>
-          </div>
+        @if (post.userId === currentUserId) {
+        <div class="owner-actions" (click)="$event.stopPropagation()">
+          <button class="btn-outline btn-edit" (click)="onEditPost(post.postId)">編輯</button>
+          <button class="btn-outline btn-delete" (click)="onDeletePost(post.postId)">刪除</button>
+        </div>
+        }
+      </div>
 
-          <div class="post-date">
-            <i class="far fa-calendar-alt"></i> {{ post.postDate | timeAgo }}
-          </div>
+      <div class="card-footer">
+        <div class="metrics-group">
+          <span class="metric-item interactable" (click)="toggleLike($event, post)">
+            <i [class]="post.isLikedByCurrentUser ? 'fas fa-thumbs-up liked' : 'far fa-thumbs-up'"></i>
+            <span class="count">{{ post.likes }}</span>
+          </span>
+          <span class="metric-item">
+            <i class="far fa-eye"></i> 瀏覽量 {{ post.views }}
+          </span>
+          <span class="metric-item">
+            <i class="far fa-comment-alt"></i> {{ post.commentCount }} 則回覆
+          </span>
+        </div>
+
+        <div class="post-date">
+          <i class="far fa-calendar-alt"></i> {{ post.postDate | timeAgo }}
         </div>
       </div>
+    </div>
     } @empty {
-      <div class="empty-state">
-        <p>目前尚無貼文</p>
-      </div>
+    <div class="empty-state">
+      <p>目前尚無貼文</p>
+    </div>
     }
   </div>
 
   @if (totalPages > 1) {
-    <div class="pagination-container">
-      <button class="page-btn prev" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">
-        <i class="fas fa-chevron-left"></i>
-      </button>
+  <div class="pagination-container">
+    <button class="page-btn prev" [disabled]="currentPage === 1" (click)="changePage(currentPage - 1)">
+      <i class="fas fa-chevron-left"></i>
+    </button>
 
-      @for (page of pagesArray; track page) {
-        <button
-          class="page-btn number"
-          [class.active]="page === currentPage"
-          (click)="changePage(page)">
-          {{ page }}
-        </button>
-      }
+    @for (page of pagesArray; track page) {
+    <button class="page-btn number" [class.active]="page === currentPage" (click)="changePage(page)">
+      {{ page }}
+    </button>
+    }
 
-      <button class="page-btn next" [disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)">
-        <i class="fas fa-chevron-right"></i>
-      </button>
-    </div>
+    <button class="page-btn next" [disabled]="currentPage === totalPages" (click)="changePage(currentPage + 1)">
+      <i class="fas fa-chevron-right"></i>
+    </button>
+  </div>
   }
 </div>
