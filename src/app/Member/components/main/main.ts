@@ -148,7 +148,7 @@ export class Main implements OnInit {
       .get<UserPostStatDTO>(`${environment.apiUrl}/Users/GetPost`, { withCredentials: true })
       .subscribe({
         next: (res) => {
-          ((this.posts = res.posts), (this.postTotalViews = res.totalViews));
+          ((this.posts = res.posts), (this.postTotalViews = res.totalViews),(this.postTotalLikes=res.totalLikes));
         },
         error: (err) => {
           console.log('取得貼文失敗', err);
@@ -176,6 +176,7 @@ export class Main implements OnInit {
         next: (res) => {
           this.recipes = res.recipes;
           this.recipeTotalViews = res.totalViews;
+          this.recipeTotalLikes = res.totalLike;
         },
         error: (err) => {
           console.error('取得食譜失敗', err);
