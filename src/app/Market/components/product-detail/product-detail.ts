@@ -7,6 +7,7 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { DialogModule } from 'primeng/dialog';
 import { CartCountService } from '../../Service/cart-count.service';
+import { resolveRecipeImageUrl } from '../../../Recipe/recipe-image-url';
 
 
 import {
@@ -133,7 +134,12 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
     this.marketService.getRelatedRecipes(this.productId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (data) => { this.relatedRecipes = data; }
+        next: (data) => {
+          this.relatedRecipes = data.map(r => ({
+            ...r,
+            imageUrl: resolveRecipeImageUrl(r.recipeName, r.imageUrl)
+          }));
+        }
       });
   }
 
@@ -241,5 +247,13 @@ export class ProductDetailComponent implements OnInit, OnDestroy {
 
   get hasMoreReviews(): boolean {
     return this.reviews.length < this.reviewTotalCount;
+  }
+
+  onRecipeImgError(e: Event): void {
+    const img = e.target as HTMLImageElement;
+    const placeholder = '/images/market/recipe_placeholder.png';
+    if (!img.src.endsWith(placeholder)) {
+      img.src = placeholder;
+    }
   }
 }

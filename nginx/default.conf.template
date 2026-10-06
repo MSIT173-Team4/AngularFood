@@ -48,6 +48,7 @@ server {
     try_files $uri $uri/ /index.html;
     add_header Cache-Control "no-cache";   # index.html 不快取，才拿得到新版
   }
+
   location /chatHub {
     proxy_pass ${API_UPSTREAM};
     proxy_set_header Host ${API_HOST};
