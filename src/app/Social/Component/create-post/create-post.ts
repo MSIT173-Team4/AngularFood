@@ -62,7 +62,7 @@ export class CreatePostComponent {
         console.error('錯誤物件：', err);
         console.error('後端回傳狀態碼：', err.status);
         console.error('後端回傳錯誤訊息：', err.error);
-        alert(`發佈失敗 (${err.status}): ${JSON.stringify(err.error)}`);
+        alert(`發佈失敗，請稍後再試。`);
       }
     });
   }

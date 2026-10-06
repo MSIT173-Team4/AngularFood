@@ -1,0 +1,85 @@
+@if (chatService.chatListVisible()) {
+  <div class="chat-popup">
+    <div class="chat-popup-header">
+      <strong>聊天室</strong>
+
+      <button type="button" (click)="chatService.closeChatList()">✕</button>
+    </div>
+
+    <div class="chat-popup-body">
+      @for (room of rooms; track room.roomId) {
+        <div class="chat-item" (click)="openRoom(room)">
+          <div>
+            <strong>{{ room.otherUsername }}</strong>
+
+            <small>
+              {{ room.createdTime }}
+            </small>
+          </div>
+        </div>
+      } @empty {
+        <p>目前沒有聊天室</p>
+      }
+    </div>
+  </div>
+}
+<p-dialog
+  [(visible)]="chatVisible"
+  [modal]="false"
+  [draggable]="true"
+  [resizable]="false"
+  [style]="{
+    width: '400px',
+    height: '520px',
+  }"
+  [contentStyle]="{
+    height: '430px',
+    padding: '0',
+  }"
+  (onHide)="closeRoom()"
+>
+  <ng-template pTemplate="header">
+    @if (selectedRoom) {
+      <div>
+        <strong>{{ selectedRoom.otherUsername }}</strong>
+      </div>
+    }
+  </ng-template>
+
+  @if (selectedRoom) {
+    <div class="chat-room">
+      <div class="messages">
+        @for (msg of messages; track $index) {
+          <div
+            class="message-row"
+            [class.my-message-row]="msg.senderId === currentUserId"
+            [class.other-message-row]="msg.senderId !== currentUserId"
+          >
+            <div
+              class="message-bubble"
+              [class.my-message]="msg.senderId === currentUserId"
+              [class.other-message]="msg.senderId !== currentUserId"
+            >
+              @if (msg.messageType === 2 && msg.imageUrl) {
+                <img [src]="getChatImageUrl(msg.imageUrl)" class="chat-image" alt="聊天圖片" />
+              } @else {
+                {{ msg.content }}
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="input-area">
+        <input type="text" [(ngModel)]="message" placeholder="輸入訊息..." (keyup.enter)="send()" />
+        <input #imageInput type="file" accept="image/jpeg" hidden (change)="sendImage($event)" />
+
+        <button type="button" (click)="imageInput.click()">
+          <i class="pi pi-image"></i>
+        </button>
+
+        <button type="button" (click)="send()">傳送</button>
+      </div>
+    </div>
+  }
+</p-dialog>

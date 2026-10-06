@@ -3,6 +3,10 @@
 <div class="form-page">
   <div class="form-header">
     <h1>{{ pageTitle }}</h1>
+    @if (!isEditMode) {
+    <button pButton type="button" label="Demo 快速填入" icon="pi pi-bolt"
+      class="p-button-outlined p-button-sm" (click)="fillDemo()"></button>
+  }
     <div class="form-divider"></div>
   </div>
 
@@ -30,6 +34,14 @@
           optionValue="categoryNo" placeholder="請先選擇大分類" [disabled]="subCategories.length === 0" styleClass="w-full" />
       </div>
     </div>
+
+    <div class="form-row full">
+  <label class="form-label">對應食材</label>
+  <p-select [(ngModel)]="form.ingredientId" [options]="ingredients"
+    optionLabel="name" optionValue="ingredientId"
+    [filter]="true" filterBy="name" [showClear]="true"
+    placeholder="選擇食材（用於推薦相關食譜，非必填）" styleClass="w-full" />
+</div>
 
     <div class="form-row half">
       <div class="form-field">

@@ -11,6 +11,7 @@ import { SelectModule } from 'primeng/select';
 import { TagModule } from 'primeng/tag';
 import { AdCheckout } from '../ad-checkout/ad-checkout';
 import { RecipeImageFallbackDirective } from '../recipe-image-fallback.directive';
+import { resolveRecipeImageUrl } from '../recipe-image-url';
 import { RecipeListPageData, RecipeSummary } from '../recipe.models';
 import { RecipeService } from '../service/recipe.service';
 
@@ -62,21 +63,21 @@ export class RecipeList implements OnInit, OnDestroy {
       eyebrow: '在地品牌合作',
       title: '讓你的手作好味道，被更多料理愛好者看見',
       description: '首頁廣告牆展示食材品牌、私房醬料與友善小農故事。',
-      imageUrl: '/images/recipes/13-taiwanese-pork-fried-noodles.jpg',
+      imageUrl: resolveRecipeImageUrl('台式肉絲家常炒麵', null),
       actionLabel: '申請廣告版位'
     },
     {
       eyebrow: '本週料理靈感',
       title: '冰箱食材不浪費，今晚就完成一道剛好的料理',
       description: '以現有庫存配對食譜，減少採買與食材浪費。',
-      imageUrl: '/images/recipes/06-spinach-tofu-soup.jpg',
+      imageUrl: resolveRecipeImageUrl('菠菜豆腐清湯', null),
       actionLabel: '前往智慧清冰箱'
     },
     {
       eyebrow: '創作者推薦',
       title: '分享你的拿手料理，建立自己的食譜作品集',
       description: '食譜可加入步驟圖片、料理影片與特色標籤。',
-      imageUrl: '/images/recipes/01-pan-seared-salmon.jpg',
+      imageUrl: resolveRecipeImageUrl('香煎鮭魚佐蘆筍', null),
       actionLabel: '建立分享食譜'
     }
   ];

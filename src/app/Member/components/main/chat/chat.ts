@@ -103,6 +103,9 @@ export class Chat implements OnInit {
     this.selectedRoom = null;
     this.messages = [];
   }
+  getChatImageUrl(url: string) {
+    return `${environment.url}${url}`;
+  }
   getMessages(roomId: number) {
     this.http
       .get<ChatMessage[]>(`${environment.apiUrl}/Chat/GetMessages/${roomId}`, {

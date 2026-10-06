@@ -10,14 +10,14 @@ describe('resolveRecipeImageUrl', () => {
     expect(resolveRecipeImageUrl(
       '香煎鮭魚佐蘆筍',
       'https://placehold.co/1200x800?text=FriendlyFood+877'
-    )).toBe('/images/recipes/01-pan-seared-salmon.jpg');
+    )).toBe('/RecipeUploads/Seed/recipes/01-pan-seared-salmon.jpg');
   });
 
   it('uses the generated cover for a Japanese freezer-prep recipe', () => {
     expect(resolveRecipeImageUrl(
       '冷凍飯糰鮭魚茶泡飯',
       'https://placehold.co/1200x800?text=FriendlyFood+030'
-    )).toBe('/images/recipes/30-freezer-salmon-onigiri-ochazuke.jpg');
+    )).toBe('/RecipeUploads/Seed/recipes/30-freezer-salmon-onigiri-ochazuke.jpg');
   });
 
   it('uses the bundled fallback when no matching cover exists', () => {
@@ -47,5 +47,14 @@ describe('resolveRecipeImageUrl', () => {
       developmentUrl,
       'http://localhost:4200'
     )).toBe(developmentUrl);
+  });
+
+  it('uses the backend origin for a relative Recipe upload during local development', () => {
+    expect(resolveRecipeImageUrl(
+      '香煎鮭魚佐蘆筍',
+      '/images/recipes/01-pan-seared-salmon.jpg',
+      'http://localhost:4200',
+      'https://localhost:7164/api'
+    )).toBe('https://localhost:7164/RecipeUploads/Seed/recipes/01-pan-seared-salmon.jpg');
   });
 });

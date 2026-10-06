@@ -1,1 +1,145 @@
-<p>order-list works!</p>
+<p-toast />
+<p-confirmdialog />
+
+<div class="ol-page">
+
+  <!-- 標題 -->
+  <div class="ol-header">
+    <div>
+      <h1 class="ol-title">訂單管理</h1>
+      <p class="ol-subtitle">處理買家的訂單，確認收件資訊後即可出貨。</p>
+    </div>
+    <div class="ol-search">
+      <i class="pi pi-search"></i>
+      <input type="text" [(ngModel)]="keyword" placeholder="搜尋訂單編號、收件人或商品名稱..."
+             (keyup.enter)="onSearch()" />
+      @if (keyword) {
+        <button class="ol-search-clear" (click)="clearSearch()" aria-label="清除搜尋">
+          <i class="pi pi-times"></i>
+        </button>
+      }
+      <button class="ol-search-btn" (click)="onSearch()">搜尋</button>
+    </div>
+  </div>
+
+  <!-- 分頁 -->
+  <div class="ol-tabs">
+    @for (tab of tabs; track tab.key) {
+      <button class="ol-tab" [class.active]="activeTab === tab.key" (click)="selectTab(tab.key)">
+        {{ tab.label }}
+        <span class="ol-tab-count">{{ getTabCount(tab) }}</span>
+      </button>
+    }
+  </div>
+
+  <!-- 載入中 -->
+  @if (isLoading) {
+    <div class="ol-state">
+      <i class="pi pi-spin pi-spinner"></i>
+      <p>載入訂單中...</p>
+    </div>
+  }
+
+  <!-- 錯誤 -->
+  @if (!isLoading && loadError) {
+    <div class="ol-state">
+      <i class="pi pi-exclamation-triangle"></i>
+      <p>無法載入訂單資料</p>
+      <button class="ol-btn" (click)="retry()">重新載入</button>
+    </div>
+  }
+
+  <!-- 沒有資料 -->
+  @if (!isLoading && !loadError && orders.length === 0) {
+    <div class="ol-state">
+      <i class="pi pi-inbox"></i>
+      <p>{{ keyword ? '查無符合條件的訂單' : (activeTab === 'pending-ship' ? '目前沒有待出貨的訂單' : '這個分類目前沒有訂單') }}</p>
+    </div>
+  }
+
+  <!-- 訂單卡片 -->
+  @if (!isLoading && !loadError && orders.length > 0) {
+    <div class="ol-list">
+      @for (order of orders; track order.orderId) {
+        <article class="ol-card">
+
+          <!-- 標頭 -->
+          <header class="ol-card-header">
+            <div class="ol-card-meta">
+              <span class="ol-order-no">訂單 {{ order.orderNo }}</span>
+              <span class="ol-paid-at">
+                付款時間 {{ (order.paidAt ?? order.orderDate) | date:'yyyy/MM/dd HH:mm' }}
+              </span>
+            </div>
+            <span [class]="'ol-status ol-status--' + order.statusKey">{{ statusLabel(order.statusKey) }}</span>
+          </header>
+
+          <div class="ol-card-body">
+
+            <!-- 品項 -->
+            <div class="ol-items">
+              @for (item of order.items; track item.productId) {
+                <div class="ol-item">
+                  <img class="ol-item-img" [src]="item.imageUrl || '/images/market/product-placeholder.png'" [alt]="item.productName" />
+                  <div class="ol-item-info">
+                    <span class="ol-item-name">{{ item.productName }}</span>
+                    <span class="ol-item-unit">NT$ {{ item.unitPrice | number }} × {{ item.quantity }}</span>
+                  </div>
+                  <span class="ol-item-total">NT$ {{ item.lineTotal | number }}</span>
+                </div>
+              }
+            </div>
+
+            <!-- 收件資訊 -->
+            <div class="ol-shipping">
+              <h4 class="ol-shipping-title"><i class="pi pi-map-marker"></i> 收件資訊</h4>
+              <dl class="ol-shipping-list">
+                <dt>收件人</dt><dd>{{ order.recipientName }}</dd>
+                <dt>電話</dt><dd>{{ order.recipientPhone }}</dd>
+                <dt>配送方式</dt><dd>{{ shippingMethodLabel(order.shippingMethod) }}</dd>
+                <dt>地址</dt><dd>{{ order.shippingAddress }}</dd>
+              </dl>
+            </div>
+
+          </div>
+
+          <!-- 底部：金額 + 出貨 -->
+          <footer class="ol-card-footer">
+            <div class="ol-amount">
+              <span class="ol-amount-detail">
+                商品 NT$ {{ order.subTotal | number }}
+                @if (order.productDiscount > 0) { － 折抵 NT$ {{ order.productDiscount | number }} }
+                ＋ 運費 @if (shippingNet(order) === 0) { 免運 } @else { NT$ {{ shippingNet(order) | number }} }
+              </span>
+              <span class="ol-amount-label">訂單金額</span>
+              <span class="ol-amount-total">NT$ {{ order.orderAmount | number }}</span>
+            </div>
+
+            @if (order.statusKey === 'pending-ship') {
+              <button class="ol-btn ol-btn-primary" [disabled]="shippingOrderId === order.orderId"
+                      (click)="ship(order)">
+                @if (shippingOrderId === order.orderId) {
+                  <i class="pi pi-spin pi-spinner"></i> 處理中...
+                } @else {
+                  <i class="pi pi-truck"></i> 出貨
+                }
+              </button>
+            }
+          </footer>
+
+        </article>
+      }
+    </div>
+  }
+
+  <!-- 分頁器 -->
+  @if (totalCount > 0) {
+    <div class="ol-pagination">
+      <span class="ol-range-text">{{ rangeText }}</span>
+      <p-paginator [rows]="pageSize" [totalRecords]="totalCount"
+                   [first]="(currentPage - 1) * pageSize"
+                   (onPageChange)="onPageChange($event)" />
+    </div>
+  }
+
+</div>
