@@ -16,7 +16,11 @@
       </div>
     </div>
 
-    <section class="author-card" aria-label="食譜作者">
+    <a
+      class="author-card"
+      [routerLink]="['/main', recipe.authorId ?? recipe.userId]"
+      [attr.aria-label]="'查看 ' + recipe.authorName + ' 的會員頁與歷史食譜'"
+    >
       @if (recipe.authorImageUrl) {
         <img [src]="recipe.authorImageUrl" [alt]="recipe.authorName + ' 的會員頭像'" />
       } @else {
@@ -27,7 +31,7 @@
         <strong>{{ recipe.authorName }}</strong>
         <span>已發布 {{ recipe.authorRecipeCount ?? 0 }} 道公開食譜</span>
       </div>
-    </section>
+    </a>
 
     <div class="recipe-toolbar" aria-label="食譜份量與互動工具列">
       <div class="serving-control">

@@ -181,6 +181,29 @@
   align-items: center;
 }
 
+.recipe-card-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.recipe-card-link:hover .recipe-title,
+.recipe-card-link:focus-visible .recipe-title {
+  color: #9f3517;
+}
+
+.recipe-card-link:focus-visible {
+  border-radius: 8px;
+  outline: 3px solid rgba(159, 53, 23, 0.25);
+  outline-offset: 4px;
+}
+
+.recipe-card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 14px;
+}
+
 .recipe-cover {
   width: 140px;
   height: 100px;

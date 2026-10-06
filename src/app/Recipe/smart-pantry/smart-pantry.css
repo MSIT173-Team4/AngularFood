@@ -88,6 +88,14 @@
   gap: 1rem;
 }
 
+.pantry-entry-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: .55rem;
+}
+
 .section-heading h2 {
   margin: 0;
 }
@@ -563,6 +571,10 @@
   .section-heading {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .pantry-entry-actions {
+    justify-content: flex-start;
   }
 
   .pantry-form {

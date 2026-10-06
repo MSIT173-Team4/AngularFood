@@ -47,4 +47,8 @@ export class ChatService {
   onReceiveMessage(callback: (message: ChatMessage) => void) {
     this.hubConnection.on('ReceiveMessage', callback);
   }
+
+  sendImage(roomId: number, imageUrl: string) {
+    return this.hubConnection.invoke('SendImage', roomId, imageUrl)
+  }
 }

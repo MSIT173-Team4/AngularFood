@@ -8,7 +8,7 @@ import {
   signal
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
@@ -25,6 +25,7 @@ import { AuthService } from '../../Member/services/auth-services';
 import {
   CreateRecipePayload,
   RecipeCategory,
+  RecipeDetail,
   RecipeIngredientInput,
   RecipeStepInput,
   RecipeTag
@@ -75,6 +76,10 @@ interface RecipeEditorDraft {
 })
 export class CreateRecipe implements OnInit, OnDestroy {
   private static readonly MaximumImageSizeBytes = 5 * 1024 * 1024;
+  private static readonly DemoCoverImageUrl =
+    'https://images.pexels.com/photos/725991/pexels-photo-725991.jpeg?auto=compress&cs=tinysrgb&w=1200&h=900&fit=crop';
+  private static readonly DemoPreparationImageUrl =
+    'https://images.pexels.com/photos/31399181/pexels-photo-31399181.jpeg?auto=compress&cs=tinysrgb&w=900&h=600&fit=crop';
   private static readonly AllowedImageTypes = new Set([
     'image/jpeg',
     'image/png',
@@ -83,6 +88,7 @@ export class CreateRecipe implements OnInit, OnDestroy {
   private readonly recipeService = inject(RecipeService);
   private readonly authService = inject(AuthService);
   private readonly messageService = inject(MessageService);
+  private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
   private localPreviewUrl: string | null = null;
@@ -97,6 +103,7 @@ export class CreateRecipe implements OnInit, OnDestroy {
   ]);
   readonly instructionDraft = signal('');
   readonly stepImageUrls = signal<Array<string | null>>([]);
+  readonly stepTimerSeconds = signal<number[]>([]);
   readonly stepPreviewUrls = signal<Record<number, string>>({});
   readonly uploadingStepIndex = signal<number | null>(null);
   readonly youTubeUrl = signal('');
@@ -110,9 +117,12 @@ export class CreateRecipe implements OnInit, OnDestroy {
   readonly isParsingWithAi = signal(false);
   readonly isNormalizing = signal(false);
   readonly isSaving = signal(false);
+  readonly isLoadingRecipe = signal(false);
   readonly isAiGenerated = signal(false);
   readonly statusMessage = signal('');
   readonly createdRecipeId = signal<number | null>(null);
+  readonly editingRecipeId = signal<number | null>(null);
+  readonly isEditMode = computed(() => this.editingRecipeId() !== null);
   readonly unitOptions = [
     '份', '個', '顆', '根', '把', '束', '支', '尾', '塊', '片', '包', '盒',
     '瓶', '罐', '公克', '公斤', '毫升', '公升', '大匙', '小匙'
@@ -135,6 +145,13 @@ export class CreateRecipe implements OnInit, OnDestroy {
   );
 
   ngOnInit(): void {
+    const routeRecipeId = Number(this.route.snapshot.paramMap.get('id'));
+    if (Number.isInteger(routeRecipeId) && routeRecipeId > 0) {
+      this.editingRecipeId.set(routeRecipeId);
+      this.loadRecipeForEditing(routeRecipeId);
+      return;
+    }
+
     this.loadMetadata();
     this.restoreDraft();
   }
@@ -364,7 +381,12 @@ export class CreateRecipe implements OnInit, OnDestroy {
     };
 
     this.isSaving.set(true);
-    this.recipeService.createRecipe(payload).subscribe({
+    const editingRecipeId = this.editingRecipeId();
+    const saveRequest = editingRecipeId
+      ? this.recipeService.updateRecipe(editingRecipeId, payload)
+      : this.recipeService.createRecipe(payload);
+
+    saveRequest.subscribe({
       next: (response) => {
         this.isSaving.set(false);
         if (!response.success || !response.data) {
@@ -374,16 +396,23 @@ export class CreateRecipe implements OnInit, OnDestroy {
 
         this.createdRecipeId.set(response.data.recipeId);
         localStorage.removeItem(this.draftStorageKey);
-        this.statusMessage.set(`「${response.data.title}」已成功寫入 FriendlyFoodDb。`);
+        this.statusMessage.set(
+          editingRecipeId
+            ? `「${response.data.title}」已成功更新。`
+            : `「${response.data.title}」已成功寫入 FriendlyFoodDb。`
+        );
         this.messageService.add({
           severity: 'success',
-          summary: '食譜發布成功',
+          summary: editingRecipeId ? '食譜更新成功' : '食譜發布成功',
           detail: response.message
         });
       },
       error: (error: HttpErrorResponse) => {
         this.isSaving.set(false);
-        this.showError(this.readApiError(error, '建立食譜失敗。'));
+        this.showError(this.readApiError(
+          error,
+          editingRecipeId ? '更新食譜失敗。' : '建立食譜失敗。'
+        ));
       }
     });
   }
@@ -393,6 +422,68 @@ export class CreateRecipe implements OnInit, OnDestroy {
     if (recipeId) {
       void this.router.navigate(['/recipes', recipeId]);
     }
+  }
+
+  fillDemoRecipe(): void {
+    if (this.isEditMode()) {
+      return;
+    }
+
+    const preferredCategory = this.categories().find(
+      (category) => category.name === '異國料理'
+    ) ?? this.categories()[0];
+    const preferredTagNames = new Set(['日式料理', '高蛋白', '新手友善']);
+    const preferredTagIds = this.tags()
+      .filter((tag) => preferredTagNames.has(tag.name))
+      .map((tag) => tag.tagId);
+
+    this.revokeLocalPreview();
+    this.revokeStepPreviews();
+    this.title.set('味噌蜂蜜烤鮭魚時蔬');
+    this.description.set(
+      '味噌與蜂蜜調成鹹甜醬汁，搭配鮭魚和時蔬一次烤熟，適合忙碌平日晚餐與便當備餐。'
+    );
+    this.servings.set(2);
+    this.cookingMinutes.set(30);
+    this.totalCalories.set(520);
+    this.ingredientRows.set([
+      { ingredientId: null, name: '大西洋鮭魚排', amount: 320, unit: '公克' },
+      { ingredientId: null, name: '味噌', amount: 2, unit: '大匙' },
+      { ingredientId: null, name: '蜂蜜', amount: 1, unit: '大匙' },
+      { ingredientId: null, name: '醬油', amount: 1, unit: '小匙' },
+      { ingredientId: null, name: '青花椰菜', amount: 200, unit: '公克' },
+      { ingredientId: null, name: '紅甜椒', amount: 1, unit: '個' }
+    ]);
+    this.instructionDraft.set([
+      '烤箱預熱至 200°C，鮭魚擦乾，青花椰菜切小朵、甜椒切條。',
+      '將味噌、蜂蜜與醬油拌勻，均勻抹在鮭魚表面。',
+      '鮭魚與蔬菜排入烤盤，蔬菜薄刷食用油後送入烤箱。',
+      '烘烤約 15 至 18 分鐘，確認鮭魚中心熟透後即可盛盤。'
+    ].join('\n'));
+    this.stepImageUrls.set([
+      CreateRecipe.DemoPreparationImageUrl,
+      null,
+      CreateRecipe.DemoCoverImageUrl,
+      CreateRecipe.DemoCoverImageUrl
+    ]);
+    this.stepTimerSeconds.set([300, 180, 900, 180]);
+    this.youTubeUrl.set('https://www.youtube.com/watch?v=A72pr5Sdepw');
+    this.categoryId.set(preferredCategory?.categoryId ?? null);
+    this.selectedTagIds.set(
+      preferredTagIds.length
+        ? preferredTagIds
+        : this.tags().slice(0, 3).map((tag) => tag.tagId)
+    );
+    this.coverImageUrl.set(CreateRecipe.DemoCoverImageUrl);
+    this.coverPreviewUrl.set(CreateRecipe.DemoCoverImageUrl);
+    this.isAiGenerated.set(false);
+    this.createdRecipeId.set(null);
+    this.statusMessage.set('Demo 食譜資料已快速填入，請確認內容後再發布。');
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Demo 資料已填入',
+      detail: '已完成基本資料、圖片、食材、步驟、分類與標籤。'
+    });
   }
 
   addIngredientRow(): void {
@@ -471,6 +562,85 @@ export class CreateRecipe implements OnInit, OnDestroy {
     });
   }
 
+  private loadRecipeForEditing(recipeId: number): void {
+    this.isLoadingRecipe.set(true);
+    forkJoin({
+      metadata: this.recipeService.getMetadata(),
+      recipe: this.recipeService.getRecipeById(recipeId),
+      currentUser: this.authService.getCurrentUser()
+    }).subscribe({
+      next: ({ metadata, recipe, currentUser }) => {
+        this.isLoadingRecipe.set(false);
+        if (!metadata.success || !metadata.data) {
+          this.showError(metadata.message || '無法載入食譜分類與標籤。');
+          return;
+        }
+        if (!recipe.success || !recipe.data) {
+          this.showError(recipe.message || '無法載入要編輯的食譜。');
+          return;
+        }
+
+        if (currentUser.userId !== recipe.data.userId) {
+          this.showError('只有食譜建立者可以修改內容。');
+          void this.router.navigate(['/recipes', recipeId]);
+          return;
+        }
+
+        this.categories.set(metadata.data.categories);
+        this.tags.set(metadata.data.tags);
+        this.populateEditor(recipe.data);
+        if (!this.restoreDraft()) {
+          this.statusMessage.set(`已載入「${recipe.data.title}」，儲存後會更新原食譜。`);
+        }
+      },
+      error: (error: HttpErrorResponse) => {
+        this.isLoadingRecipe.set(false);
+        this.showError(this.readApiError(error, '無法載入要編輯的食譜。'));
+        void this.router.navigate(['/main']);
+      }
+    });
+  }
+
+  private populateEditor(recipe: RecipeDetail): void {
+    this.title.set(recipe.title);
+    this.description.set(recipe.description ?? '');
+    this.servings.set(recipe.defaultServings);
+    this.cookingMinutes.set(recipe.cookingMinutes);
+    this.totalCalories.set(recipe.totalCalories);
+    this.ingredientRows.set(
+      [...recipe.ingredients]
+        .sort((left, right) => left.sortOrder - right.sortOrder)
+        .map((ingredient) => ({
+          ingredientId: ingredient.ingredientId,
+          name: ingredient.name,
+          amount: ingredient.baseAmount ?? 1,
+          unit: this.toSupportedUnit(ingredient.unit || '份')
+        }))
+    );
+
+    const orderedSteps = [...recipe.steps].sort(
+      (left, right) => left.stepNumber - right.stepNumber
+    );
+    this.instructionDraft.set(orderedSteps.map((step) => step.instruction).join('\n'));
+    this.stepImageUrls.set(orderedSteps.map((step) => step.imageUrl));
+    this.stepTimerSeconds.set(orderedSteps.map((step) => step.timerSeconds));
+    this.youTubeUrl.set(
+      recipe.youTubeVideoId
+        ? `https://www.youtube.com/watch?v=${recipe.youTubeVideoId}`
+        : ''
+    );
+    this.categoryId.set(recipe.categoryId);
+    this.selectedTagIds.set(
+      this.tags()
+        .filter((tag) => recipe.tags.includes(tag.name))
+        .map((tag) => tag.tagId)
+    );
+    this.coverImageUrl.set(recipe.coverImageUrl);
+    this.coverPreviewUrl.set(recipe.coverImageUrl);
+    this.isAiGenerated.set(recipe.isAiGenerated);
+    this.createdRecipeId.set(recipe.recipeId);
+  }
+
   private parseIngredientRows(): RecipeIngredientInput[] {
     return this.ingredientRows()
       .filter((ingredient) => ingredient.name.trim() && ingredient.amount > 0)
@@ -485,10 +655,10 @@ export class CreateRecipe implements OnInit, OnDestroy {
       }));
   }
 
-  private restoreDraft(): void {
+  private restoreDraft(): boolean {
     const storedDraft = localStorage.getItem(this.draftStorageKey);
     if (!storedDraft) {
-      return;
+      return false;
     }
 
     try {
@@ -507,9 +677,12 @@ export class CreateRecipe implements OnInit, OnDestroy {
       this.categoryId.set(draft.categoryId ?? null);
       this.selectedTagIds.set(draft.selectedTagIds ?? []);
       this.coverImageUrl.set(draft.coverImageUrl ?? null);
+      this.coverPreviewUrl.set(draft.coverImageUrl ?? null);
       this.statusMessage.set('已載入上次保存在此瀏覽器的食譜草稿。');
+      return true;
     } catch {
       localStorage.removeItem(this.draftStorageKey);
+      return false;
     }
   }
 
@@ -519,7 +692,10 @@ export class CreateRecipe implements OnInit, OnDestroy {
       ? encodeURIComponent(signedInUserName)
       : 'authenticated-user';
 
-    return `friendlyfood.recipe-draft.${ownerKey}`;
+    const editingRecipeId = this.editingRecipeId();
+    return editingRecipeId
+      ? `friendlyfood.recipe-draft.${ownerKey}.edit.${editingRecipeId}`
+      : `friendlyfood.recipe-draft.${ownerKey}`;
   }
 
   private validateImageFile(file: File): string {
@@ -553,7 +729,7 @@ export class CreateRecipe implements OnInit, OnDestroy {
         stepNumber: index + 1,
         instruction: line.replace(/^\d+[.、．]\s*/, ''),
         imageUrl: this.stepImageUrls()[index] ?? null,
-        timerSeconds: 0
+        timerSeconds: this.stepTimerSeconds()[index] ?? 0
       }));
   }
 
