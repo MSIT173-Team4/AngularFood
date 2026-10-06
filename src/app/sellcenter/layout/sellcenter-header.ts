@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
 import { SellerStateService } from '../../Market/Service/seller-state.service';
 import { AuthService } from '../../Member/services/auth-services';
 
@@ -32,5 +33,24 @@ export class SellcenterHeaderComponent {
           .find(([path]) => e.urlAfterRedirects.startsWith(path));
         this.currentPage = matched ? matched[1] : '';
       });
+  }
+
+  onAvatarError(event: Event) {
+    const img = event.target as HTMLImageElement;
+    const fallback = '/images/default-avatar.png';
+    if (!img.src.endsWith(fallback)) {
+      img.src = fallback;
+    }
+  }
+  getUserImage(image?: string | null): string {
+    if (!image) {
+      return '/images/default-avatar.png';
+    }
+    if (/^https?:\/\//i.test(image)) {
+      return image;
+    }
+
+    const backendOrigin = environment.apiUrl.replace(/\/api\/?$/, '');
+    return `${backendOrigin}${image.startsWith('/') ? '' : '/'}${image}`;
   }
 }

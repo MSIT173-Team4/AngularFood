@@ -60,8 +60,6 @@
 
 .action-buttons { display: flex; gap: 0.75rem; }
 .action-buttons .p-button { flex: 1; }
-.action-buttons .p-button:not(.p-button-secondary) { background: #832600 !important; border-color: #832600 !important; }
-.action-buttons .p-button:not(.p-button-secondary):hover { background: #ab3500 !important; border-color: #ab3500 !important; }
 
 .description-box { background: var(--surface-container-low); border-radius: 0.75rem; padding: 1rem; }
 .description-box h3 { font-size: 14px; font-weight: 600; color: var(--on-surface); display: flex; align-items: center; gap: 0.35rem; margin: 0 0 0.5rem; }
@@ -114,6 +112,18 @@
 .action-buttons .p-button:not(.p-button-secondary) {
   background: #832600 !important;
   border-color: #832600 !important;
+}
+/* 加入購物車按鈕：#832600，hover #ab3500 */
+:host {
+  --p-button-primary-background: #832600;
+  --p-button-primary-border-color: #832600;
+  --p-button-primary-hover-background: #ab3500;
+  --p-button-primary-hover-border-color: #ab3500;
+  --p-button-primary-active-background: #ab3500;
+  --p-button-primary-active-border-color: #ab3500;
+  --p-button-primary-color: #ffffff;
+  --p-button-primary-hover-color: #ffffff;
+  --p-button-primary-active-color: #ffffff;
 }
 
 .action-buttons .p-button:not(.p-button-secondary):hover {

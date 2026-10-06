@@ -11,9 +11,9 @@
 
   <div class="seller-info">
     @if (authService.currentUser()?.userImage) {
-      <img [src]="authService.currentUser()?.userImage" alt="賣家頭像" class="seller-avatar" />
+    <img [src]="getUserImage(authService.currentUser()?.userImage)" alt="賣家頭像" class="seller-avatar" />
     } @else {
-      <span class="seller-avatar seller-avatar-fallback"><i class="pi pi-shop"></i></span>
+    <span class="seller-avatar seller-avatar-fallback"><i class="pi pi-shop"></i></span>
     }
     <div>
       <div class="seller-name">{{ sellerState.sellerInfo()?.sellerName }}</div>
@@ -21,31 +21,31 @@
   </div>
 
   <nav class="sidebar-nav">
-  @for (item of navItems(); track item.route) {
-  <a [routerLink]="item.route" routerLinkActive="active" class="nav-item">
-    <span class="nav-left">
-      <i [class]="item.icon"></i>
-      {{ item.label }}
-    </span>
-    @if (item.badge) {
-    <span [class]="'nav-badge ' + (item.badgeClass || '')">
-      {{ item.badge }}
-    </span>
+    @for (item of navItems(); track item.route) {
+    <a [routerLink]="item.route" routerLinkActive="active" class="nav-item">
+      <span class="nav-left">
+        <i [class]="item.icon"></i>
+        {{ item.label }}
+      </span>
+      @if (item.badge) {
+      <span [class]="'nav-badge ' + (item.badgeClass || '')">
+        {{ item.badge }}
+      </span>
+      }
+    </a>
     }
-  </a>
-  }
 
-  <!-- 分隔線 + 返回商城 -->
-  <div class="nav-divider"></div>
-  <a routerLink="/market/products" class="nav-item nav-item--back">
-    <span class="nav-left">
-      <i class="pi pi-arrow-left"></i>
-      返回友料美食生活平台
-    </span>
-  </a>
-</nav>
+    <!-- 分隔線 + 返回商城 -->
+    <div class="nav-divider"></div>
+    <a routerLink="/market/products" class="nav-item nav-item--back">
+      <span class="nav-left">
+        <i class="pi pi-arrow-left"></i>
+        返回友料美食生活平台
+      </span>
+    </a>
+  </nav>
 
-<!-- 分隔線 + 此功能先隱藏
+  <!-- 分隔線 + 此功能先隱藏
   <div class="sidebar-footer">
     <a href="#" class="footer-link">
       <i class="pi pi-external-link"></i>瀏覽我的賣場公開頁

@@ -3,6 +3,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { SellerStateService } from '../../Market/Service/seller-state.service';
 import { AuthService } from '../../Member/services/auth-services';
+import { environment } from '../../../environments/environment';
 
 interface NavItem {
   label: string;
@@ -37,4 +38,16 @@ export class SellcenterSidebarComponent implements OnInit {
     // 側欄在賣家中心內一直存在，進入後台時載入一次；之後由各頁在資料異動後重新載入
     this.sellerState.loadSummary();
   }
+  getUserImage(image?: string | null): string {
+    if (!image) {
+      return '/images/default-avatar.png';
+    }
+    if (/^https?:\/\//i.test(image)) {
+      return image;
+    }
+
+    const backendOrigin = environment.apiUrl.replace(/\/api\/?$/, '');
+    return `${backendOrigin}${image.startsWith('/') ? '' : '/'}${image}`;
+  }
+
 }

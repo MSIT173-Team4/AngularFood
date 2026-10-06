@@ -15,25 +15,24 @@
     <div class="icon-btns">
       <button class="icon-btn">
         <i class="pi pi-bell"></i>
-        <span class="dot red"></span>
       </button>
       <button class="icon-btn">
         <i class="pi pi-comments"></i>
-        <span class="badge-num">3</span>
       </button>
     </div>
 
     <div class="divider"></div>
 
     <div class="user-chip">
-  @if (authService.currentUser()?.userImage) {
-    <img [src]="authService.currentUser()?.userImage" alt="賣家頭像" />
-  } @else {
-    <i class="pi pi-user user-chip-fallback"></i>
-  }
-  <span>{{ sellerState.sellerInfo()?.ownerName || sellerState.sellerInfo()?.sellerName }}</span>
-  <i class="pi pi-chevron-down"></i>
-</div>
+      @if (authService.currentUser()?.userImage) {
+      <img [src]="getUserImage(authService.currentUser()?.userImage)" (error)="onAvatarError($event)"
+        class="user-avatar" alt="賣家頭像" />
+      } @else {
+      <i class="pi pi-user user-chip-fallback"></i>
+      }
+      <span>{{ sellerState.sellerInfo()?.ownerName || sellerState.sellerInfo()?.sellerName }}</span>
+      <i class="pi pi-chevron-down"></i>
+    </div>
   </div>
 
 </header>
