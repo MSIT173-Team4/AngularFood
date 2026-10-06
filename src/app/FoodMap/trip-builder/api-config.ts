@@ -10,7 +10,7 @@ export const API_BASE_URL = environment.apiUrl;
 //   2. 應用程式限制選「HTTP 參照網址」，加入 http://localhost:4200/* 和正式網域
 //   3. API 限制只勾「Maps JavaScript API」
 // 這把金鑰一定會出現在瀏覽器裡，沒有加參照網址限制的話任何人都能拿去用。
-export const GOOGLE_MAPS_BROWSER_KEY = 'AIzaSyDKvDQlAxNr4ayFSuVeSaCVvom08GFX2vg';
+export const GOOGLE_MAPS_BROWSER_KEY = 'AIzaSyCop27AwrIM_CL-IpAiAOa0ouo9r-2LOJ0';
 
 // 進階標記（AdvancedMarkerElement）需要 Map ID。
 // 'DEMO_MAP_ID' 是 Google 提供給開發測試用的；上線前到 Cloud Console 的「地圖管理」建立正式的 Map ID。
