@@ -9,6 +9,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { SelectModule } from 'primeng/select';
 import { TagModule } from 'primeng/tag';
+import { AuthService } from '../../Member/services/auth-services';
 import { AdCheckout } from '../ad-checkout/ad-checkout';
 import { RecipeImageFallbackDirective } from '../recipe-image-fallback.directive';
 import { resolveRecipeImageUrl } from '../recipe-image-url';
@@ -38,6 +39,7 @@ export class RecipeList implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly recipeService = inject(RecipeService);
+  private readonly authService = inject(AuthService);
 
   readonly allRecipes = signal<RecipeSummary[]>([]);
   readonly dataNotice = signal('');
@@ -55,6 +57,9 @@ export class RecipeList implements OnInit, OnDestroy {
   readonly contactEmail = signal('');
   readonly adPlacement = signal('首頁輪播廣告牆');
   readonly rentalDays = signal(7);
+  readonly canUseAdDemoFill = computed(() =>
+    this.authService.currentUser()?.userName.trim().toLocaleLowerCase() === 'recipe.demo'
+  );
   readonly pageSize = 24;
   private carouselTimer: ReturnType<typeof setInterval> | null = null;
 
@@ -167,6 +172,18 @@ export class RecipeList implements OnInit, OnDestroy {
 
     this.adApplicationVisible.set(false);
     this.paymentDialogVisible.set(true);
+  }
+
+  fillDemoAdApplication(): void {
+    if (!this.canUseAdDemoFill()) {
+      return;
+    }
+
+    this.advertiserName.set('幸福食光手作坊');
+    this.productName.set('蜂蜜味噌鮭魚料理醬');
+    this.contactEmail.set('happierdemon@gmail.com');
+    this.adPlacement.set('首頁輪播廣告牆');
+    this.rentalDays.set(10);
   }
 
   returnToAdApplication(): void {

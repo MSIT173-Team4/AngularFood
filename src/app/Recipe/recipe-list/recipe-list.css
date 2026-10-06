@@ -19,7 +19,12 @@
 .ad-dots button { width: .55rem; height: .55rem; padding: 0; border: 0; border-radius: 999px; background: rgba(255,255,255,.55); cursor: pointer; transition: width .2s ease, background .2s ease; }
 .ad-dots button.active { width: 1.65rem; background: #fff; }
 .ad-apply-link { position: absolute; right: 1.25rem; bottom: 1rem; z-index: 2; padding: .6rem .85rem; border: 1px solid rgba(255,255,255,.4); border-radius: 999px; color: #fff; background: rgba(24,17,14,.55); font-weight: 700; cursor: pointer; }
-.ad-application-form { display: grid; gap: 1rem; }
+.ad-application-form { position: relative; display: grid; gap: 1rem; }
+.ad-demo-fill-trigger { position: absolute; top: -.45rem; right: 0; z-index: 1; display: inline-flex; width: 2.5rem; height: 2.5rem; align-items: center; justify-content: center; gap: .35rem; padding: 0; overflow: hidden; border: 1px solid transparent; border-radius: 999px; color: #8f3215; background: transparent; opacity: .025; cursor: pointer; transition: width .2s ease, padding .2s ease, opacity .2s ease, border-color .2s ease, background .2s ease; }
+.ad-demo-fill-trigger span { width: 0; overflow: hidden; white-space: nowrap; }
+.ad-demo-fill-trigger:hover, .ad-demo-fill-trigger:focus-visible { width: 7rem; padding: 0 .85rem; border-color: #e7b5a5; background: #fff7f2; opacity: 1; }
+.ad-demo-fill-trigger:hover span, .ad-demo-fill-trigger:focus-visible span { width: auto; }
+.ad-demo-fill-trigger:focus-visible { outline: 3px solid rgba(171, 53, 0, .2); outline-offset: .2rem; }
 .ad-application-form label { display: grid; gap: .4rem; color: #594139; font-size: .82rem; font-weight: 700; }
 .ad-application-form input, .ad-application-form p-select, .ad-application-form p-inputnumber { width: 100%; }
 .ad-specification { display: flex; gap: .75rem; padding: .9rem; border-radius: .85rem; color: #4d563f; background: #edf5ea; }

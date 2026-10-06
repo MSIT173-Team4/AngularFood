@@ -128,6 +128,8 @@ export class CreateRecipe implements OnInit, OnDestroy {
   readonly canUseDemoFill = computed(() =>
     !this.isEditMode()
       && this.authService.currentUser()?.userName.trim().toLocaleLowerCase() === 'recipe.demo'
+      && this.categories().length > 0
+      && this.tags().length > 0
   );
   readonly unitOptions = [
     '份', '個', '顆', '根', '把', '束', '支', '尾', '塊', '片', '包', '盒',
@@ -480,7 +482,7 @@ export class CreateRecipe implements OnInit, OnDestroy {
   }
 
   fillDemoRecipe(): void {
-    if (this.isEditMode()) {
+    if (!this.canUseDemoFill()) {
       return;
     }
 
@@ -537,7 +539,7 @@ export class CreateRecipe implements OnInit, OnDestroy {
     this.messageService.add({
       severity: 'success',
       summary: 'Demo 資料已填入',
-      detail: '已完成基本資料、圖片、食材、步驟、分類與標籤。'
+      detail: '已完成基本資料、AI 熱量、圖片、食材、步驟計時、分類與標籤。'
     });
   }
 
