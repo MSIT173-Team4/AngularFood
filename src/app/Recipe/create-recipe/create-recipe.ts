@@ -48,6 +48,7 @@ interface RecipeEditorDraft {
   ingredients: IngredientEditorRow[];
   instructions: string;
   stepImageUrls: Array<string | null>;
+  stepTimerSeconds: number[];
   youTubeUrl: string;
   categoryId: number | null;
   selectedTagIds: number[];
@@ -115,6 +116,7 @@ export class CreateRecipe implements OnInit, OnDestroy {
   readonly coverPreviewUrl = signal<string | null>(null);
   readonly isUploadingCover = signal(false);
   readonly isParsingWithAi = signal(false);
+  readonly isEstimatingCalories = signal(false);
   readonly isNormalizing = signal(false);
   readonly isSaving = signal(false);
   readonly isLoadingRecipe = signal(false);
@@ -123,6 +125,10 @@ export class CreateRecipe implements OnInit, OnDestroy {
   readonly createdRecipeId = signal<number | null>(null);
   readonly editingRecipeId = signal<number | null>(null);
   readonly isEditMode = computed(() => this.editingRecipeId() !== null);
+  readonly canUseDemoFill = computed(() =>
+    !this.isEditMode()
+      && this.authService.currentUser()?.userName.trim().toLocaleLowerCase() === 'recipe.demo'
+  );
   readonly unitOptions = [
     '份', '個', '顆', '根', '把', '束', '支', '尾', '塊', '片', '包', '盒',
     '瓶', '罐', '公克', '公斤', '毫升', '公升', '大匙', '小匙'
@@ -264,6 +270,18 @@ export class CreateRecipe implements OnInit, OnDestroy {
     });
   }
 
+  updateStepTimer(stepIndex: number, seconds: number): void {
+    this.stepTimerSeconds.update((timers) => {
+      const nextTimers = [...timers];
+      nextTimers[stepIndex] = Math.max(0, Math.round(seconds));
+      return nextTimers;
+    });
+  }
+
+  getStepTimerSeconds(stepIndex: number): number {
+    return this.stepTimerSeconds()[stepIndex] ?? 0;
+  }
+
   parseWithAi(): void {
     const content = [
       this.title(),
@@ -299,12 +317,49 @@ export class CreateRecipe implements OnInit, OnDestroy {
         );
         this.revokeStepPreviews();
         this.stepImageUrls.set([]);
+        this.stepTimerSeconds.set([]);
+        this.totalCalories.set(response.data.estimatedTotalCalories);
         this.isAiGenerated.set(true);
-        this.statusMessage.set('AI 已整理食材與步驟，請確認內容後再送出。');
+        this.statusMessage.set('AI 已整理食材、步驟並估算總熱量，請確認內容後再送出。');
       },
       error: (error: HttpErrorResponse) => {
         this.isParsingWithAi.set(false);
         this.showError(this.readApiError(error, 'AI 食譜解析失敗。'));
+      }
+    });
+  }
+
+  estimateCaloriesWithAi(): void {
+    const ingredients = this.ingredientRows()
+      .filter((ingredient) => ingredient.name.trim())
+      .map((ingredient) => `${ingredient.name} ${ingredient.amount} ${ingredient.unit}`);
+    if (!ingredients.length) {
+      this.showError('請先輸入至少一項食材，再由 AI 估算總熱量。');
+      return;
+    }
+
+    const content = [
+      `食譜名稱：${this.title().trim() || '未命名食譜'}`,
+      `基準份量：${this.servings()} 人份`,
+      '請依下列完整食材與用量估算整份食譜總熱量：',
+      ...ingredients
+    ].join('\n');
+
+    this.isEstimatingCalories.set(true);
+    this.recipeService.parseRecipe(content).subscribe({
+      next: (response) => {
+        this.isEstimatingCalories.set(false);
+        if (!response.success || !response.data) {
+          this.showError(response.message);
+          return;
+        }
+
+        this.totalCalories.set(response.data.estimatedTotalCalories);
+        this.statusMessage.set('AI 已依目前食材與用量估算整份食譜總熱量。');
+      },
+      error: (error: HttpErrorResponse) => {
+        this.isEstimatingCalories.set(false);
+        this.showError(this.readApiError(error, 'AI 熱量估算失敗。'));
       }
     });
   }
@@ -524,6 +579,7 @@ export class CreateRecipe implements OnInit, OnDestroy {
       ingredients: this.ingredientRows(),
       instructions: this.instructionDraft(),
       stepImageUrls: this.stepImageUrls(),
+      stepTimerSeconds: this.stepTimerSeconds(),
       youTubeUrl: this.youTubeUrl(),
       categoryId: this.categoryId(),
       selectedTagIds: this.selectedTagIds(),
@@ -673,6 +729,7 @@ export class CreateRecipe implements OnInit, OnDestroy {
         : [{ ingredientId: null, name: '', amount: 1, unit: '顆' }]);
       this.instructionDraft.set(draft.instructions ?? '');
       this.stepImageUrls.set(draft.stepImageUrls ?? []);
+      this.stepTimerSeconds.set(draft.stepTimerSeconds ?? []);
       this.youTubeUrl.set(draft.youTubeUrl ?? '');
       this.categoryId.set(draft.categoryId ?? null);
       this.selectedTagIds.set(draft.selectedTagIds ?? []);
