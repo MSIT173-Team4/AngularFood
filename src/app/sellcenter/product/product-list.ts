@@ -276,4 +276,12 @@ export class ProductListComponent implements OnInit, OnDestroy {
     this.currentPage = 1;
     this.loadProducts();
   }
+
+  onProdutError(event: Event) {
+    const img = event.target as HTMLImageElement;
+    const fallback = '/images/product-placeholder.png';
+    if (!img.src.endsWith(fallback)) {
+      img.src = fallback;
+    }
+  }
 }

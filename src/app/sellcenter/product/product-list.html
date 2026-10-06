@@ -40,8 +40,9 @@
     }
   </div>
 
-  <p-table [value]="products" [loading]="loading" [paginator]="true" [rows]="pageSize" [totalRecords]="totalCount" [first]="(currentPage - 1) * pageSize"
-    [lazy]="true" (onLazyLoad)="onPageChange($event)" styleClass="p-datatable-sm seller-table" [rowHover]="true">
+  <p-table [value]="products" [loading]="loading" [paginator]="true" [rows]="pageSize" [totalRecords]="totalCount"
+    [first]="(currentPage - 1) * pageSize" [lazy]="true" (onLazyLoad)="onPageChange($event)"
+    styleClass="p-datatable-sm seller-table" [rowHover]="true">
     <ng-template pTemplate="header">
       <tr>
         <th style="width: 3rem"><p-tableHeaderCheckbox /></th>
@@ -61,8 +62,8 @@
 
         <td>
           <div class="product-info">
-            <img [src]="product.imageUrls?.[0] || '/images/market/product-placeholder.png'" [alt]="product.productName"
-              class="product-thumb" />
+            <img [src]="product.imageUrls?.[0] || '/images/market/product-placeholder.png'" (error)="
+              onProdutError($event)" [alt]="product.productName" class="product-thumb" />
             <div class="product-meta">
               <span class="product-name" (click)="goToEdit(product.productId)">
                 {{ product.productName }}
@@ -150,7 +151,8 @@
 </div>
 
 <!-- 庫存微調 Dialog -->
-<p-dialog styleClass="stock-dialog" [(visible)]="showStockDialog" [modal]="true" [style]="{ width: '400px' }" [header]="stockDialogTitle" [draggable]="false" (onHide)="closeStockDialog()">
+<p-dialog styleClass="stock-dialog" [(visible)]="showStockDialog" [modal]="true" [style]="{ width: '400px' }"
+  [header]="stockDialogTitle" [draggable]="false" (onHide)="closeStockDialog()">
   @if (stockEditProduct) {
   <div class="stock-dialog-content">
     <p class="stock-product-name">{{ stockEditProduct.productName }}</p>
@@ -163,8 +165,8 @@
       <p-inputnumber [(ngModel)]="newStock" [min]="0" [showButtons]="true" styleClass="stock-input" />
     </div>
     @if (stockDialogTitle === '緊急補貨') {
-<p class="stock-hint">補到 {{ LOW_STOCK_THRESHOLD }} 件以上即可解除庫存警告</p>
-}
+    <p class="stock-hint">補到 {{ LOW_STOCK_THRESHOLD }} 件以上即可解除庫存警告</p>
+    }
   </div>
   }
 
