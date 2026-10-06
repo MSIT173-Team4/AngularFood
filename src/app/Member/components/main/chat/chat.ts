@@ -148,7 +148,7 @@ export class Chat implements OnInit {
     const file = input.files[0];
     formData.append('image', file);
     this.http
-      .post<{ imageUrl: string }>(`${environment.url}/Chat/UploadChatImage`, formData, {
+      .post<{ imageUrl: string }>(`${environment.apiUrl}/Chat/UploadChatImage`, formData, {
         withCredentials: true,
       })
       .subscribe({
