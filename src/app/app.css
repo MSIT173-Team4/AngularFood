@@ -89,16 +89,7 @@ nav>a:hover,
 }
 
 .navigation-group {
-  position: relative;
-}
-
-.navigation-group::after {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  width: 100%;
-  height: 0.8rem;
-  content: '';
+  position: static;
 }
 
 .navigation-trigger {
@@ -113,12 +104,13 @@ nav>a:hover,
 
 .mega-menu {
   position: absolute;
-  top: calc(100% + 0.65rem);
-  left: 50%;
+  top: calc(100% + 0.4rem);          /* 100% = header 底部，不再寫死 4.5rem */
+  left: 50%;                          /* header 的 50%，整頁置中 */
   z-index: 60;
   display: grid;
   grid-template-columns: minmax(220px, 0.8fr) minmax(420px, 1.6fr);
-  width: min(860px, calc(100vw - 2rem));
+  width: min(860px, calc(100% - 2rem));   /* 100vw 改成 100%，不會被捲軸寬度影響 */
+  /* ...其餘不變 */
   overflow: hidden;
   border: 1px solid #eadbd4;
   border-radius: 1rem;
@@ -476,6 +468,12 @@ nav>a:hover,
   white-space: nowrap;
 }
 
+@media (max-width: 1100px) {
+  .mega-menu {
+    grid-template-columns: 200px minmax(0, 1fr);
+  }
+}
+
 @media (max-width: 900px) {
   .topbar {
     flex-wrap: wrap;
@@ -489,6 +487,7 @@ nav>a:hover,
 
   nav {
     display: none;
+    flex: 0 0 100%;
     width: 100%;
     padding: 0.75rem 0;
     align-items: stretch;
