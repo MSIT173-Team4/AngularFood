@@ -13,9 +13,9 @@
   </a>
 
   <nav aria-label="主要導覽" [class.open]="isMobileNavigationOpen()">
-    <div class="navigation-group" (mouseenter)="openPanel('recipe')" (mouseleave)="closePanel('recipe')">
-      <button type="button" class="navigation-trigger" [class.active]="activePanel() === 'recipe'"
-        [attr.aria-expanded]="activePanel() === 'recipe'" (click)="togglePanel('recipe')">
+    <div class="navigation-group" (mouseenter)="onNavEnter('recipe')" (mouseleave)="onNavLeave('recipe')">
+  <button type="button" class="navigation-trigger" [class.active]="activePanel() === 'recipe'"
+    [attr.aria-expanded]="activePanel() === 'recipe'" (click)="onNavClick('recipe')">
         食譜發現
         <i class="pi pi-chevron-down" aria-hidden="true"></i>
       </button>
@@ -48,9 +48,9 @@
       </section>
       }
     </div>
-    <div class="navigation-group" (mouseenter)="openPanel('market')" (mouseleave)="closePanel('market')">
-      <button type="button" class="navigation-trigger" [class.active]="activePanel() === 'market'"
-        [attr.aria-expanded]="activePanel() === 'market'" (click)="togglePanel('market')">
+    <div class="navigation-group" (mouseenter)="onNavEnter('market')" (mouseleave)="onNavLeave('market')">
+  <button type="button" class="navigation-trigger" [class.active]="activePanel() === 'market'"
+    [attr.aria-expanded]="activePanel() === 'market'" (click)="onNavClick('market')">
         友善商城
         <i class="pi pi-chevron-down" aria-hidden="true"></i>
       </button>

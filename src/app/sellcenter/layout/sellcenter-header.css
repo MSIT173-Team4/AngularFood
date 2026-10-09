@@ -178,3 +178,37 @@
   background: #e8f3ec;
   color: #2d6a4f;
 }
+
+.user-profile-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.user-profile-link:hover span {
+  text-decoration: underline;
+}
+
+.user-menu-btn {
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+}
+
+.user-menu-btn:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.user-menu-btn i {
+  font-size: 0.75rem;
+}

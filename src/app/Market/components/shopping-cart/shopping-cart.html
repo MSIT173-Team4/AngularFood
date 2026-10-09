@@ -113,6 +113,9 @@
           <!-- 賣家優惠券 + 本店小計 -->
           <div class="seller-footer">
             <div class="seller-coupon-area">
+              <button type="button" class="demo-fill-btn" (click)="fillDemoSellerCoupon(group.sellerId)">
+                <i class="pi pi-bolt"></i> Demo 快速填入
+              </button>
               <div class="seller-coupon-input">
                 <i class="pi pi-tag" style="color: #832600;"></i>
                 <span class="seller-coupon-label">賣家專屬優惠券</span>
@@ -156,7 +159,9 @@
         <div class="order-summary">
 
           <h2 class="summary-title">訂單明細</h2>
-
+          <button type="button" class="demo-fill-btn" (click)="fillDemoPlatformCoupon()">
+            <i class="pi pi-bolt"></i> Demo 快速填入
+          </button>
           <!-- 全站優惠代碼 -->
           <div class="platform-coupon-group">
             <label>全站優惠代碼

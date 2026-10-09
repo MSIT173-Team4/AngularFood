@@ -206,6 +206,10 @@
       為「{{ reviewOrder.sellerName }}」的商品留下評價，至少為一項商品評分即可送出。
     </p>
 
+    <button type="button" class="demo-fill-btn" (click)="fillDemoReview()">
+    <i class="pi pi-bolt"></i> Demo 快速填入
+    </button>
+
     <div class="rv-list">
       @for (form of reviewForms; track form.orderDetailId) {
         <div class="rv-item">
