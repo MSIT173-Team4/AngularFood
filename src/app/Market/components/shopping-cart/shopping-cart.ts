@@ -50,6 +50,8 @@ export class ShoppingCartComponent implements OnInit, OnDestroy {
 
   // 運費
   readonly shippingFeePerSeller = SHIPPING_FEE_PER_SELLER;
+  private readonly DEMO_PLATFORM_COUPON = 'FRIENDLY90';
+  private readonly DEMO_SELLER_COUPON = 'FREESHIP7';
 
   private destroy$ = new Subject<void>();
 
@@ -472,6 +474,14 @@ export class ShoppingCartComponent implements OnInit, OnDestroy {
   private findSellerId(item: CartItemDto): number | undefined {
     return this.sellerGroups
       .find(g => g.items.some(i => i.cartItemId === item.cartItemId))?.sellerId;
+  }
+
+  fillDemoPlatformCoupon(): void {
+    this.platformCouponCode = this.DEMO_PLATFORM_COUPON;
+  }
+
+  fillDemoSellerCoupon(sellerId: number): void {
+    this.sellerCouponCodes[sellerId] = this.DEMO_SELLER_COUPON;
   }
 
 }

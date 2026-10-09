@@ -64,6 +64,12 @@ export class MyOrdersComponent implements OnInit, OnDestroy {
 
   readonly pageSize = 10;
 
+  private readonly demoReviews: { rating: number; comment: string }[] = [
+    { rating: 5, comment: '出貨速度極!!品質讚!值得推薦的好賣家!' },
+    // { rating: 5, comment: '品質超棒，有需要會再回購' },
+    // { rating: 4, comment: '整體品質不錯，價格合理。如果出貨可以再快一點就更完美了。' },
+  ];
+
   // 查詢條件
   activeTab: MyOrderTab = 'pending-ship';
   range: MyOrderRange = '6m';
@@ -345,5 +351,13 @@ export class MyOrdersComponent implements OnInit, OnDestroy {
           });
         },
       });
+  }
+
+  fillDemoReview(): void {
+    this.reviewForms.forEach((form, index) => {
+      const demo = this.demoReviews[index % this.demoReviews.length];   // 多項商品時輪流使用不同評論
+      form.rating = demo.rating;
+      form.comment = demo.comment.slice(0, this.maxCommentLength);      // 保險：不超過字數上限
+    });
   }
 }
