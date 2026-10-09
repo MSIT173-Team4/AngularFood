@@ -1,5 +1,11 @@
+:host {
+  display: flex;
+  flex-shrink: 0;
+}
+
 .sellcenter-sidebar {
   width: 16rem;
+  flex: 1;
   flex-shrink: 0;
   background: #162920;
   color: #D8E6DE;
