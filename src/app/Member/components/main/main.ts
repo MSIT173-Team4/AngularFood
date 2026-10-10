@@ -1,6 +1,6 @@
 import { UserRecipeStatDTO } from './../../interfaces/UserRecipeStatDTO';
 import { Component, inject, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { environment } from '../../../../environments/environment';
 import { UserProfileDTO } from '../../interfaces/UserProfileDTO';
@@ -20,6 +20,9 @@ import { AvatarModule } from 'primeng/avatar';
 import { TabsModule } from 'primeng/tabs';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
+import { RecipeService } from '../../../Recipe/service/recipe.service';
 
 @Component({
   selector: 'app-main',
@@ -29,12 +32,14 @@ import { ButtonModule } from 'primeng/button';
     TabsModule,
     CardModule,
     ButtonModule,
+    ToastModule,
     DialogModule,
     EditProfile,
     Apply,
     CommonModule,
     RouterLink,
   ],
+  providers: [MessageService],
   templateUrl: './main.html',
   styleUrl: './main.css',
 })
@@ -43,6 +48,8 @@ export class Main implements OnInit {
   isOwnProfile = true;
   readonly chatService = inject(ChatService);
   private authService = inject(AuthService);
+  private readonly recipeService = inject(RecipeService);
+  private readonly messageService = inject(MessageService);
   publicProfileId: number | null = null;
   isSeller = false;
   profile: BaseUserProfileDTO | null = null;
@@ -56,6 +63,9 @@ export class Main implements OnInit {
   postTotalViews = 0;
 
   recipes: UserRecipeDTO[] = [];
+  selectedRecipeForDeletion: UserRecipeDTO | null = null;
+  deleteRecipeDialogVisible = false;
+  isDeletingRecipe = false;
   recipeTotalLikes = 0;
   recipeTotalViews = 0;
   dashboard: any[] = ['0'];
@@ -277,6 +287,56 @@ export class Main implements OnInit {
     }
 
     void this.router.navigate(['/recipes', recipeId, 'edit']);
+  }
+
+  requestRecipeDeletion(recipe: UserRecipeDTO): void {
+    if (!this.isOwnProfile || this.isDeletingRecipe) {
+      return;
+    }
+
+    this.selectedRecipeForDeletion = recipe;
+    this.deleteRecipeDialogVisible = true;
+  }
+
+  cancelRecipeDeletion(): void {
+    if (this.isDeletingRecipe) {
+      return;
+    }
+
+    this.deleteRecipeDialogVisible = false;
+    this.selectedRecipeForDeletion = null;
+  }
+
+  confirmRecipeDeletion(): void {
+    const recipe = this.selectedRecipeForDeletion;
+    if (!this.isOwnProfile || !recipe || this.isDeletingRecipe) {
+      return;
+    }
+
+    this.isDeletingRecipe = true;
+    this.recipeService.deleteRecipe(recipe.recipeId).subscribe({
+      next: (response) => {
+        this.recipes = this.recipes.filter((item) => item.recipeId !== recipe.recipeId);
+        this.recipeTotalViews = Math.max(0, this.recipeTotalViews - recipe.views);
+        this.recipeTotalLikes = Math.max(0, this.recipeTotalLikes - recipe.likes);
+        this.deleteRecipeDialogVisible = false;
+        this.selectedRecipeForDeletion = null;
+        this.isDeletingRecipe = false;
+        this.messageService.add({
+          severity: 'success',
+          summary: '食譜已移除',
+          detail: response.message || `「${recipe.title}」已從個人食譜移除。`,
+        });
+      },
+      error: (error: HttpErrorResponse) => {
+        this.isDeletingRecipe = false;
+        this.messageService.add({
+          severity: 'error',
+          summary: '刪除失敗',
+          detail: error.error?.message || '目前無法刪除食譜，請稍後再試。',
+        });
+      },
+    });
   }
   onApplySuccess() {
     this.sellerApplyVisible = false;
