@@ -74,6 +74,18 @@ describe('RecipeService', () => {
     request.flush(createEnvelope<RecipeDetail>(null));
   });
 
+  it('deletes the authenticated member recipe without a client user id', () => {
+    const recipeId = 42;
+
+    service.deleteRecipe(recipeId).subscribe();
+
+    const request = httpController.expectOne(apiConfig.recipes.delete(recipeId));
+    expect(request.request.method).toBe('DELETE');
+    expect(request.request.body).toBeNull();
+    expect(request.request.withCredentials).toBe(true);
+    request.flush(createEnvelope(true));
+  });
+
   it('routes AI parsing through the FriendlyFood Web API BFF', () => {
     service.parseRecipe('番茄炒蛋').subscribe();
 

@@ -174,6 +174,13 @@ export class RecipeService {
     })));
   }
 
+  deleteRecipe(recipeId: number): Observable<ApiResponse<boolean>> {
+    return this.http.delete<ApiResponse<boolean>>(
+      apiConfig.recipes.delete(recipeId),
+      { withCredentials: true }
+    );
+  }
+
   uploadCover(file: File): Observable<ApiResponse<RecipeAsset>> {
     const formData = new FormData();
     formData.append('file', file, file.name);
