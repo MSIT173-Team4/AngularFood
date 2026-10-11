@@ -199,9 +199,40 @@
 
 .recipe-card-actions {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
   gap: 8px;
   margin-top: 14px;
+}
+
+.delete-recipe-confirmation {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid #f3c2ba;
+  border-radius: 12px;
+  color: #5d2a21;
+  background: #fff4f1;
+}
+
+.delete-recipe-confirmation > i {
+  margin-top: .15rem;
+  color: #c13e29;
+  font-size: 1.35rem;
+}
+
+.delete-recipe-confirmation p {
+  margin: .45rem 0 0;
+  color: #7a5149;
+  line-height: 1.65;
+}
+
+.delete-recipe-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: .75rem;
+  margin-top: 1.25rem;
 }
 
 .recipe-cover {

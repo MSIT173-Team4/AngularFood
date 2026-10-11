@@ -7,18 +7,6 @@
   </a>
 
   <header>
-    @if (canUseDemoFill()) {
-      <button
-        type="button"
-        class="demo-fill-trigger"
-        aria-label="Demo 一鍵快速填入食譜資料"
-        title="Demo 快速填入"
-        (click)="fillDemoRecipe()"
-      >
-        <i class="pi pi-bolt" aria-hidden="true"></i>
-        <span>Demo</span>
-      </button>
-    }
     <div>
       <span class="eyebrow"><i class="pi pi-sparkles"></i> AI 協作食譜編輯器</span>
       <h1>{{ isEditMode() ? '編輯分享食譜' : '建立分享食譜' }}</h1>
@@ -29,6 +17,17 @@
       </p>
     </div>
     <div class="header-actions">
+      @if (canUseDemoFill()) {
+        <button
+          type="button"
+          class="demo-fill-trigger"
+          aria-label="Demo 一鍵快速填入食譜資料"
+          (click)="fillDemoRecipe()"
+        >
+          <i class="pi pi-bolt" aria-hidden="true"></i>
+          <span>Demo 一鍵填入</span>
+        </button>
+      }
       @if (createdRecipeId()) {
         <p-button
           label="查看已發布食譜"

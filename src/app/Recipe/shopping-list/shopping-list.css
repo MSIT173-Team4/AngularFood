@@ -15,6 +15,7 @@
 .pending-summary { padding: .45rem .7rem; border-radius: 999px; color: #8b2e08; background: #fff0e9; font-size: .75rem; font-weight: 800; }
 .shopping-items { display: grid; gap: .75rem; padding: 1.25rem; }
 .shopping-item { display: grid; grid-template-columns: auto minmax(180px, 1fr) 135px 140px auto; align-items: end; gap: .8rem; padding: 1rem; border: 1px solid #eadbd4; border-radius: .95rem; background: #fffdfb; transition: opacity .2s ease, background .2s ease; }
+.shopping-item > p-checkbox { align-self: center; justify-self: center; }
 .shopping-item.purchased { opacity: .62; background: #f3f3f1; }
 .shopping-item.purchased .item-name > label { text-decoration: line-through; }
 .item-name { display: grid; align-self: center; gap: .25rem; }

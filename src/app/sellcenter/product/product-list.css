@@ -387,41 +387,41 @@
   --p-button-success-active-color: #ffffff;
 
   /* 外框按鈕（搜尋） */
-  --p-button-outlined-primary-color: #832600;
-  --p-button-outlined-primary-border-color: #832600;
+  --p-button-outlined-primary-color: #233E30;
+  --p-button-outlined-primary-border-color: #233E30;
   --p-button-outlined-primary-hover-background: #fff1ec;
   --p-button-outlined-primary-active-background: #ffe9e4;
 
   /* 文字圖示按鈕（編輯、庫存微調、取消） */
-  --p-button-text-primary-color: #832600;
+  --p-button-text-primary-color: #233E30;
   --p-button-text-primary-hover-background: #fff1ec;
   --p-button-text-primary-active-background: #ffe9e4;
 
   /* 上下架開關 */
-  --p-toggleswitch-checked-background: #832600;
-  --p-toggleswitch-checked-hover-background: #ab3500;
+  --p-toggleswitch-checked-background: #233E30;
+  --p-toggleswitch-checked-hover-background: #2D6A4F;
 
   /* 勾選框 */
-  --p-checkbox-checked-background: #832600;
-  --p-checkbox-checked-border-color: #832600;
-  --p-checkbox-checked-hover-background: #ab3500;
-  --p-checkbox-checked-hover-border-color: #ab3500;
+  --p-checkbox-checked-background: #233E30;
+  --p-checkbox-checked-border-color: #233E30;
+  --p-checkbox-checked-hover-background: #2D6A4F;
+  --p-checkbox-checked-hover-border-color: #2D6A4F;
 }
 
-/* 外框、文字按鈕 hover 時，字和圖示變 #ab3500 */
+/* 外框、文字按鈕 hover 時，字和圖示變 #2D6A4F*/
 :host ::ng-deep .p-button-outlined:not(:disabled):hover,
 :host ::ng-deep .p-button-text:not(.p-button-danger):not(:disabled):hover {
-  color: #ab3500;
-  border-color: #ab3500;
+  color: #2D6A4F;
+  border-color: #2D6A4F;
 }
 
 /* 搜尋框 focus、商品名稱 hover（原本是綠色） */
 .search-input:focus {
-  border-color: #832600;
+  border-color: #233E30;
   box-shadow: 0 0 0 2px rgba(131, 38, 0, 0.15);
 }
 .product-name:hover {
-  color: #ab3500;
+  color: #2D6A4F;
 }
 
 /* 改顏色end */

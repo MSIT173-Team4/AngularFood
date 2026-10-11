@@ -496,31 +496,29 @@ export class CreateRecipe implements OnInit, OnDestroy {
 
     this.revokeLocalPreview();
     this.revokeStepPreviews();
-    this.title.set('味噌蜂蜜烤鮭魚時蔬');
+    this.title.set('生抽烤三文魚時蔬');
     this.description.set(
-      '味噌與蜂蜜調成鹹甜醬汁，搭配鮭魚和時蔬一次烤熟，適合忙碌平日晚餐與便當備餐。'
+      '以生抽調味三文魚，搭配西蘭花與菜椒一次烤熟；示範完成食材名稱與單位標準化後再發布。'
     );
     this.servings.set(2);
     this.cookingMinutes.set(30);
     this.totalCalories.set(520);
     this.ingredientRows.set([
-      { ingredientId: null, name: '大西洋鮭魚排', amount: 320, unit: '公克' },
-      { ingredientId: null, name: '味噌', amount: 2, unit: '大匙' },
-      { ingredientId: null, name: '蜂蜜', amount: 1, unit: '大匙' },
-      { ingredientId: null, name: '醬油', amount: 1, unit: '小匙' },
-      { ingredientId: null, name: '青花椰菜', amount: 200, unit: '公克' },
-      { ingredientId: null, name: '紅甜椒', amount: 1, unit: '個' }
+      { ingredientId: null, name: '三文魚', amount: 320, unit: '公克' },
+      { ingredientId: null, name: '生抽', amount: 1, unit: '大匙' },
+      { ingredientId: null, name: '西蘭花', amount: 200, unit: '公克' },
+      { ingredientId: null, name: '菜椒', amount: 1, unit: '個' }
     ]);
     this.instructionDraft.set([
-      '烤箱預熱至 200°C，鮭魚擦乾，青花椰菜切小朵、甜椒切條。',
-      '將味噌、蜂蜜與醬油拌勻，均勻抹在鮭魚表面。',
-      '鮭魚與蔬菜排入烤盤，蔬菜薄刷食用油後送入烤箱。',
-      '烘烤約 15 至 18 分鐘，確認鮭魚中心熟透後即可盛盤。'
+      '烤箱預熱至 200°C，三文魚擦乾，西蘭花切小朵、菜椒切條。',
+      '將生抽均勻抹在三文魚表面，靜置三分鐘入味。',
+      '三文魚與蔬菜排入烤盤，蔬菜薄刷食用油後送入烤箱。',
+      '烘烤約 15 至 18 分鐘，確認三文魚中心熟透後即可盛盤。'
     ].join('\n'));
     this.stepImageUrls.set([
       CreateRecipe.DemoPreparationImageUrl,
       null,
-      CreateRecipe.DemoCoverImageUrl,
+      null,
       CreateRecipe.DemoCoverImageUrl
     ]);
     this.stepTimerSeconds.set([300, 180, 900, 180]);

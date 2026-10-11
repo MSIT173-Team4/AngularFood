@@ -212,3 +212,28 @@
 .item-favorite-btn.active .pi-heart-fill {
   color: #d64545;
 }
+
+/* Demo 快速填入按鈕 */
+.demo-fill-btn {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;      /* 在 flex 容器裡不要被拉滿整排 */
+  gap: 0.3rem;
+  margin-bottom: 0.5rem;
+  padding: 0.25rem 0.65rem;
+  border: 1px dashed #c98a6f;
+  border-radius: 999px;
+  color: #832600;
+  background: #fff7f3;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.demo-fill-btn:hover {
+  background: #ffe9df;
+}
+
+.demo-fill-btn i {
+  font-size: 0.7rem;
+}

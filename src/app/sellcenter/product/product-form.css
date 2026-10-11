@@ -338,3 +338,24 @@
   justify-content: center;
   height: 40vh;
 }
+
+:host,
+::ng-deep .stock-dialog {
+  /* 實心按鈕（發布新商品、確認更新） */
+  --p-button-success-background: #233E30;
+  --p-button-success-border-color: #233E30;
+  --p-button-success-hover-background: #2D6A4F;
+  --p-button-success-hover-border-color: #2D6A4F;
+  --p-button-success-active-background: #2D6A4F;
+  --p-button-success-active-border-color: #2D6A4F;
+  --p-button-success-color: #ffffff;
+  --p-button-success-hover-color: #ffffff;
+  --p-button-success-active-color: #ffffff;
+
+  /* 外框按鈕（搜尋） */
+  --p-button-outlined-primary-color: #233E30;
+  --p-button-outlined-primary-border-color: #233E30;
+  --p-button-outlined-primary-hover-background: #fff1ec;
+  --p-button-outlined-primary-active-background: #ffe9e4;
+}
+

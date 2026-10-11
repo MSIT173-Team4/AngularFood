@@ -1,3 +1,5 @@
+<p-toast />
+
 <div class="profile-container">
   @if (profile) {
     <!-- ==================== -->
@@ -291,6 +293,14 @@
                       size="small"
                       (onClick)="editRecipe(recipe.recipeId)"
                     />
+                    <p-button
+                      label="刪除食譜"
+                      icon="pi pi-trash"
+                      severity="danger"
+                      [outlined]="true"
+                      size="small"
+                      (onClick)="requestRecipeDeletion(recipe)"
+                    />
                   }
                 </div>
               </p-card>
@@ -299,6 +309,43 @@
         </p-tabpanel>
       </p-tabpanels>
     </p-tabs>
+
+    <p-dialog
+      header="確認刪除食譜"
+      [(visible)]="deleteRecipeDialogVisible"
+      [modal]="true"
+      [closable]="!isDeletingRecipe"
+      [dismissableMask]="!isDeletingRecipe"
+      [closeOnEscape]="!isDeletingRecipe"
+      [style]="{ width: 'min(92vw, 460px)' }"
+      (onHide)="cancelRecipeDeletion()"
+    >
+      @if (selectedRecipeForDeletion; as recipe) {
+        <div class="delete-recipe-confirmation">
+          <i class="pi pi-exclamation-triangle" aria-hidden="true"></i>
+          <div>
+            <strong>確定要刪除「{{ recipe.title }}」嗎？</strong>
+            <p>食譜將從公開內容與個人頁移除，完成後無法直接從畫面復原。</p>
+          </div>
+        </div>
+        <div class="delete-recipe-actions">
+          <p-button
+            label="取消"
+            severity="secondary"
+            [outlined]="true"
+            [disabled]="isDeletingRecipe"
+            (onClick)="cancelRecipeDeletion()"
+          />
+          <p-button
+            label="確認刪除"
+            icon="pi pi-trash"
+            severity="danger"
+            [loading]="isDeletingRecipe"
+            (onClick)="confirmRecipeDeletion()"
+          />
+        </div>
+      }
+    </p-dialog>
   }
 
   <!-- API 資料還沒回來 -->

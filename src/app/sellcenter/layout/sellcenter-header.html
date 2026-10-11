@@ -24,15 +24,23 @@
     <div class="divider"></div>
 
     <div class="user-chip">
-      @if (authService.currentUser()?.userImage) {
-      <img [src]="getUserImage(authService.currentUser()?.userImage)" (error)="onAvatarError($event)"
-        class="user-avatar" alt="賣家頭像" />
-      } @else {
-      <i class="pi pi-user user-chip-fallback"></i>
-      }
-      <span>{{ sellerState.sellerInfo()?.ownerName || sellerState.sellerInfo()?.sellerName }}</span>
-      <i class="pi pi-chevron-down"></i>
-    </div>
+  <!-- 頭像 + 名字：導到會員中心 -->
+  <a class="user-profile-link" routerLink="/main">
+    @if (authService.currentUser()?.userImage) {
+    <img [src]="getUserImage(authService.currentUser()?.userImage)" (error)="onAvatarError($event)"
+      class="user-avatar" alt="賣家頭像" />
+    } @else {
+    <i class="pi pi-user user-chip-fallback"></i>
+    }
+    <span>{{ sellerState.sellerInfo()?.ownerName || sellerState.sellerInfo()?.sellerName }}</span>
+  </a>
+
+  <!-- 下箭頭：開啟登出選單 -->
+  <button type="button" class="user-menu-btn" aria-label="開啟使用者選單" (click)="userMenu.toggle($event)">
+    <i class="pi pi-chevron-down"></i>
+  </button>
+  <p-menu #userMenu [model]="userMenuItems" [popup]="true" appendTo="body" />
+</div>
   </div>
 
 </header>

@@ -37,6 +37,9 @@ export class App implements OnInit {
   readonly activePanel = signal<HeaderPanel | null>(null);
   readonly quickSearchTerm = signal('');
   readonly isSellerCenter = signal(false);
+  // 桌機（有滑鼠、寬度 > 900px）才用 hover 開選單；斷點要跟 CSS 的 900px 一致
+  private readonly hoverMedia = window.matchMedia('(hover: hover) and (min-width: 901px)');
+  private closeTimer?: ReturnType<typeof setTimeout>;
 
   // ===== 通知 =====
   readonly notifications = this.notificationCenter.notifications;
@@ -68,6 +71,7 @@ export class App implements OnInit {
         this.activePanel.set(null);
         this.isSellerCenter.set(url.startsWith('/sellcenter'));
         this.hideLayout.set(url.startsWith('/login') || url.startsWith('/register'));
+        this.destroyRef.onDestroy(() => clearTimeout(this.closeTimer));
       });
   }
 
@@ -149,6 +153,28 @@ export class App implements OnInit {
     const target = event.target as HTMLElement;
     if (!target.closest('.header-action, .navigation-group')) {
       this.closePanel();
+    }
+  }
+
+  // ===== 主選單（食譜發現 / 友善商城） =====
+  onNavEnter(panel: HeaderPanel): void {
+    if (!this.hoverMedia.matches) return;
+    clearTimeout(this.closeTimer);          // 滑回按鈕或選單就取消關閉
+    this.activePanel.set(panel);
+  }
+
+  onNavLeave(panel: HeaderPanel): void {
+    if (!this.hoverMedia.matches) return;
+    clearTimeout(this.closeTimer);
+    this.closeTimer = setTimeout(() => this.closePanel(panel), 200);
+  }
+
+  onNavClick(panel: HeaderPanel): void {
+    clearTimeout(this.closeTimer);
+    if (this.hoverMedia.matches) {
+      this.activePanel.set(panel);          // 桌機：已經 hover 打開，點擊不要又關掉
+    } else {
+      this.togglePanel(panel);              // 手機：點擊開 / 關
     }
   }
 
