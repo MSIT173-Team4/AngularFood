@@ -122,8 +122,15 @@ export class ProductListComponent implements OnInit, OnDestroy {
   }
 
   onPageChange(event: TableLazyLoadEvent): void {
-    this.currentPage = (event.first ?? 0) / (event.rows ?? this.pageSize) + 1;
+    const newPage = (event.first ?? 0) / (event.rows ?? this.pageSize) + 1;
+    const pageChanged = newPage !== this.currentPage;
+
+    this.currentPage = newPage;
     this.loadProducts();
+
+    if (pageChanged) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   }
 
   toggleStatus(product: SellerProduct): void {

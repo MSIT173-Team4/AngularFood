@@ -157,6 +157,7 @@ export class GetPublicProduct implements OnInit, OnDestroy {
     // event.page 是 0-based，後端是 1-based，所以要 +1
     this.currentPage = (event.page ?? 0) + 1;
     this.loadProducts();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   // ── 子 Component 的事件 ───────────────────────────────
