@@ -1,3 +1,4 @@
+//Angular元件、表單、路由、TimeAgoPipe、environment、HttpClient、SocialService & User相關
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -18,19 +19,31 @@ import { AvatarModule } from 'primeng/avatar';
   styleUrls: ['./post-list.css']
 })
 export class PostListComponent implements OnInit {
+
+  //使用者資料
   profile: BaseUserProfileDTO | null = null;
   userInfo: UserProfileDTO | null = null;
+
+  //個人檔案
   userProfiles: { [userId: number]: UserProfileDTO } = {};
+
+  //API
   baseURL: string = environment.apiUrl;
+
+  //貼文列表
   posts: PostList[] = [];
+
+  //當前頁籤與關鍵字
   activeTab: string = 'latest';
   keyword: string = '';
 
+  //分頁
   currentPage: number = 1;
   pageSize: number = 5;
   totalPages: number = 1;
   pagesArray: number[] = [];
 
+  //目前登入者
   currentUserId: number = 0;
 
   constructor(
@@ -39,10 +52,12 @@ export class PostListComponent implements OnInit {
     private http: HttpClient
   ) { }
 
+  //載入貼文
   ngOnInit(): void {
     this.loadPosts();
   }
 
+  //載入貼文: 排序、關鍵字及頁碼
   loadPosts(): void {
     this.socialService
       .getPosts(
@@ -53,6 +68,7 @@ export class PostListComponent implements OnInit {
       )
       .subscribe({
         next: (res) => {
+          //更新列表，(當前i, i) => i + 1
           this.posts = res.items;
           this.totalPages = res.totalPages;
           this.pagesArray = Array.from(
@@ -60,7 +76,7 @@ export class PostListComponent implements OnInit {
             (_, i) => i + 1
           );
 
-          // 取得每篇貼文作者的 Profile
+          //各貼文作者的個人檔案
           this.posts.forEach(post => {
             this.loadingProfile(post.userId);
           });
@@ -69,27 +85,32 @@ export class PostListComponent implements OnInit {
       });
   }
 
+  //切換頁籤，回第一頁
   switchTab(tab: string): void {
     this.activeTab = tab;
     this.currentPage = 1;
     this.loadPosts();
   }
 
+  //關鍵字搜尋
   onSearch(): void {
     this.currentPage = 1;
     this.loadPosts();
   }
 
+  //貼文發佈
   goToCreate(): void {
     this.router.navigate(['/social/create']);
   }
 
+  //查看貼文
   viewPost(postId: number): void {
     this.router.navigate(['/social/post', postId]);
   }
 
+  //取得貼文作者個人檔案
   loadingProfile(userId: number): void {
-    // 已經載入過就不用再呼叫 API
+    //已載入過的
     if (this.userProfiles[userId]) {
       return;
     }
@@ -111,19 +132,23 @@ export class PostListComponent implements OnInit {
       });
   }
 
+  //頭像
   getImageUrl(image?: string): string {
+    //預設圖片
     if (!image) {
       return '/images/default-avatar.png';
     }
 
+    //完整網址
     if (/^https?:\/\//i.test(image)) {
-      return image; // 已經是完整網址（Cloudinary、Google 頭像）
+      return image;
     }
-    // 本機開發接上 https://localhost:7164；正式環境 apiUrl 是 /api，前綴為空，交給 nginx 轉發
+
     const backendOrigin = environment.apiUrl.replace(/\/api\/?$/, '');
     return `${backendOrigin}${image.startsWith('/') ? '' : '/'}${image}`;
   }
 
+  //頭像載入失敗
   onAvatarError(event: Event) {
     const img = event.target as HTMLImageElement;
     const fallback = '/images/default-avatar.png';
@@ -132,21 +157,23 @@ export class PostListComponent implements OnInit {
     }
   }
 
+  //作者資訊頁面
   navigateToUser(userId: number): void {
     this.router.navigate(['/main', userId]);
   }
 
-
+  //貼文收藏
   toggleBookmark(event: Event, post: PostList): void {
     event.stopPropagation();
     this.socialService.toggleBookmark(post.postId).subscribe({
-      next: (res) => {
-        post.isBookmarkedByCurrentUser = res.isBookmarked;
+      next: () => {
+        post.isBookmarkedByCurrentUser = !post.isBookmarkedByCurrentUser;
       },
       error: (err) => console.error('操作失敗', err)
     });
   }
 
+  //貼文按讚
   toggleLike(event: Event, post: PostList): void {
     event.stopPropagation();
     this.socialService.togglePostLike(post.postId).subscribe({
@@ -158,24 +185,7 @@ export class PostListComponent implements OnInit {
     });
   }
 
-  onEditPost(postId: number): void {
-    this.router.navigate(['/social/edit-post', postId]);
-  }
-
-  onDeletePost(postId: number): void {
-    if (confirm('確定要刪除這篇貼文嗎？')) {
-      this.socialService.deletePost(postId).subscribe({
-        next: () => {
-          this.posts = this.posts.filter(p => p.postId !== postId);
-        },
-        error: (err) => {
-          console.error('刪除失敗', err);
-          alert('刪除失敗，請稍後再試。');
-        }
-      });
-    }
-  }
-
+  //切換頁碼
   changePage(page: number): void {
     if (page < 1 || page > this.totalPages) return;
     this.currentPage = page;

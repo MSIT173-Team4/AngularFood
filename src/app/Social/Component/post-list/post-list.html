@@ -52,13 +52,6 @@
             {{ post.userName }}
           </span>
         </div>
-
-        @if (post.userId === currentUserId) {
-        <div class="owner-actions" (click)="$event.stopPropagation()">
-          <button class="btn-outline btn-edit" (click)="onEditPost(post.postId)">編輯</button>
-          <button class="btn-outline btn-delete" (click)="onDeletePost(post.postId)">刪除</button>
-        </div>
-        }
       </div>
 
       <div class="card-footer">

@@ -18,12 +18,19 @@ import { environment } from '../../../../environments/environment';
   styleUrls: ['./post-detail.css']
 })
 export class PostDetailComponent implements OnInit {
+
+  //貼文ID、貼文資料、留言列表
+  //貼文ID尚未初始化，但使用前會被賦值，加"!"
   postId!: number;
   post: PostDetail | null = null;
   comments: Comment[] = [];
+
+  //留言內容、回覆/編輯目標
   newCommentContent: string = '';
   replyToComment: Comment | null = null;
   editingComment: Comment | null = null;
+
+  //個人檔案、API
   userProfiles: { [userId: number]: UserProfileDTO } = {};
   baseURL: string = environment.apiUrl;
 
@@ -36,12 +43,7 @@ export class PostDetailComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    if (!this.authService.currentUser()) {
-      this.authService.getCurrentUser().subscribe({
-        error: (err) => console.log('尚未登入', err)
-      });
-    }
-
+    //以ID取得貼文內容
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
       if (id) {
@@ -52,11 +54,13 @@ export class PostDetailComponent implements OnInit {
     });
   }
 
+  //目前登入者
   get currentUserName(): string | null {
     const user = this.authService.currentUser();
     return user ? user.userName : null;
   }
 
+  //目前登入者是否為貼文作者
   get isPostOwner(): boolean {
     return !!(
       this.post &&
@@ -64,12 +68,11 @@ export class PostDetailComponent implements OnInit {
       this.post.userName === this.currentUserName
     );
   }
+  //取得各用戶的個人檔案
   loadingProfile(userId: number): void {
-    // 已經取得過這個使用者的資料，就不要重複呼叫 API
     if (this.userProfiles[userId]) {
       return;
     }
-
     this.http
       .get<UserProfileDTO>(
         `${this.baseURL}/Users/GetUserProfile/${userId}`,
@@ -87,7 +90,7 @@ export class PostDetailComponent implements OnInit {
       });
   }
 
-  //貼文內容
+  //貼文詳細內容
   loadPostDetail(): void {
     this.socialService.getPost(this.postId).subscribe({
       next: (res) => {
@@ -98,12 +101,11 @@ export class PostDetailComponent implements OnInit {
     });
   }
 
-  //留言列表
+  //留言區
   loadComments(): void {
     this.socialService.getComments(this.postId).subscribe({
       next: (res) => {
         this.comments = res;
-        //載入留言作者Profile
         this.comments.forEach(comment => {
           this.loadingProfile(comment.userId);
         });
@@ -115,17 +117,15 @@ export class PostDetailComponent implements OnInit {
   //貼文按讚
   togglePostLike(): void {
     if (!this.post) return;
-
+    //臨時想到的改良:錯誤時回復原本狀態
     const previousState = this.post.isLikedByCurrentUser;
     this.post.isLikedByCurrentUser = !previousState;
     this.post.likes += this.post.isLikedByCurrentUser ? 1 : -1;
 
     this.socialService.togglePostLike(this.postId).subscribe({
       next: (res) => {
-        if (res && typeof res.isLikedByCurrentUser === 'boolean') {
-          this.post!.isLikedByCurrentUser = res.isLikedByCurrentUser;
-          this.post!.likes = res.likes;
-        }
+        this.post!.isLikedByCurrentUser = res.isLikedByCurrentUser;
+        this.post!.likes = res.likes;
       },
       error: (err) => {
         console.error('操作失敗', err);
@@ -149,7 +149,7 @@ export class PostDetailComponent implements OnInit {
     });
   }
 
-  //編輯貼文
+  //貼文編輯頁面
   onEditPost(): void {
     if (this.postId) {
       this.router.navigate(['/social/edit-post', this.postId]);
@@ -171,6 +171,7 @@ export class PostDetailComponent implements OnInit {
     }
   }
 
+  //新增/回覆/編輯留言
   sendComment(): void {
     if (!this.newCommentContent.trim()) return;
 
@@ -186,6 +187,7 @@ export class PostDetailComponent implements OnInit {
 
       this.socialService.updateComment(editingCommentId, payload).subscribe({
         next: () => {
+          //清除編輯狀態
           this.newCommentContent = '';
           this.editingComment = null;
           this.replyToComment = null;
@@ -199,7 +201,7 @@ export class PostDetailComponent implements OnInit {
       return;
     }
 
-    // 新增 / 回覆留言
+    //新增&回覆
     const payload = {
       postId: this.postId,
       replyMessageId: this.replyToComment
@@ -210,6 +212,7 @@ export class PostDetailComponent implements OnInit {
 
     this.socialService.createComment(payload).subscribe({
       next: () => {
+        //取消回覆狀態
         this.newCommentContent = '';
         this.replyToComment = null;
         this.loadComments();
@@ -220,23 +223,30 @@ export class PostDetailComponent implements OnInit {
     });
   }
 
+  //要回覆的留言
   setReplyTarget(comment: Comment): void {
-    // 回覆留言時取消編輯狀態
+    //取消編輯狀態
     this.editingComment = null;
     this.newCommentContent = '';
 
     this.replyToComment = comment;
   }
+
+  //要編輯的留言
   setEditTarget(comment: Comment): void {
-    // 開始編輯時取消回覆狀態
+    //取消回覆狀態
     this.replyToComment = null;
 
     this.editingComment = comment;
     this.newCommentContent = comment.messageContent;
   }
+
+  //取消回覆
   cancelReply(): void {
     this.replyToComment = null;
   }
+
+  //取消編輯
   cancelEdit(): void {
     this.editingComment = null;
     this.newCommentContent = '';
@@ -262,20 +272,22 @@ export class PostDetailComponent implements OnInit {
     if (confirm('確定要刪除留言嗎？')) {
       this.socialService.deleteComment(commentId).subscribe({
         next: () => {
+          //從留言列表移除
           this.comments = this.comments.filter(c => c.messageId !== commentId);
 
-          // 如果刪除的正好是正在編輯的留言
+          //清除編輯狀態
           if (this.editingComment?.messageId === commentId) {
             this.editingComment = null;
             this.newCommentContent = '';
           }
 
-          // 如果刪除的是正在回覆的留言
+          //清除回覆狀態
           if (this.replyToComment?.messageId === commentId) {
             this.replyToComment = null;
             this.newCommentContent = '';
           }
 
+          //更新留言數量
           if (this.post && this.post.commentCount > 0) {
             this.post.commentCount--;
           }
@@ -285,17 +297,20 @@ export class PostDetailComponent implements OnInit {
     }
   }
 
-  //資訊頁面及用戶頭像
+  //點頭像看資訊
   navigateToUser(userId: number): void {
     if (userId) {
       this.router.navigate(['/main', userId]);
     }
   }
+
+  //頭像
   getImageUrl(image?: string): string {
+    //預設圖片
     if (!image) {
       return '/images/default-avatar.png';
     }
-
+    //完整網址
     if (/^https?:\/\//i.test(image)) {
       return image;
     }
@@ -305,6 +320,7 @@ export class PostDetailComponent implements OnInit {
     return `${backendOrigin}${image.startsWith('/') ? '' : '/'}${image}`;
   }
 
+  //頭像載入失敗時
   onAvatarError(event: Event): void {
     const img = event.target as HTMLImageElement;
     const fallback = '/images/default-avatar.png';
@@ -314,6 +330,7 @@ export class PostDetailComponent implements OnInit {
     }
   }
 
+  //返回
   goBack(): void {
     this.router.navigate(['/social']);
   }
